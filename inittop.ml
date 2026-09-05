@@ -8,14 +8,14 @@ type dummy_interactive = START_INTERACTIVE | END_INTERACTIVE;;
 
 (* Runs the action of a directive with no arguments *)
 let run_directive name =
-  match (Hashtbl.find Toploop.directive_table name) with
-  | Toploop.Directive_none fn -> fn()
+  match Toploop.get_directive name with
+  | Some (Toploop.Directive_none fn) -> fn ()
   | _ -> failwith "Directive needs args";;
 
 (* Runs the #use directive *)
 let directive_use filename =
-  match (Hashtbl.find Toploop.directive_table "use") with
-  | Toploop.Directive_string fn -> fn filename
+  match Toploop.get_directive "use" with
+  | Some (Toploop.Directive_string fn) -> fn filename
   | _ -> failwith "#use directive needs filename";;
 
 (* Runs an expression from a string, appending ";;" *)
@@ -31,4 +31,4 @@ if Findlib.is_recorded_package "utop" then
   if Sys.file_exists "utop-prefs.ml" then
     directive_use "utop-prefs.ml";;
 
-#directory "samples";;  
+#directory "_build/default/lib/samples";;

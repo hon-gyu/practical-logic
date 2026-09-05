@@ -10,20 +10,20 @@
 
 let coordinations =
   ["collinear", (** Points 1, 2 and 3 lie on a common line **)
-   <<(1_x - 2_x) * (2_y - 3_y) = (1_y - 2_y) * (2_x - 3_x)>>;
+   {%fml|(1_x - 2_x) * (2_y - 3_y) = (1_y - 2_y) * (2_x - 3_x)|};
    "parallel", (** Lines (1,2) and (3,4) are parallel **)
-    <<(1_x - 2_x) * (3_y - 4_y) = (1_y - 2_y) * (3_x - 4_x)>>;
+    {%fml|(1_x - 2_x) * (3_y - 4_y) = (1_y - 2_y) * (3_x - 4_x)|};
    "perpendicular", (** Lines (1,2) and (3,4) are perpendicular **)
-   <<(1_x - 2_x) * (3_x - 4_x) + (1_y - 2_y) * (3_y - 4_y) = 0>>;
+   {%fml|(1_x - 2_x) * (3_x - 4_x) + (1_y - 2_y) * (3_y - 4_y) = 0|};
    "lengths_eq", (** Lines (1,2) and (3,4) have the same length **)
-   <<(1_x - 2_x)^2 + (1_y - 2_y)^2 = (3_x - 4_x)^2 + (3_y - 4_y)^2>>;
+   {%fml|(1_x - 2_x)^2 + (1_y - 2_y)^2 = (3_x - 4_x)^2 + (3_y - 4_y)^2|};
    "is_midpoint", (** Point 1 is the midpoint of line (2,3) **)
-   <<2 * 1_x = 2_x + 3_x /\ 2 * 1_y = 2_y + 3_y>>;
+   {%fml|2 * 1_x = 2_x + 3_x /\ 2 * 1_y = 2_y + 3_y|};
    "is_intersection", (** Lines (2,3) and (4,5) meet at point 1 **)
-   <<(1_x - 2_x) * (2_y - 3_y) = (1_y - 2_y) * (2_x - 3_x) /\
-     (1_x - 4_x) * (4_y - 5_y) = (1_y - 4_y) * (4_x - 5_x)>>;
+   {%fml|(1_x - 2_x) * (2_y - 3_y) = (1_y - 2_y) * (2_x - 3_x) /\
+     (1_x - 4_x) * (4_y - 5_y) = (1_y - 4_y) * (4_x - 5_x)|};
    "=", (** Points 1 and 2 are the same **)
-   <<(1_x = 2_x) /\ (1_y = 2_y)>>];;
+   {%fml|(1_x = 2_x) /\ (1_y = 2_y)|}];;
 
 (* ------------------------------------------------------------------------- *)
 (* Convert formula into coordinate form.                                     *)
@@ -42,7 +42,7 @@ let coordinate = onatoms
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-coordinate <<collinear(a,b,c) ==> collinear(b,a,c)>>;;
+coordinate {%fml|collinear(a,b,c) ==> collinear(b,a,c)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -56,15 +56,15 @@ let invariant (x',y') ((s:string),z) =
     (x |-> tsubst i x') ((y |-> tsubst i y') f) in
   Iff(z,subst(itlist m (1--5) undefined) z);;
 
-let invariant_under_translation = invariant (<<|x + X|>>,<<|y + Y|>>);;
+let invariant_under_translation = invariant ({%tm|x + X|},{%tm|y + Y|});;
 
 START_INTERACTIVE;;
 forall (grobner_decide ** invariant_under_translation) coordinations;;
 END_INTERACTIVE;;
 
 let invariant_under_rotation fm =
-  Imp(<<s^2 + c^2 = 1>>,
-      invariant (<<|c * x - s * y|>>,<<|s * x + c * y|>>) fm);;
+  Imp({%fml|s^2 + c^2 = 1|},
+      invariant ({%tm|c * x - s * y|},{%tm|s * x + c * y|}) fm);;
 
 START_INTERACTIVE;;
 forall (grobner_decide ** invariant_under_rotation) coordinations;;
@@ -76,7 +76,7 @@ END_INTERACTIVE;;
 
 START_INTERACTIVE;;
 real_qelim
- <<forall x y. exists s c. s^2 + c^2 = 1 /\ s * x + c * y = 0>>;;
+ {%fml|forall x y. exists s c. s^2 + c^2 = 1 /\ s * x + c * y = 0|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -93,9 +93,9 @@ let originate fm =
 (* ------------------------------------------------------------------------- *)
 
 let invariant_under_scaling fm =
-  Imp(<<~(A = 0)>>,invariant(<<|A * x|>>,<<|A * y|>>) fm);;
+  Imp({%fml|~(A = 0)|},invariant({%tm|A * x|},{%tm|A * y|}) fm);;
 
-let invariant_under_shearing = invariant(<<|x + b * y|>>,<<|y|>>);;
+let invariant_under_shearing = invariant({%tm|x + b * y|},{%tm|y|});;
 
 START_INTERACTIVE;;
 forall (grobner_decide ** invariant_under_scaling) coordinations;;
@@ -109,22 +109,22 @@ END_INTERACTIVE;;
 
 START_INTERACTIVE;;
 (grobner_decide ** originate)
- <<is_midpoint(m,a,c) /\ perpendicular(a,c,m,b)
-   ==> lengths_eq(a,b,b,c)>>;;
+ {%fml|is_midpoint(m,a,c) /\ perpendicular(a,c,m,b)
+   ==> lengths_eq(a,b,b,c)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Parallelogram theorem (Chou's expository example at the start).           *)
 (* ------------------------------------------------------------------------- *)
 
 (grobner_decide ** originate)
- <<parallel(a,b,d,c) /\ parallel(a,d,b,c) /\
+ {%fml|parallel(a,b,d,c) /\ parallel(a,d,b,c) /\
    is_intersection(e,a,c,b,d)
-   ==> lengths_eq(a,e,e,c)>>;;
+   ==> lengths_eq(a,e,e,c)|};;
 
 (grobner_decide ** originate)
- <<parallel(a,b,d,c) /\ parallel(a,d,b,c) /\
+ {%fml|parallel(a,b,d,c) /\ parallel(a,d,b,c) /\
    is_intersection(e,a,c,b,d) /\ ~collinear(a,b,c)
-   ==> lengths_eq(a,e,e,c)>>;;
+   ==> lengths_eq(a,e,e,c)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -180,7 +180,7 @@ let wu fm vars zeros =
 
 START_INTERACTIVE;;
 let simson =
- <<lengths_eq(o,a,o,b) /\
+ {%fml|lengths_eq(o,a,o,b) /\
    lengths_eq(o,a,o,c) /\
    lengths_eq(o,a,o,d) /\
    collinear(e,b,c) /\
@@ -189,7 +189,7 @@ let simson =
    perpendicular(b,c,d,e) /\
    perpendicular(a,c,d,f) /\
    perpendicular(a,b,d,g)
-   ==> collinear(e,f,g)>>;;
+   ==> collinear(e,f,g)|};;
 
 let vars =
  ["g_y"; "g_x"; "f_y"; "f_x"; "e_y"; "e_x"; "d_y"; "d_x"; "c_y"; "c_x";
@@ -209,13 +209,13 @@ wu simson (vars @ zeros) [];;
 (* ------------------------------------------------------------------------- *)
 
 let pappus =
- <<collinear(a1,b2,d) /\
+ {%fml|collinear(a1,b2,d) /\
    collinear(a2,b1,d) /\
    collinear(a2,b3,e) /\
    collinear(a3,b2,e) /\
    collinear(a1,b3,f) /\
    collinear(a3,b1,f)
-   ==> collinear(d,e,f)>>;;
+   ==> collinear(d,e,f)|};;
 
 let vars = ["f_y"; "f_x"; "e_y"; "e_x"; "d_y"; "d_x";
             "b3_y"; "b2_y"; "b1_y"; "a3_x"; "a2_x"; "a1_x"]
@@ -229,11 +229,11 @@ wu pappus vars zeros;;
 
 (****
 let butterfly =
- <<lengths_eq(b,o,a,o) /\ lengths_eq(c,o,a,o) /\ lengths_eq(d,o,a,o) /\
+ {%fml|lengths_eq(b,o,a,o) /\ lengths_eq(c,o,a,o) /\ lengths_eq(d,o,a,o) /\
    collinear(a,e,c) /\ collinear(d,e,b) /\
    perpendicular(e,f,o,e) /\
    collinear(a,f,d) /\ collinear(f,e,g) /\ collinear(b,c,g)
-   ==> is_midpoint(e,f,g)>>;;
+   ==> is_midpoint(e,f,g)|};;
 
 let vars = ["g_y"; "g_x"; "f_y"; "f_x"; "e_y"; "e_x"; "d_y"; "c_y";
             "b_y"; "d_x"; "c_x"; "b_x"; "a_x"]
@@ -255,8 +255,8 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 (grobner_decide ** originate)
- <<is_midpoint(d,b,c) /\ is_midpoint(e,a,c) /\
+ {%fml|is_midpoint(d,b,c) /\ is_midpoint(e,a,c) /\
    is_midpoint(f,a,b) /\ is_intersection(m,b,e,a,d)
-   ==> collinear(c,f,m)>>;;
+   ==> collinear(c,f,m)|};;
 
 ****)

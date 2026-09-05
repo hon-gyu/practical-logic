@@ -11,7 +11,7 @@
 let real_lang =
   let fn = ["-",1; "+",2; "-",2; "*",2; "^",2]
   and pr = ["<=",2; "<",2; ">=",2; ">",2] in
-  (fun (s,n) -> n = 0 & is_numeral(Fn(s,[])) or mem (s,n) fn),
+  (fun (s,n) -> n = 0 && is_numeral(Fn(s,[])) || mem (s,n) fn),
   (fun sn -> mem sn pr),
   (fun fm -> real_qelim(generalize fm) = True);;
 
@@ -22,7 +22,7 @@ let real_lang =
 let int_lang =
   let fn = ["-",1; "+",2; "-",2; "*",2]
   and pr = ["<=",2; "<",2; ">=",2; ">",2] in
-  (fun (s,n) -> n = 0 & is_numeral(Fn(s,[])) or mem (s,n) fn),
+  (fun (s,n) -> n = 0 && is_numeral(Fn(s,[])) || mem (s,n) fn),
   (fun sn -> mem sn pr),
   (fun fm -> integer_qelim(generalize fm) = True);;
 
@@ -103,7 +103,7 @@ let homogenize langs fms =
 (* ------------------------------------------------------------------------- *)
 
 let belongs (fn,pr,dp) fm =
-  forall fn (functions fm) &
+  forall fn (functions fm) &&
   forall pr (subtract (predicates fm) ["=",2]);;
 
 (* ------------------------------------------------------------------------- *)
@@ -122,11 +122,11 @@ let rec langpartition langs fms =
 
 START_INTERACTIVE;;
 (integer_qelim ** generalize)
-  <<(u + 1 = v /\ v_1 + 1 = u - 1 /\ v_2 - 1 = v + 1 /\ v_3 = v - 1)
-    ==> u = v_3 /\ ~(v_1 = v_2)>>;;
+  {%fml|(u + 1 = v /\ v_1 + 1 = u - 1 /\ v_2 - 1 = v + 1 /\ v_3 = v - 1)
+    ==> u = v_3 /\ ~(v_1 = v_2)|};;
 
 ccvalid
-  <<(v_2 = f(v_3) /\ v_1 = f(u)) ==> ~(u = v_3 /\ ~(v_1 = v_2))>>;;
+  {%fml|(v_2 = f(v_3) /\ v_1 = f(u)) ==> ~(u = v_3 /\ ~(v_1 = v_2))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -192,7 +192,7 @@ let nelop langs fm = forall (nelop1 langs) (simpdnf(simplify(Not fm)));;
 
 START_INTERACTIVE;;
 nelop (add_default [int_lang])
- <<f(v - 1) - 1 = v + 1 /\ f(u) + 1 = u - 1 /\ u + 1 = v ==> false>>;;
+ {%fml|f(v - 1) - 1 = v + 1 /\ f(u) + 1 = u - 1 /\ u + 1 = v ==> false|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Bell numbers show the size of our case analysis.                          *)
@@ -247,40 +247,40 @@ let nelop langs fm = forall (nelop1 langs) (simpdnf(simplify(Not fm)));;
 
 START_INTERACTIVE;;
 nelop (add_default [int_lang])
- <<y <= x /\ y >= x + z /\ z >= 0 ==> f(f(x) - f(y)) = f(z)>>;;
+ {%fml|y <= x /\ y >= x + z /\ z >= 0 ==> f(f(x) - f(y)) = f(z)|};;
 
 nelop (add_default [int_lang])
- <<x = y /\ y >= z /\ z >= x ==> f(z) = f(x)>>;;
+ {%fml|x = y /\ y >= z /\ z >= x ==> f(z) = f(x)|};;
 
 nelop (add_default [int_lang])
- <<a <= b /\ b <= f(a) /\ f(a) <= 1
-  ==> a + b <= 1 \/ b + f(b) <= 1 \/ f(f(b)) <= f(a)>>;;
+ {%fml|a <= b /\ b <= f(a) /\ f(a) <= 1
+  ==> a + b <= 1 \/ b + f(b) <= 1 \/ f(f(b)) <= f(a)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Confirmation of non-convexity.                                            *)
 (* ------------------------------------------------------------------------- *)
 
 map (real_qelim ** generalize)
-  [<<x * y = 0 /\ z = 0 ==> x = z \/ y = z>>;
-   <<x * y = 0 /\ z = 0 ==> x = z>>;
-   <<x * y = 0 /\ z = 0 ==> y = z>>];;
+  [{%fml|x * y = 0 /\ z = 0 ==> x = z \/ y = z|};
+   {%fml|x * y = 0 /\ z = 0 ==> x = z|};
+   {%fml|x * y = 0 /\ z = 0 ==> y = z|}];;
 
 map (integer_qelim ** generalize)
-  [<<0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = y \/ x = z>>;
-   <<0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = y>>;
-   <<0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = z>>];;
+  [{%fml|0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = y \/ x = z|};
+   {%fml|0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = y|};
+   {%fml|0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = z|}];;
 
 (* ------------------------------------------------------------------------- *)
 (* Failures of original Shostak procedure.                                   *)
 (* ------------------------------------------------------------------------- *)
 
 nelop (add_default [int_lang])
- <<f(v - 1) - 1 = v + 1 /\ f(u) + 1 = u - 1 /\ u + 1 = v ==> false>>;;
+ {%fml|f(v - 1) - 1 = v + 1 /\ f(u) + 1 = u - 1 /\ u + 1 = v ==> false|};;
 
 (*** And this one is where the original procedure loops ***)
 
 nelop (add_default [int_lang])
- <<f(v) = v /\ f(u) = u - 1 /\ u = v ==> false>>;;
+ {%fml|f(v) = v /\ f(u) = u - 1 /\ u = v ==> false|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Additional examples not in the text.                                      *)
@@ -289,68 +289,68 @@ nelop (add_default [int_lang])
 (*** This is on p. 8 of Shostak's "Deciding combinations" paper ***)
 
 time (nelop (add_default [int_lang]))
- <<z = f(x - y) /\ x = z + y /\ ~(-(y) = -(x - f(f(z)))) ==> false>>;;
+ {%fml|z = f(x - y) /\ x = z + y /\ ~(-(y) = -(x - f(f(z)))) ==> false|};;
 
 (*** This (ICS theories-1) fails without array operations ***)
 
 time (nelop (add_default [int_lang]))
- <<a + 2 = b ==> f(read(update(A,a,3),b-2)) = f(b - a + 1)>>;;
+ {%fml|a + 2 = b ==> f(read(update(A,a,3),b-2)) = f(b - a + 1)|};;
 
 (*** can-001 from ICS examples site, with if-then-elses expanded manually ***)
 
 time (nelop (add_default [int_lang]))
- <<(x = y /\ z = 1 ==> f(f((x+z))) = f(f((1+y))))>>;;
+ {%fml|(x = y /\ z = 1 ==> f(f((x+z))) = f(f((1+y))))|};;
 
 (*** RJB example; lists plus uninterpreted functions ***)
 
 time (nelop (add_default [int_lang]))
- <<hd(x) = hd(y) /\ tl(x) = tl(y) /\ ~(x = nil) /\ ~(y = nil)
-   ==> f(x) = f(y)>>;;
+ {%fml|hd(x) = hd(y) /\ tl(x) = tl(y) /\ ~(x = nil) /\ ~(y = nil)
+   ==> f(x) = f(y)|};;
 
 (*** Another one from the ICS paper ***)
 
 time (nelop (add_default [int_lang]))
- <<~(f(f(x) - f(y)) = f(z)) /\ y <= x /\ y >= x + z /\ z >= 0 ==> false>>;;
+ {%fml|~(f(f(x) - f(y)) = f(z)) /\ y <= x /\ y >= x + z /\ z >= 0 ==> false|};;
 
 (*** Shostak's "A Practical Decision Procedure..." paper
  *** No longer works since I didn't do predicates in congruence closure
 time (nelop (add_default [int_lang]))
- <<x < f(y) + 1 /\ f(y) <= x ==> (P(x,y) <=> P(f(y),y))>>;;
+ {%fml|x < f(y) + 1 /\ f(y) <= x ==> (P(x,y) <=> P(f(y),y))|};;
  ***)
 
 (*** Shostak's "Practical..." paper again, using extra clauses for MAX ***)
 
 time (nelop (add_default [int_lang]))
- <<(x >= y ==> MAX(x,y) = x) /\ (y >= x ==> MAX(x,y) = y)
-   ==> x = y + 2 ==> MAX(x,y) = x>>;;
+ {%fml|(x >= y ==> MAX(x,y) = x) /\ (y >= x ==> MAX(x,y) = y)
+   ==> x = y + 2 ==> MAX(x,y) = x|};;
 
 (*** Shostak's "Practical..." paper again ***)
 
 time (nelop (add_default [int_lang]))
- <<x <= g(x) /\ x >= g(x) ==> x = g(g(g(g(x))))>>;;
+ {%fml|x <= g(x) /\ x >= g(x) ==> x = g(g(g(g(x))))|};;
 
 (*** Easy example I invented ***)
 
 time (nelop (add_default [real_lang]))
- <<x^2 =  1 ==> (f(x) = f(-(x)))  ==> (f(x) = f(1))>>;;
+ {%fml|x^2 =  1 ==> (f(x) = f(-(x)))  ==> (f(x) = f(1))|};;
 
 (*** Taken from Clark Barrett's CVC page ***)
 
 time (nelop (add_default [int_lang]))
- <<2 * f(x + y) = 3 * y /\ 2 * x = y ==> f(f(x + y)) = 3 * x>>;;
+ {%fml|2 * f(x + y) = 3 * y /\ 2 * x = y ==> f(f(x + y)) = 3 * x|};;
 
 (*** My former running example in the text; seems too slow.
  *** Anyway this also needs extra predicates in CC
 
 time (nelop (add_default [real_lang]))
- <<x^2 = y^2 /\ x < y /\ z^2 = z /\ x < x * z /\ P(f(1 + z))
-  ==> P(f(x + y) - f(0))>>;;
+ {%fml|x^2 = y^2 /\ x < y /\ z^2 = z /\ x < x * z /\ P(f(1 + z))
+  ==> P(f(x + y) - f(0))|};;
  ***)
 
 (*** An example where the "naive" procedure is slow but feasible ***)
 
 nelop (add_default [int_lang])
- <<4 * x = 2 * x + 2 * y /\ x = f(2 * x - y) /\
-  f(2 * y - x) = 3 /\ f(x) = 4 ==> false>>;;
+ {%fml|4 * x = 2 * x + 2 * y /\ x = f(2 * x - y) /\
+  f(2 * y - x) = 3 /\ f(x) = 4 ==> false|};;
 
 END_INTERACTIVE;;

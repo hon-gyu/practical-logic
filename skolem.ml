@@ -30,7 +30,7 @@ let rec simplify fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-simplify <<(forall x y. P(x) \/ (P(y) /\ false)) ==> exists z. Q>>;;
+simplify {%fml|(forall x y. P(x) \/ (P(y) /\ false)) ==> exists z. Q|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -59,8 +59,8 @@ let rec nnf fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-nnf <<(forall x. P(x))
-      ==> ((exists y. Q(y)) <=> exists z. P(z) /\ Q(z))>>;;
+nnf {%fml|(forall x. P(x))
+      ==> ((exists y. Q(y)) <=> exists z. P(z) /\ Q(z))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -104,8 +104,8 @@ let pnf fm = prenex(nnf(simplify fm));;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-pnf <<(forall x. P(x) \/ R(y))
-      ==> exists y z. Q(y) \/ ~(exists z. P(z) /\ Q(z))>>;;
+pnf {%fml|(forall x. P(x) \/ R(y))
+      ==> exists y z. Q(y) \/ ~(exists z. P(z) /\ Q(z))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -160,9 +160,9 @@ let skolemize fm = specialize(pnf(askolemize fm));;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-skolemize <<exists y. x < y ==> forall u. exists v. x * u < y * v>>;;
+skolemize {%fml|exists y. x < y ==> forall u. exists v. x * u < y * v|};;
 
 skolemize
- <<forall x. P(x)
-             ==> (exists y z. Q(y) \/ ~(exists z. P(z) /\ Q(z)))>>;;
+ {%fml|forall x. P(x)
+             ==> (exists y z. Q(y) \/ ~(exists z. P(z) /\ Q(z)))|};;
 END_INTERACTIVE;;

@@ -1,0 +1,4 @@
+(library
+ (name ppx_atp_quot)
+ (kind ppx_rewriter)
+ (libraries ppxlib))

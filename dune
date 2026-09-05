@@ -1,0 +1,8 @@
+; Plain "dune build" should produce everything the toplevel needs, including
+; lib/samples, which is a directory target and so is not picked up by the
+; default alias on its own.
+(alias
+ (name default)
+ (deps
+  (alias lib/top)
+  bin/example.exe))

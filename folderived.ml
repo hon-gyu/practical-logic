@@ -31,9 +31,9 @@ let eq_trans s t u =
 
 let rec icongruence s t stm ttm =
   if stm = ttm then add_assum (mk_eq s t) (axiom_eqrefl stm)
-  else if stm = s & ttm = t then imp_refl (mk_eq s t) else
+  else if stm = s && ttm = t then imp_refl (mk_eq s t) else
   match (stm,ttm) with
-   (Fn(fs,sa),Fn(ft,ta)) when fs = ft & length sa = length ta ->
+   (Fn(fs,sa),Fn(ft,ta)) when fs = ft && length sa = length ta ->
         let ths = map2 (icongruence s t) sa ta in
         let ts = map (consequent ** concl) ths in
         imp_trans_chain ths (axiom_funcong fs (map lhs ts) (map rhs ts))
@@ -44,8 +44,8 @@ let rec icongruence s t stm ttm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-icongruence <<|s|>> <<|t|>> <<|f(s,g(s,t,s),u,h(h(s)))|>>
-                            <<|f(s,g(t,t,s),u,h(h(t)))|>>;;
+icongruence {%tm|s|} {%tm|t|} {%tm|f(s,g(s,t,s),u,h(h(s)))|}
+                            {%tm|f(s,g(t,t,s),u,h(h(t)))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -131,7 +131,7 @@ let subalpha th =
 let rec isubst s t sfm tfm =
   if sfm = tfm then add_assum (mk_eq s t) (imp_refl tfm) else
   match (sfm,tfm) with
-    Atom(R(p,sa)),Atom(R(p',ta)) when p = p' & length sa = length ta ->
+    Atom(R(p,sa)),Atom(R(p',ta)) when p = p' && length sa = length ta ->
         let ths = map2 (icongruence s t) sa ta in
         let ls,rs = unzip (map (dest_eq ** consequent ** concl) ths) in
         imp_trans_chain ths (axiom_predcong p ls rs)
@@ -159,7 +159,7 @@ let rec isubst s t sfm tfm =
 
 (* ------------------------------------------------------------------------- *)
 (*                                                                           *)
-(* -------------------------------------------- alpha "z" <<forall x. p[x]>> *)
+(* -------------------------------------------- alpha "z" {%fml|forall x. p[x]|} *)
 (*   |- (forall x. p[x]) ==> (forall z. p'[z])                               *)
 (*                                                                           *)
 (* [Restriction that z is not free in the initial p[x].]                     *)
@@ -173,7 +173,7 @@ let alpha z fm =
 
 (* ------------------------------------------------------------------------- *)
 (*                                                                           *)
-(* -------------------------------- ispec t <<forall x. p[x]>>               *)
+(* -------------------------------- ispec t {%fml|forall x. p[x]|}               *)
 (*   |- (forall x. p[x]) ==> p'[t]                                           *)
 (* ------------------------------------------------------------------------- *)
 
@@ -197,52 +197,52 @@ let spec t th = modusponens (ispec t (concl th)) th;;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-ispec <<|y|>> <<forall x y z. x + y + z = z + y + x>>;;
+ispec {%tm|y|} {%fml|forall x y z. x + y + z = z + y + x|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Additional tests not in main text.                                        *)
 (* ------------------------------------------------------------------------- *)
 
-isubst <<|x + x|>> <<|2 * x|>>
-        <<x + x = x ==> x = 0>> <<2 * x = x ==> x = 0>>;;
+isubst {%tm|x + x|} {%tm|2 * x|}
+        {%fml|x + x = x ==> x = 0|} {%fml|2 * x = x ==> x = 0|};;
 
-isubst <<|x + x|>>  <<|2 * x|>>
-       <<(x + x = y + y) ==> (y + y + y = x + x + x)>>
-       <<2 * x = y + y ==> y + y + y = x + 2 * x>>;;
+isubst {%tm|x + x|}  {%tm|2 * x|}
+       {%fml|(x + x = y + y) ==> (y + y + y = x + x + x)|}
+       {%fml|2 * x = y + y ==> y + y + y = x + 2 * x|};;
 
-ispec <<|x|>> <<forall x y z. x + y + z = y + z + z>> ;;
+ispec {%tm|x|} {%fml|forall x y z. x + y + z = y + z + z|} ;;
 
-ispec <<|x|>> <<forall x. x = x>> ;;
+ispec {%tm|x|} {%fml|forall x. x = x|} ;;
 
-ispec <<|w + y + z|>> <<forall x y z. x + y + z = y + z + z>> ;;
+ispec {%tm|w + y + z|} {%fml|forall x y z. x + y + z = y + z + z|} ;;
 
-ispec <<|x + y + z|>> <<forall x y z. x + y + z = y + z + z>> ;;
+ispec {%tm|x + y + z|} {%fml|forall x y z. x + y + z = y + z + z|} ;;
 
-ispec <<|x + y + z|>> <<forall x y z. nothing_much>> ;;
+ispec {%tm|x + y + z|} {%fml|forall x y z. nothing_much|} ;;
 
-isubst <<|x + x|>> <<|2 * x|>>
-       <<(x + x = y + y) <=> (something \/ y + y + y = x + x + x)>> ;;
+isubst {%tm|x + x|} {%tm|2 * x|}
+       {%fml|(x + x = y + y) <=> (something \/ y + y + y = x + x + x)|} ;;
 
-isubst <<|x + x|>>  <<|2 * x|>>
-       <<(exists x. x = 2) <=> exists y. y + x + x = y + y + y>>
-       <<(exists x. x = 2) <=> (exists y. y + 2 * x = y + y + y)>>;;
+isubst {%tm|x + x|}  {%tm|2 * x|}
+       {%fml|(exists x. x = 2) <=> exists y. y + x + x = y + y + y|}
+       {%fml|(exists x. x = 2) <=> (exists y. y + 2 * x = y + y + y)|};;
 
-isubst <<|x|>>  <<|y|>>
-        <<(forall z. x = z) <=> (exists x. y < z) /\ (forall y. y < x)>>
-        <<(forall z. y = z) <=> (exists x. y < z) /\ (forall y'. y' < y)>>;;
+isubst {%tm|x|}  {%tm|y|}
+        {%fml|(forall z. x = z) <=> (exists x. y < z) /\ (forall y. y < x)|}
+        {%fml|(forall z. y = z) <=> (exists x. y < z) /\ (forall y'. y' < y)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* The bug is now fixed.                                                     *)
 (* ------------------------------------------------------------------------- *)
 
-ispec <<|x'|>> <<forall x x' x''. x + x' + x'' = 0>>;;
+ispec {%tm|x'|} {%fml|forall x x' x''. x + x' + x'' = 0|};;
 
-ispec <<|x''|>> <<forall x x' x''. x + x' + x'' = 0>>;;
+ispec {%tm|x''|} {%fml|forall x x' x''. x + x' + x'' = 0|};;
 
-ispec <<|x' + x''|>> <<forall x x' x''. x + x' + x'' = 0>>;;
+ispec {%tm|x' + x''|} {%fml|forall x x' x''. x + x' + x'' = 0|};;
 
-ispec <<|x + x' + x''|>> <<forall x x' x''. x + x' + x'' = 0>>;;
+ispec {%tm|x + x' + x''|} {%fml|forall x x' x''. x + x' + x'' = 0|};;
 
-ispec <<|2 * x|>> <<forall x x'. x + x' = x' + x>>;;
+ispec {%tm|2 * x|} {%fml|forall x x'. x + x' = x' + x|};;
 
 END_INTERACTIVE;;

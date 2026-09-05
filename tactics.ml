@@ -77,7 +77,7 @@ let gen_right_alpha y x th =
 (* ------------------------------------------------------------------------- *)
 
 let forall_intro_tac y (Goals((asl,(Forall(x,p) as fm))::gls,jfn)) =
-  if mem y (fv fm) or exists (mem y ** fv ** snd) asl
+  if mem y (fv fm) || exists (mem y ** fv ** snd) asl
   then failwith "fix: variable already free in goal" else
   Goals((asl,subst(x |=> Var y) p)::gls,
         jmodify jfn (gen_right_alpha y x));;
@@ -236,11 +236,11 @@ let disj_elim_tac l fm byfn hyps (Goals((asl,w)::gls,jfn) as g) =
 
 START_INTERACTIVE;;
 let g0 = set_goal
- <<(forall x. x <= x) /\
+ {%fml|(forall x. x <= x) /\
    (forall x y z. x <= y /\ y <= z ==> x <= z) /\
    (forall x y. f(x) <= y <=> x <= g(y))
    ==> (forall x y. x <= y ==> f(x) <= f(y)) /\
-       (forall x y. x <= y ==> g(x) <= g(y))>>;;
+       (forall x y. x <= y ==> g(x) <= g(y))|};;
 
 let g1 = imp_intro_tac "ant" g0;;
 
@@ -254,11 +254,11 @@ extract_thm g3;;
 (* All packaged up together.                                                 *)
 (* ------------------------------------------------------------------------- *)
 
-prove <<(forall x. x <= x) /\
+prove {%fml|(forall x. x <= x) /\
         (forall x y z. x <= y /\ y <= z ==> x <= z) /\
         (forall x y. f(x) <= y <=> x <= g(y))
         ==> (forall x y. x <= y ==> f(x) <= f(y)) /\
-            (forall x y. x <= y ==> g(x) <= g(y))>>
+            (forall x y. x <= y ==> g(x) <= g(y))|}
       [imp_intro_tac "ant";
        conj_intro_tac;
        auto_tac by ["ant"];
@@ -335,25 +335,25 @@ START_INTERACTIVE;;
 let cases = disj_elim_tac "";;
 
 let ewd954 = prove
- <<(forall x y. x <= y <=> x * y = x) /\
+ {%fml|(forall x y. x <= y <=> x * y = x) /\
    (forall x y. f(x * y) = f(x) * f(y))
-   ==> forall x y. x <= y ==> f(x) <= f(y)>>
- [note("eq_sym",<<forall x y. x = y ==> y = x>>)
-    using [eq_sym <<|x|>> <<|y|>>];
-  note("eq_trans",<<forall x y z. x = y /\ y = z ==> x = z>>)
-    using [eq_trans <<|x|>> <<|y|>> <<|z|>>];
-  note("eq_cong",<<forall x y. x = y ==> f(x) = f(y)>>)
-    using [axiom_funcong "f" [<<|x|>>] [<<|y|>>]];
-  assume ["le",<<forall x y. x <= y <=> x * y = x>>;
-          "hom",<<forall x y. f(x * y) = f(x) * f(y)>>];
+   ==> forall x y. x <= y ==> f(x) <= f(y)|}
+ [note("eq_sym",{%fml|forall x y. x = y ==> y = x|})
+    using [eq_sym {%tm|x|} {%tm|y|}];
+  note("eq_trans",{%fml|forall x y z. x = y /\ y = z ==> x = z|})
+    using [eq_trans {%tm|x|} {%tm|y|} {%tm|z|}];
+  note("eq_cong",{%fml|forall x y. x = y ==> f(x) = f(y)|})
+    using [axiom_funcong "f" [{%tm|x|}] [{%tm|y|}]];
+  assume ["le",{%fml|forall x y. x <= y <=> x * y = x|};
+          "hom",{%fml|forall x y. f(x * y) = f(x) * f(y)|}];
   fix "x"; fix "y";
-  assume ["xy",<<x <= y>>];
-  so have <<x * y = x>> by ["le"];
-  so have <<f(x * y) = f(x)>> by ["eq_cong"];
-  so have <<f(x) = f(x * y)>> by ["eq_sym"];
-  so have <<f(x) = f(x) * f(y)>> by ["eq_trans"; "hom"];
-  so have <<f(x) * f(y) = f(x)>> by ["eq_sym"];
-  so conclude <<f(x) <= f(y)>> by ["le"];
+  assume ["xy",{%fml|x <= y|}];
+  so have {%fml|x * y = x|} by ["le"];
+  so have {%fml|f(x * y) = f(x)|} by ["eq_cong"];
+  so have {%fml|f(x) = f(x * y)|} by ["eq_sym"];
+  so have {%fml|f(x) = f(x) * f(y)|} by ["eq_trans"; "hom"];
+  so have {%fml|f(x) * f(y) = f(x)|} by ["eq_sym"];
+  so conclude {%fml|f(x) <= f(y)|} by ["le"];
   qed];;
 END_INTERACTIVE;;
 
@@ -363,18 +363,18 @@ END_INTERACTIVE;;
 
 START_INTERACTIVE;;
 prove
- <<(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
-   ==> exists y. p(f(f(f(f(y)))))>>
-  [assume ["A",<<exists x. p(x)>>];
-   assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-   note ("C",<<forall x. p(x) ==> p(f(f(f(f(x)))))>>)
+ {%fml|(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
+   ==> exists y. p(f(f(f(f(y)))))|}
+  [assume ["A",{%fml|exists x. p(x)|}];
+   assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+   note ("C",{%fml|forall x. p(x) ==> p(f(f(f(f(x)))))|})
    proof
-    [have <<forall x. p(x) ==> p(f(f(x)))>> by ["B"];
-     so conclude <<forall x. p(x) ==> p(f(f(f(f(x)))))>> at once;
+    [have {%fml|forall x. p(x) ==> p(f(f(x)))|} by ["B"];
+     so conclude {%fml|forall x. p(x) ==> p(f(f(f(f(x)))))|} at once;
      qed];
-   consider ("a",<<p(a)>>) by ["A"];
-   take <<|a|>>;
-   so conclude <<p(f(f(f(f(a)))))>> by ["C"];
+   consider ("a",{%fml|p(a)|}) by ["A"];
+   take {%tm|a|};
+   so conclude {%fml|p(f(f(f(f(a)))))|} by ["C"];
    qed];;
 
 (* ------------------------------------------------------------------------- *)
@@ -386,17 +386,17 @@ let lemma (s,p) (Goals((asl,w)::gls,jfn) as gl) =
         fun (thp::thw::oths) ->
             jfn(imp_unduplicate(imp_trans thp (shunt thw)) :: oths)) in
 prove
- <<(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
-   ==> exists y. p(f(f(f(f(y)))))>>
-  [assume ["A",<<exists x. p(x)>>];
-   assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-   lemma ("C",<<forall x. p(x) ==> p(f(f(f(f(x)))))>>);
-     have <<forall x. p(x) ==> p(f(f(x)))>> by ["B"];
-     so conclude <<forall x. p(x) ==> p(f(f(f(f(x)))))>> at once;
+ {%fml|(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
+   ==> exists y. p(f(f(f(f(y)))))|}
+  [assume ["A",{%fml|exists x. p(x)|}];
+   assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+   lemma ("C",{%fml|forall x. p(x) ==> p(f(f(f(f(x)))))|});
+     have {%fml|forall x. p(x) ==> p(f(f(x)))|} by ["B"];
+     so conclude {%fml|forall x. p(x) ==> p(f(f(f(f(x)))))|} at once;
      qed;
-   consider ("a",<<p(a)>>) by ["A"];
-   take <<|a|>>;
-   so conclude <<p(f(f(f(f(a)))))>> by ["C"];
+   consider ("a",{%fml|p(a)|}) by ["A"];
+   take {%tm|a|};
+   so conclude {%fml|p(f(f(f(f(a)))))|} by ["C"];
    qed];;
 
 (* ------------------------------------------------------------------------- *)
@@ -425,128 +425,128 @@ let b() = current_goal := tl(!current_goal); hd(!current_goal);;
 (* Examples.                                                                 *)
 (* ------------------------------------------------------------------------- *)
 
-prove <<p(a) ==> (forall x. p(x) ==> p(f(x)))
-        ==> exists y. p(y) /\ p(f(y))>>
+prove {%fml|p(a) ==> (forall x. p(x) ==> p(f(x)))
+        ==> exists y. p(y) /\ p(f(y))|}
       [our thesis at once;
        qed];;
 
 prove
- <<(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
-   ==> exists y. p(f(f(f(f(y)))))>>
-  [assume ["A",<<exists x. p(x)>>];
-   assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-   note ("C",<<forall x. p(x) ==> p(f(f(f(f(x)))))>>) proof
-    [have <<forall x. p(x) ==> p(f(f(x)))>> by ["B"];
+ {%fml|(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
+   ==> exists y. p(f(f(f(f(y)))))|}
+  [assume ["A",{%fml|exists x. p(x)|}];
+   assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+   note ("C",{%fml|forall x. p(x) ==> p(f(f(f(f(x)))))|}) proof
+    [have {%fml|forall x. p(x) ==> p(f(f(x)))|} by ["B"];
      so our thesis at once;
      qed];
-   consider ("a",<<p(a)>>) by ["A"];
-   take <<|a|>>;
+   consider ("a",{%fml|p(a)|}) by ["A"];
+   take {%tm|a|};
    so our thesis by ["C"];
    qed];;
 
-prove <<forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
-                  ==> exists y. p(y) /\ p(f(y))>>
+prove {%fml|forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
+                  ==> exists y. p(y) /\ p(f(y))|}
       [fix "c";
-       assume ["A",<<p(c)>>];
-       assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-       take <<|c|>>;
-       conclude <<p(c)>> by ["A"];
-       note ("C",<<p(c) ==> p(f(c))>>) by ["B"];
+       assume ["A",{%fml|p(c)|}];
+       assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+       take {%tm|c|};
+       conclude {%fml|p(c)|} by ["A"];
+       note ("C",{%fml|p(c) ==> p(f(c))|}) by ["B"];
        so our thesis by ["C"; "A"];
        qed];;
 
-prove <<p(c) ==> (forall x. p(x) ==> p(f(x)))
-                  ==> exists y. p(y) /\ p(f(y))>>
-      [assume ["A",<<p(c)>>];
-       assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-       take <<|c|>>;
-       conclude <<p(c)>> by ["A"];
+prove {%fml|p(c) ==> (forall x. p(x) ==> p(f(x)))
+                  ==> exists y. p(y) /\ p(f(y))|}
+      [assume ["A",{%fml|p(c)|}];
+       assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+       take {%tm|c|};
+       conclude {%fml|p(c)|} by ["A"];
        our thesis by ["A"; "B"];
        qed];;
 
-prove <<forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
-                  ==> exists y. p(y) /\ p(f(y))>>
+prove {%fml|forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
+                  ==> exists y. p(y) /\ p(f(y))|}
       [fix "c";
-       assume ["A",<<p(c)>>];
-       assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-       take <<|c|>>;
-       conclude <<p(c)>> by ["A"];
-       note ("C",<<p(c) ==> p(f(c))>>) by ["B"];
+       assume ["A",{%fml|p(c)|}];
+       assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+       take {%tm|c|};
+       conclude {%fml|p(c)|} by ["A"];
+       note ("C",{%fml|p(c) ==> p(f(c))|}) by ["B"];
        our thesis by ["C"; "A"];
        qed];;
 
-prove <<forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
-                  ==> exists y. p(y) /\ p(f(y))>>
+prove {%fml|forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
+                  ==> exists y. p(y) /\ p(f(y))|}
       [fix "c";
-       assume ["A",<<p(c)>>];
-       assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-       take <<|c|>>;
-       note ("D",<<p(c)>>) by ["A"];
-       note ("C",<<p(c) ==> p(f(c))>>) by ["B"];
+       assume ["A",{%fml|p(c)|}];
+       assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+       take {%tm|c|};
+       note ("D",{%fml|p(c)|}) by ["A"];
+       note ("C",{%fml|p(c) ==> p(f(c))|}) by ["B"];
        our thesis by ["C"; "A"; "D"];
        qed];;
 
 
-prove <<(p(a) \/ p(b)) ==> q ==> exists y. p(y)>>
-  [assume ["A",<<p(a) \/ p(b)>>];
-   assume ["",<<q>>];
-   cases <<p(a) \/ p(b)>> by ["A"];
-     take <<|a|>>;
+prove {%fml|(p(a) \/ p(b)) ==> q ==> exists y. p(y)|}
+  [assume ["A",{%fml|p(a) \/ p(b)|}];
+   assume ["",{%fml|q|}];
+   cases {%fml|p(a) \/ p(b)|} by ["A"];
+     take {%tm|a|};
      so our thesis at once;
      qed;
 
-     take <<|b|>>;
+     take {%tm|b|};
      so our thesis at once;
      qed];;
 
 prove
-  <<(p(a) \/ p(b)) /\ (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))>>
-  [assume ["base",<<p(a) \/ p(b)>>;
-           "Step",<<forall x. p(x) ==> p(f(x))>>];
-   cases <<p(a) \/ p(b)>> by ["base"];
-     so note("A",<<p(a)>>) at once;
-     note ("X",<<p(a) ==> p(f(a))>>) by ["Step"];
-     take <<|a|>>;
+  {%fml|(p(a) \/ p(b)) /\ (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))|}
+  [assume ["base",{%fml|p(a) \/ p(b)|};
+           "Step",{%fml|forall x. p(x) ==> p(f(x))|}];
+   cases {%fml|p(a) \/ p(b)|} by ["base"];
+     so note("A",{%fml|p(a)|}) at once;
+     note ("X",{%fml|p(a) ==> p(f(a))|}) by ["Step"];
+     take {%tm|a|};
      our thesis by ["A"; "X"];
      qed;
 
-     take <<|b|>>;
+     take {%tm|b|};
      so our thesis by ["Step"];
      qed];;
 
 prove
- <<(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))>>
-  [assume ["A",<<exists x. p(x)>>];
-   assume ["B",<<forall x. p(x) ==> p(f(x))>>];
-   consider ("a",<<p(a)>>) by ["A"];
-   so note ("concl",<<p(f(a))>>) by ["B"];
-   take <<|a|>>;
+ {%fml|(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))|}
+  [assume ["A",{%fml|exists x. p(x)|}];
+   assume ["B",{%fml|forall x. p(x) ==> p(f(x))|}];
+   consider ("a",{%fml|p(a)|}) by ["A"];
+   so note ("concl",{%fml|p(f(a))|}) by ["B"];
+   take {%tm|a|};
    our thesis by ["concl"];
    qed];;
 
-prove <<(forall x. p(x) ==> q(x)) ==> (forall x. q(x) ==> p(x))
-       ==> (p(a) <=> q(a))>>
-  [assume ["A",<<forall x. p(x) ==> q(x)>>];
-   assume ["B",<<forall x. q(x) ==> p(x)>>];
-   note ("von",<<p(a) ==> q(a)>>) by ["A"];
-   note ("bis",<<q(a) ==> p(a)>>) by ["B"];
+prove {%fml|(forall x. p(x) ==> q(x)) ==> (forall x. q(x) ==> p(x))
+       ==> (p(a) <=> q(a))|}
+  [assume ["A",{%fml|forall x. p(x) ==> q(x)|}];
+   assume ["B",{%fml|forall x. q(x) ==> p(x)|}];
+   note ("von",{%fml|p(a) ==> q(a)|}) by ["A"];
+   note ("bis",{%fml|q(a) ==> p(a)|}) by ["B"];
    our thesis by ["von"; "bis"];
    qed];;
 
 (*** Mizar-like
 
 prove
-  <<(p(a) \/ p(b)) /\ (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))>>
-  [assume ["A",<<antecedent>>];
-   note ("Step",<<forall x. p(x) ==> p(f(x))>>) by ["A"];
+  {%fml|(p(a) \/ p(b)) /\ (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))|}
+  [assume ["A",{%fml|antecedent|}];
+   note ("Step",{%fml|forall x. p(x) ==> p(f(x))|}) by ["A"];
    per_cases by ["A"];
-     suppose ("base",<<p(a)>>);
-     note ("X",<<p(a) ==> p(f(a))>>) by ["Step"];
-     take <<|a|>>;
+     suppose ("base",{%fml|p(a)|});
+     note ("X",{%fml|p(a) ==> p(f(a))|}) by ["Step"];
+     take {%tm|a|};
      our thesis by ["base"; "X"];
      qed;
 
-     suppose ("base",<<p(b)>>);
+     suppose ("base",{%fml|p(b)|});
      our thesis by ["Step"; "base"];
      qed;
    endcase];;
@@ -567,10 +567,10 @@ let double_th th =
   let tm = concl th in modusponens (modusponens (and_pair tm tm) th) th;;
 
 let testcase n =
-  gen "x" (funpow n double_th (lcftaut <<p(x) ==> q(1) \/ p(x)>>));;
+  gen "x" (funpow n double_th (lcftaut {%fml|p(x) ==> q(1) \/ p(x)|}));;
 
-let test n = time (spec <<|2|>>) (testcase n),
-             time (subst ("x" |=> <<|2|>>)) (concl(testcase n));
+let test n = time (spec {%tm|2|}) (testcase n),
+             time (subst ("x" |=> {%tm|2|})) (concl(testcase n));
              ();;
 
 test 10;;

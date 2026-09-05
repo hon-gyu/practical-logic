@@ -19,7 +19,7 @@ let print_formula fm = print_qformula print_atom fm; print_newline();;
 (* Prove Dijkstra's "Golden Rule" via naive tautology algorithm.             *)
 (* ------------------------------------------------------------------------- *)
 
-let gold = <<p /\ q <=> ((p <=> q) <=> p \/ q)>> in
+let gold = {%fml|p /\ q <=> ((p <=> q) <=> p \/ q)|} in
 if tautology gold then print_formula gold else failwith "Not a tautology";;
 
 (* ------------------------------------------------------------------------- *)
@@ -44,7 +44,7 @@ print_qformula print_propvar prf; print_newline();;
 (* ------------------------------------------------------------------------- *)
 
 let p55 =
- <<lives(agatha) /\ lives(butler) /\ lives(charles) /\
+ {%fml|lives(agatha) /\ lives(butler) /\ lives(charles) /\
    (killed(agatha,agatha) \/ killed(butler,agatha) \/
     killed(charles,agatha)) /\
    (forall x y. killed(x,y) ==> hates(x,y) /\ ~richer(x,y)) /\
@@ -55,7 +55,7 @@ let p55 =
    (forall x. ~hates(x,agatha) \/ ~hates(x,butler) \/ ~hates(x,charles))
    ==> killed(agatha,agatha) /\
        ~killed(butler,agatha) /\
-       ~killed(charles,agatha)>> in
+       ~killed(charles,agatha)|} in
 if can (time splittab) p55 then print_formula p55
 else failwith "Proof failed";;
 
@@ -64,11 +64,11 @@ else failwith "Proof failed";;
 (* ------------------------------------------------------------------------- *)
 
 let los =
- <<(forall x y z. P(x,y) ==> P(y,z) ==> P(x,z)) /\
+ {%fml|(forall x y z. P(x,y) ==> P(y,z) ==> P(x,z)) /\
    (forall x y z. Q(x,y) ==> Q(y,z) ==> Q(x,z)) /\
    (forall x y. Q(x,y) ==> Q(y,x)) /\
    (forall x y. P(x,y) \/ Q(x,y))
-   ==> (forall x y. P(x,y)) \/ (forall x y. Q(x,y))>> in
+   ==> (forall x y. P(x,y)) \/ (forall x y. Q(x,y))|} in
  if can (time presolution) los then print_formula los
  else failwith "Proof failed";;
 
@@ -77,8 +77,8 @@ let los =
 (* ------------------------------------------------------------------------- *)
 
 let wishnu =
- <<(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
-   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')>> in
+ {%fml|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
+   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|} in
  if can meson (equalitize wishnu) then print_formula wishnu
  else failwith "Formula was not proved";;
 
@@ -87,10 +87,10 @@ let wishnu =
 (* ------------------------------------------------------------------------- *)
 
 let ewd =
- <<(forall x. f(x) ==> g(x)) /\
+ {%fml|(forall x. f(x) ==> g(x)) /\
    (exists x. f(x)) /\
    (forall x y. g(x) /\ g(y) ==> x = y)
-   ==> forall y. g(y) ==> f(y)>> in
+   ==> forall y. g(y) ==> f(y)|} in
 if can (time paramodulation) ewd then print_formula ewd
 else failwith "Proof failed";;
 
@@ -101,7 +101,7 @@ else failwith "Proof failed";;
 let eqs =
   complete_and_simplify
     ["1"; "*"; "i"]
-    [<<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>] in
+    [{%fml|1 * x = x|}; {%fml|i(x) * x = 1|}; {%fml|(x * y) * z = x * y * z|}] in
   do_list print_formula eqs;;
 
 (* ------------------------------------------------------------------------- *)
@@ -118,10 +118,10 @@ do_list (fun syl -> print_string syl; print_newline()) all_valid_syllogisms;;
 
 let result =
   time complex_qelim
-   <<forall a b c d e f.
+   {%fml|forall a b c d e f.
        (exists x. a * x^2 + b * x + c = 0 /\ d * x^2 + e * x + f = 0) \/
        (a = 0) /\ (d = 0) <=>
-       d^2*c^2-2*d*c*a*f+a^2*f^2-e*d*b*c-e*b*a*f+a*e^2*c+f*d*b^2 = 0>> in
+       d^2*c^2-2*d*c*a*f+a^2*f^2-e*d*b*c-e*b*a*f+a*e^2*c+f*d*b^2 = 0|} in
 print_formula result;;
 
 (* ------------------------------------------------------------------------- *)
@@ -130,15 +130,15 @@ print_formula result;;
 
 let quad_f =
   time real_qelim
-   <<forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
-                   b^2 >= 4 * a * c>> in
+   {%fml|forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
+                   b^2 >= 4 * a * c|} in
 print_formula quad_f;;
 
 let quad_t =
   time real_qelim
-   <<forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
+   {%fml|forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
                    a = 0 /\ (~(b = 0) \/ c = 0) \/
-                   ~(a = 0) /\ b^2 >= 4 * a * c>> in
+                   ~(a = 0) /\ b^2 >= 4 * a * c|} in
 print_formula quad_t;;
 
 (* ------------------------------------------------------------------------- *)
@@ -147,31 +147,31 @@ print_formula quad_t;;
 (* ------------------------------------------------------------------------- *)
 
 let lob = prove
- <<(forall p. |--(p) ==> |--(Pr(p))) /\
+ {%fml|(forall p. |--(p) ==> |--(Pr(p))) /\
    (forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))) /\
    (forall p. |--(imp(Pr(p),Pr(Pr(p)))))
    ==> (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
        (forall p q. |--(imp(q,imp(p,q)))) /\
        (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r)))))
        ==> |--(imp(G,imp(Pr(G),S))) /\ |--(imp(imp(Pr(G),S),G))
-           ==> |--(imp(Pr(S),S)) ==> |--(S)>>
- [assume["lob1",<<forall p. |--(p) ==> |--(Pr(p))>>;                           
-         "lob2",<<forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))>>;       
-         "lob3",<<forall p. |--(imp(Pr(p),Pr(Pr(p))))>>];                      
-  assume["logic",<<(forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\         
+           ==> |--(imp(Pr(S),S)) ==> |--(S)|}
+ [assume["lob1",{%fml|forall p. |--(p) ==> |--(Pr(p))|};                           
+         "lob2",{%fml|forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))|};       
+         "lob3",{%fml|forall p. |--(imp(Pr(p),Pr(Pr(p))))|}];                      
+  assume["logic",{%fml|(forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\         
                    (forall p q. |--(imp(q,imp(p,q)))) /\               
                    (forall p q r. |--(imp(imp(p,imp(q,r)),             
-                                      imp(imp(p,q),imp(p,r)))))>>];            
-  assume ["fix1",<<|--(imp(G,imp(Pr(G),S)))>>;                                 
-          "fix2",<<|--(imp(imp(Pr(G),S),G))>>];                                
-  assume["consistency",<<|--(imp(Pr(S),S))>>];                                 
-  have <<|--(Pr(imp(G,imp(Pr(G),S))))>> by ["lob1"; "fix1"];                   
-  so have <<|--(imp(Pr(G),Pr(imp(Pr(G),S))))>> by ["lob2"; "logic"];           
-  so have <<|--(imp(Pr(G),imp(Pr(Pr(G)),Pr(S))))>> by ["lob2"; "logic"];       
-  so have <<|--(imp(Pr(G),Pr(S)))>> by ["lob3"; "logic"];
-  so note("L",<<|--(imp(Pr(G),S))>>) by ["consistency"; "logic"];
-  so have <<|--(G)>> by ["fix2"; "logic"];
-  so have <<|--(Pr(G))>> by ["lob1"; "logic"];
-  so conclude <<|--(S)>> by ["L"; "logic"];
+                                      imp(imp(p,q),imp(p,r)))))|}];            
+  assume ["fix1",{%fml||--(imp(G,imp(Pr(G),S)))|};                                 
+          "fix2",{%fml||--(imp(imp(Pr(G),S),G))|}];                                
+  assume["consistency",{%fml||--(imp(Pr(S),S))|}];                                 
+  have {%fml||--(Pr(imp(G,imp(Pr(G),S))))|} by ["lob1"; "fix1"];                   
+  so have {%fml||--(imp(Pr(G),Pr(imp(Pr(G),S))))|} by ["lob2"; "logic"];           
+  so have {%fml||--(imp(Pr(G),imp(Pr(Pr(G)),Pr(S))))|} by ["lob2"; "logic"];       
+  so have {%fml||--(imp(Pr(G),Pr(S)))|} by ["lob3"; "logic"];
+  so note("L",{%fml||--(imp(Pr(G),S))|}) by ["consistency"; "logic"];
+  so have {%fml||--(G)|} by ["fix2"; "logic"];
+  so have {%fml||--(Pr(G))|} by ["lob1"; "logic"];
+  so conclude {%fml||--(S)|} by ["L"; "logic"];
   qed] in
   print_thm lob; print_newline();;

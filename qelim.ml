@@ -104,71 +104,71 @@ let quelim_dlo =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-quelim_dlo <<forall x y. exists z. z < x /\ z < y>>;;
+quelim_dlo {%fml|forall x y. exists z. z < x /\ z < y|};;
 
-quelim_dlo <<exists z. z < x /\ z < y>>;;
+quelim_dlo {%fml|exists z. z < x /\ z < y|};;
 
-quelim_dlo <<exists z. x < z /\ z < y>>;;
+quelim_dlo {%fml|exists z. x < z /\ z < y|};;
 
-quelim_dlo <<(forall x. x < a ==> x < b)>>;;
+quelim_dlo {%fml|(forall x. x < a ==> x < b)|};;
 
-quelim_dlo <<forall a b. (forall x. x < a ==> x < b) <=> a <= b>>;;
+quelim_dlo {%fml|forall a b. (forall x. x < a ==> x < b) <=> a <= b|};;
 
-quelim_dlo <<forall a b. (forall x. x < a <=> x < b) <=> a = b>>;;
+quelim_dlo {%fml|forall a b. (forall x. x < a <=> x < b) <=> a = b|};;
 
-quelim_dlo <<exists x y z. forall u.
-                 x < x \/ ~x < u \/ (x < y /\ y < z /\ ~x < z)>>;;
+quelim_dlo {%fml|exists x y z. forall u.
+                 x < x \/ ~x < u \/ (x < y /\ y < z /\ ~x < z)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* More tests (not in the text).                                             *)
 (* ------------------------------------------------------------------------- *)
 
-time quelim_dlo <<forall x. exists y. x < y>>;;
+time quelim_dlo {%fml|forall x. exists y. x < y|};;
 
-time quelim_dlo <<forall x y z. x < y /\ y < z ==> x < z>>;;
+time quelim_dlo {%fml|forall x y z. x < y /\ y < z ==> x < z|};;
 
-time quelim_dlo <<forall x y. x < y \/ (x = y) \/ y < x>>;;
+time quelim_dlo {%fml|forall x y. x < y \/ (x = y) \/ y < x|};;
 
-time quelim_dlo <<exists x y. x < y /\ y < x>>;;
+time quelim_dlo {%fml|exists x y. x < y /\ y < x|};;
 
-time quelim_dlo <<forall x y. exists z. z < x /\ x < y>>;;
+time quelim_dlo {%fml|forall x y. exists z. z < x /\ x < y|};;
 
-time quelim_dlo <<exists z. z < x /\ x < y>>;;
+time quelim_dlo {%fml|exists z. z < x /\ x < y|};;
 
-time quelim_dlo <<forall x y. exists z. z < x /\ z < y>>;;
+time quelim_dlo {%fml|forall x y. exists z. z < x /\ z < y|};;
 
-time quelim_dlo <<forall x y. x < y ==> exists z. x < z /\ z < y>>;;
+time quelim_dlo {%fml|forall x y. x < y ==> exists z. x < z /\ z < y|};;
 
 time quelim_dlo
-  <<forall x y. ~(x = y) ==> exists u. u < x /\ (y < u \/ x < y)>>;;
+  {%fml|forall x y. ~(x = y) ==> exists u. u < x /\ (y < u \/ x < y)|};;
 
-time quelim_dlo <<exists x. x = x>>;;
+time quelim_dlo {%fml|exists x. x = x|};;
 
-time quelim_dlo <<exists x. x = x /\ x = y>>;;
+time quelim_dlo {%fml|exists x. x = x /\ x = y|};;
 
-time quelim_dlo <<exists z. x < z /\ z < y>>;;
+time quelim_dlo {%fml|exists z. x < z /\ z < y|};;
 
-time quelim_dlo <<exists z. x <= z /\ z <= y>>;;
+time quelim_dlo {%fml|exists z. x <= z /\ z <= y|};;
 
-time quelim_dlo <<exists z. x < z /\ z <= y>>;;
+time quelim_dlo {%fml|exists z. x < z /\ z <= y|};;
 
-time quelim_dlo <<forall x y z. exists u. u < x /\ u < y /\ u < z>>;;
+time quelim_dlo {%fml|forall x y z. exists u. u < x /\ u < y /\ u < z|};;
 
-time quelim_dlo <<forall y. x < y /\ y < z ==> w < z>>;;
+time quelim_dlo {%fml|forall y. x < y /\ y < z ==> w < z|};;
 
-time quelim_dlo <<forall x y. x < y>>;;
+time quelim_dlo {%fml|forall x y. x < y|};;
 
-time quelim_dlo <<exists z. z < x /\ x < y>>;;
+time quelim_dlo {%fml|exists z. z < x /\ x < y|};;
 
-time quelim_dlo <<forall a b. (forall x. x < a ==> x < b) <=> a <= b>>;;
+time quelim_dlo {%fml|forall a b. (forall x. x < a ==> x < b) <=> a <= b|};;
 
-time quelim_dlo <<forall x. x < a ==> x < b>>;;
+time quelim_dlo {%fml|forall x. x < a ==> x < b|};;
 
-time quelim_dlo <<forall x. x < a ==> x <= b>>;;
+time quelim_dlo {%fml|forall x. x < a ==> x <= b|};;
 
-time quelim_dlo <<forall a b. exists x. ~(x = a) \/ ~(x = b) \/ (a = b)>>;;
+time quelim_dlo {%fml|forall a b. exists x. ~(x = a) \/ ~(x = b) \/ (a = b)|};;
 
-time quelim_dlo <<forall x y. x <= y \/ x > y>>;;
+time quelim_dlo {%fml|forall x y. x <= y \/ x > y|};;
 
-time quelim_dlo <<forall x y. x <= y \/ x < y>>;;
+time quelim_dlo {%fml|forall x y. x <= y \/ x < y|};;
 END_INTERACTIVE;;

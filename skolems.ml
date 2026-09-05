@@ -22,6 +22,6 @@ let rec skolems fms corr =
 let skolemizes fms = fst(skolems fms []);;
 
 START_INTERACTIVE;;
-skolemizes [<<exists x y. x + y = 2>>;
-            <<forall x. exists y. x + 1 = y>>];;
+skolemizes [{%fml|exists x y. x + y = 2|};
+            {%fml|forall x. exists y. x + 1 = y|}];;
 END_INTERACTIVE;;

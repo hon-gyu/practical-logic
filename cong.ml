@@ -15,7 +15,7 @@ let rec subterms tm =
 
 let congruent eqv (s,t) =
   match (s,t) with
-    Fn(f,a1),Fn(g,a2) -> f = g & forall2 (equivalent eqv) a1 a2
+    Fn(f,a1),Fn(g,a2) -> f = g && forall2 (equivalent eqv) a1 a2
   | _ -> false;;
 
 (* ------------------------------------------------------------------------- *)
@@ -65,10 +65,10 @@ let ccvalid fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-ccvalid <<f(f(f(f(f(c))))) = c /\ f(f(f(c))) = c
-          ==> f(c) = c \/ f(g(c)) = g(f(c))>>;;
+ccvalid {%fml|f(f(f(f(f(c))))) = c /\ f(f(f(c))) = c
+          ==> f(c) = c \/ f(g(c)) = g(f(c))|};;
 
-ccvalid <<f(f(f(f(c)))) = c /\ f(f(c)) = c ==> f(c) = c>>;;
+ccvalid {%fml|f(f(f(f(c)))) = c /\ f(f(c)) = c ==> f(c) = c|};;
 
 (* ------------------------------------------------------------------------- *)
 (* For debugging. Maybe I will incorporate into a prettyprinter one day.     *)

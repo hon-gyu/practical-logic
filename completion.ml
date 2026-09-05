@@ -45,7 +45,7 @@ let critical_pairs fma fmb =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let eq = <<f(f(x)) = g(x)>> in critical_pairs eq eq;;
+let eq = {%fml|f(f(x)) = g(x)|} in critical_pairs eq eq;;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -62,7 +62,7 @@ let normalize_and_orient ord eqs (Atom(R("=",[s;t]))) =
 (* ------------------------------------------------------------------------- *)
 
 let status(eqs,def,crs) eqs0 =
-  if eqs = eqs0 & (length crs) mod 1000 <> 0 then () else
+  if eqs = eqs0 && (length crs) mod 1000 <> 0 then () else
   (print_string(string_of_int(length eqs)^" equations and "^
                 string_of_int(length crs)^" pending critical pairs + "^
                 string_of_int(length def)^" deferred");
@@ -94,14 +94,14 @@ let rec complete ord (eqs,def,crits) =
 
 START_INTERACTIVE;;
 let eqs =
-  [<<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>];;
+  [{%fml|1 * x = x|}; {%fml|i(x) * x = 1|}; {%fml|(x * y) * z = x * y * z|}];;
 
 let ord = lpo_ge (weight ["1"; "*"; "i"]);;
 
 let eqs' = complete ord
   (eqs,[],unions(allpairs critical_pairs eqs eqs));;
 
-rewrite eqs' <<|i(x * i(x)) * (i(i((y * z) * u) * y) * i(u))|>>;;
+rewrite eqs' {%tm|i(x * i(x)) * (i(i((y * z) * u) * y) * i(u))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -141,17 +141,17 @@ let complete_and_simplify wts eqs =
 
 START_INTERACTIVE;;
 complete_and_simplify ["1"; "*"; "i"]
-  [<<i(a) * (a * b) = b>>];;
+  [{%fml|i(a) * (a * b) = b|}];;
 
 (* ------------------------------------------------------------------------- *)
 (* Auxiliary result used to justify extension of language for cancellation.  *)
 (* ------------------------------------------------------------------------- *)
 
 (meson ** equalitize)
- <<(forall x y z. x * y = x * z ==> y = z) <=>
-   (forall x z. exists w. forall y. z = x * y ==> w = y)>>;;
+ {%fml|(forall x y z. x * y = x * z ==> y = z) <=>
+   (forall x z. exists w. forall y. z = x * y ==> w = y)|};;
 
-skolemize <<forall x z. exists w. forall y. z = x * y ==> w = y>>;;
+skolemize {%fml|forall x z. exists w. forall y. z = x * y ==> w = y|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -163,8 +163,8 @@ END_INTERACTIVE;;
 #trace complete;;
 
 complete_and_simplify ["1"; "*"; "i"]
- [<<(x * y) * z = x * (y * z)>>;
-  <<1 * x = x>>; <<x * 1 = x>>; <<x * x = 1>>];;
+ [{%fml|(x * y) * z = x * (y * z)|};
+  {%fml|1 * x = x|}; {%fml|x * 1 = x|}; {%fml|x * x = 1|}];;
 
  ********************)
 
@@ -173,7 +173,7 @@ complete_and_simplify ["1"; "*"; "i"]
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let eqs =  [<<(a * b) * (b * c) = b>>];;
+let eqs =  [{%fml|(a * b) * (b * c) = b|}];;
 
 complete_and_simplify ["*"] eqs;;
 
@@ -184,7 +184,7 @@ complete_and_simplify ["*"] eqs;;
 (******** This works, but takes a long time
 
 let eqs =
- [<<(x * y) * z = x * y * z>>; <<1 * x = x>>; <<x * i(x) = 1>>];;
+ [{%fml|(x * y) * z = x * y * z|}; {%fml|1 * x = x|}; {%fml|x * i(x) = 1|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
@@ -195,13 +195,13 @@ complete_and_simplify ["1"; "*"; "i"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 (meson ** equalitize)
- <<(forall x y z. x * y = x * z ==> y = z) <=>
-   (forall x z. exists w. forall y. z = x * y ==> w = y)>>;;
+ {%fml|(forall x y z. x * y = x * z ==> y = z) <=>
+   (forall x z. exists w. forall y. z = x * y ==> w = y)|};;
 
-skolemize <<forall x z. exists w. forall y. z = x * y ==> w = y>>;;
+skolemize {%fml|forall x z. exists w. forall y. z = x * y ==> w = y|};;
 
 let eqs =
-  [<<f(a,a*b) = b>>; <<g(a*b,b) = a>>; <<1 * a = a>>; <<a * 1 = a>>];;
+  [{%fml|f(a,a*b) = b|}; {%fml|g(a*b,b) = a|}; {%fml|1 * a = a|}; {%fml|a * 1 = a|}];;
 
 complete_and_simplify ["1"; "*"; "f"; "g"] eqs;;
 
@@ -209,7 +209,7 @@ complete_and_simplify ["1"; "*"; "f"; "g"] eqs;;
 (* K&B example 7, where we need to divide through.                           *)
 (* ------------------------------------------------------------------------- *)
 
-let eqs =  [<<f(a,f(b,c,a),d) = c>>];;
+let eqs =  [{%fml|f(a,f(b,c,a),d) = c|}];;
 
 (*********** Can't orient
 
@@ -217,8 +217,8 @@ complete_and_simplify ["f"] eqs;;
 
 *************)
 
-let eqs =  [<<f(a,f(b,c,a),d) = c>>; <<f(a,b,c) = g(a,b)>>;
-                     <<g(a,b) = h(b)>>];;
+let eqs =  [{%fml|f(a,f(b,c,a),d) = c|}; {%fml|f(a,b,c) = g(a,b)|};
+                     {%fml|g(a,b) = h(b)|}];;
 
 complete_and_simplify ["h"; "g"; "f"] eqs;;
 
@@ -234,7 +234,7 @@ complete_and_simplify ["h"; "g"; "f"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>];;
+ [{%fml|1 * x = x|}; {%fml|i(x) * x = 1|}; {%fml|(x * y) * z = x * y * z|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
@@ -244,7 +244,7 @@ complete_and_simplify ["1"; "*"; "i"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<(x * y) * z = x * y * z>>; <<1 * x = x>>; <<i(x) * x = 1>>];;
+ [{%fml|(x * y) * z = x * y * z|}; {%fml|1 * x = x|}; {%fml|i(x) * x = 1|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
@@ -255,7 +255,7 @@ complete_and_simplify ["1"; "*"; "i"] eqs;;
 (**************
 
 let eqs =
- [<<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>];;
+ [{%fml|1 * x = x|}; {%fml|i(x) * x = 1|}; {%fml|(x * y) * z = x * y * z|}];;
 
 complete_and_simplify ["1"; "i"; "*"] eqs;;
  *************)
@@ -265,7 +265,7 @@ complete_and_simplify ["1"; "i"; "*"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<(x * y) * z = x * y * z>>; <<x * 1 = x>>; <<x * i(x) = 1>>];;
+ [{%fml|(x * y) * z = x * y * z|}; {%fml|x * 1 = x|}; {%fml|x * i(x) = 1|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
@@ -273,11 +273,11 @@ complete_and_simplify ["1"; "*"; "i"] eqs;;
 (* Inverse property (K&B example 4).                                         *)
 (* ------------------------------------------------------------------------- *)
 
-let eqs =  [<<i(a) * (a * b) = b>>];;
+let eqs =  [{%fml|i(a) * (a * b) = b|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
-let eqs =  [<<a * (i(a) * b) = b>>];;
+let eqs =  [{%fml|a * (i(a) * b) = b|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
@@ -286,9 +286,9 @@ complete_and_simplify ["1"; "*"; "i"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<(x * y) * z = x * y * z>>;
-  <<1 * x = x>>; <<11 * x = x>>;
-  <<i(x) * x = 1>>; <<j(x) * x = 11>>];;
+ [{%fml|(x * y) * z = x * y * z|};
+  {%fml|1 * x = x|}; {%fml|11 * x = x|};
+  {%fml|i(x) * x = 1|}; {%fml|j(x) * x = 11|}];;
 
 complete_and_simplify ["1"; "11"; "*"; "i"; "j"] eqs;;
 
@@ -296,7 +296,7 @@ complete_and_simplify ["1"; "11"; "*"; "i"; "j"] eqs;;
 (* Central groupoids (K&B example 6).                                        *)
 (* ------------------------------------------------------------------------- *)
 
-let eqs =  [<<(a * b) * (b * c) = b>>];;
+let eqs =  [{%fml|(a * b) * (b * c) = b|}];;
 
 complete_and_simplify ["*"] eqs;;
 
@@ -304,7 +304,7 @@ complete_and_simplify ["*"] eqs;;
 (* Random axiom (K&B example 7).                                             *)
 (* ------------------------------------------------------------------------- *)
 
-let eqs =  [<<f(a,f(b,c,a),d) = c>>];;
+let eqs =  [{%fml|f(a,f(b,c,a),d) = c|}];;
 
 (*********** Can't orient
 
@@ -312,8 +312,8 @@ complete_and_simplify ["f"] eqs;;
 
 *************)
 
-let eqs =  [<<f(a,f(b,c,a),d) = c>>; <<f(a,b,c) = g(a,b)>>;
-                     <<g(a,b) = h(b)>>];;
+let eqs =  [{%fml|f(a,f(b,c,a),d) = c|}; {%fml|f(a,b,c) = g(a,b)|};
+                     {%fml|g(a,b) = h(b)|}];;
 
 complete_and_simplify ["h"; "g"; "f"] eqs;;
 
@@ -323,7 +323,7 @@ complete_and_simplify ["h"; "g"; "f"] eqs;;
 
 (************* Can't orient
 
-let eqs =  [<<(a * b) * (c * b * a) = b>>];;
+let eqs =  [{%fml|(a * b) * (c * b * a) = b|}];;
 
 complete_and_simplify ["*"] eqs;;
 
@@ -333,26 +333,26 @@ complete_and_simplify ["*"] eqs;;
 (* The cancellation law (K&B example 9).                                     *)
 (* ------------------------------------------------------------------------- *)
 
-let eqs =  [<<f(a,a*b) = b>>; <<g(a*b,b) = a>>];;
+let eqs =  [{%fml|f(a,a*b) = b|}; {%fml|g(a*b,b) = a|}];;
 
 complete_and_simplify ["*"; "f"; "g"] eqs;;
 
 let eqs =
-  [<<f(a,a*b) = b>>; <<g(a*b,b) = a>>; <<1 * a = a>>; <<a * 1 = a>>];;
+  [{%fml|f(a,a*b) = b|}; {%fml|g(a*b,b) = a|}; {%fml|1 * a = a|}; {%fml|a * 1 = a|}];;
 
 complete_and_simplify ["1"; "*"; "f"; "g"] eqs;;
 
 (**** Just for fun; these aren't tried by Knuth and Bendix
 
 let eqs =
-  [<<(x * y) * z = x * y * z>>;
-   <<f(a,a*b) = b>>; <<g(a*b,b) = a>>; <<1 * a = a>>; <<a * 1 = a>>];;
+  [{%fml|(x * y) * z = x * y * z|};
+   {%fml|f(a,a*b) = b|}; {%fml|g(a*b,b) = a|}; {%fml|1 * a = a|}; {%fml|a * 1 = a|}];;
 
 complete_and_simplify ["1"; "*"; "f"; "g"] eqs;;
 
 let eqs =
-  [<<(x * y) * z = x * y * z>>;
-   <<f(a,a*b) = b>>; <<g(a*b,b) = a>>];;
+  [{%fml|(x * y) * z = x * y * z|};
+   {%fml|f(a,a*b) = b|}; {%fml|g(a*b,b) = a|}];;
 
 complete_and_simplify ["*"; "f"; "g"] eqs;;
 
@@ -365,13 +365,13 @@ complete_and_simplify ["f"; "g"; "*"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<a * \(a,b) = b>>; <</(a,b) * b = a>>; <<1 * a = a>>; <<a * 1 = a>>];;
+ [{%fml|a * \(a,b) = b|}; {%fml|/(a,b) * b = a|}; {%fml|1 * a = a|}; {%fml|a * 1 = a|}];;
 
 complete_and_simplify ["1"; "*"; "\\"; "/"] eqs;;
 
 let eqs =
- [<<a * \(a,b) = b>>; <</(a,b) * b = a>>; <<1 * a = a>>; <<a * 1 = a>>;
-  <<f(a,a*b) = b>>; <<g(a*b,b) = a>>];;
+ [{%fml|a * \(a,b) = b|}; {%fml|/(a,b) * b = a|}; {%fml|1 * a = a|}; {%fml|a * 1 = a|};
+  {%fml|f(a,a*b) = b|}; {%fml|g(a*b,b) = a|}];;
 
 complete_and_simplify ["1"; "*"; "\\"; "/"; "f"; "g"] eqs;;
 
@@ -380,11 +380,11 @@ complete_and_simplify ["1"; "*"; "\\"; "/"; "f"; "g"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<(x * y) * z = x * y * z>>;
-  <<1 * 1 = 1>>;
-  <<a * i(a) = 1>>;
-  <<f(1,a,b) = a>>;
-  <<f(a*b,a,b) = g(a*b,b)>>];;
+ [{%fml|(x * y) * z = x * y * z|};
+  {%fml|1 * 1 = 1|};
+  {%fml|a * i(a) = 1|};
+  {%fml|f(1,a,b) = a|};
+  {%fml|f(a*b,a,b) = g(a*b,b)|}];;
 
 (******** this is not expected to terminate
 
@@ -399,7 +399,7 @@ complete_and_simplify ["1"; "g"; "f"; "*"; "i"] eqs;;
 (******** This works, but takes a long time
 
 let eqs =
- [<<(x * y) * z = x * y * z>>; <<1 * x = x>>; <<x * i(x) = 1>>];;
+ [{%fml|(x * y) * z = x * y * z|}; {%fml|1 * x = x|}; {%fml|x * i(x) = 1|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
@@ -414,7 +414,7 @@ complete_and_simplify ["1"; "*"; "i"] eqs;;
  ****)
 
 let eqs =
- [<<(x * y) * z = x * y * z>>; <<x * 1 = x>>; <<i(x) * x = 1>>];;
+ [{%fml|(x * y) * z = x * y * z|}; {%fml|x * 1 = x|}; {%fml|i(x) * x = 1|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
@@ -423,9 +423,9 @@ complete_and_simplify ["1"; "*"; "i"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<(x * y) * z = x * y * z>>;
-  <<1 * x = x>>; <<11 * x = x>>;
-  <<x * i(x) = 1>>; <<x * j(x) = 11>>];;
+ [{%fml|(x * y) * z = x * y * z|};
+  {%fml|1 * x = x|}; {%fml|11 * x = x|};
+  {%fml|x * i(x) = 1|}; {%fml|x * j(x) = 11|}];;
 
 (******** This seems to be too slow. K&B encounter a similar problem
 
@@ -440,10 +440,10 @@ complete_and_simplify ["1"; "11"; "*"; "i"; "j"] eqs;;
 (********** According to KB, this wouldn't be expected to work
 
 let eqs =
- [<<(x * y) * z = x * y * z>>;
-  <<1 * x = x>>;
-  <<prime(a) * a = star(a)>>;
-  <<star(a) * b = b>>];;
+ [{%fml|(x * y) * z = x * y * z|};
+  {%fml|1 * x = x|};
+  {%fml|prime(a) * a = star(a)|};
+  {%fml|star(a) * b = b|}];;
 
 complete_and_simplify ["1"; "*"; "star"; "prime"] eqs;;
 
@@ -452,24 +452,24 @@ complete_and_simplify ["1"; "*"; "star"; "prime"] eqs;;
 (*********** These seem too slow too. Maybe just a bad ordering?
 
 let eqs =
- [<<(x * y) * z = x * y * z>>;
-  <<1 * x = x>>;
-  <<hash(a) * dollar(a) * a = star(a)>>;
-  <<star(a) * b = b>>;
-  <<a * hash(a) = 1>>;
-  <<a * 1 = hash(hash(a))>>;
-  <<hash(hash(hash(a))) = hash(a)>>];;
+ [{%fml|(x * y) * z = x * y * z|};
+  {%fml|1 * x = x|};
+  {%fml|hash(a) * dollar(a) * a = star(a)|};
+  {%fml|star(a) * b = b|};
+  {%fml|a * hash(a) = 1|};
+  {%fml|a * 1 = hash(hash(a))|};
+  {%fml|hash(hash(hash(a))) = hash(a)|}];;
 
 complete_and_simplify ["1"; "hash"; "star"; "*"; "dollar"] eqs;;
 
 let eqs =
- [<<(x * y) * z = x * y * z>>;
-  <<1 * x = x>>;
-  <<hash(a) * dollar(a) * a = star(a)>>;
-  <<star(a) * b = b>>;
-  <<a * hash(a) = 1>>;
-  <<hash(hash(a)) = a * 1>>;
-  <<hash(hash(hash(a))) = hash(a)>>];;
+ [{%fml|(x * y) * z = x * y * z|};
+  {%fml|1 * x = x|};
+  {%fml|hash(a) * dollar(a) * a = star(a)|};
+  {%fml|star(a) * b = b|};
+  {%fml|a * hash(a) = 1|};
+  {%fml|hash(hash(a)) = a * 1|};
+  {%fml|hash(hash(hash(a))) = hash(a)|}];;
 
 complete_and_simplify ["1"; "star"; "*"; "hash"; "dollar"] eqs;;
 
@@ -480,10 +480,10 @@ complete_and_simplify ["1"; "star"; "*"; "hash"; "dollar"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<(a * a) * a = one(a)>>;
-  <<a * (a * a) = two(a)>>;
-  <<(a * b) * (b * c) = b>>;
-  <<two(a) * b = a * b>>];;
+ [{%fml|(a * a) * a = one(a)|};
+  {%fml|a * (a * a) = two(a)|};
+  {%fml|(a * b) * (b * c) = b|};
+  {%fml|two(a) * b = a * b|}];;
 
 complete_and_simplify ["one"; "two"; "*"] eqs;;
 
@@ -494,9 +494,9 @@ complete_and_simplify ["one"; "two"; "*"] eqs;;
 (******** Not ordered right...
 
 let eqs =
- [<<(a*a * a) = one(a)>>;
-  <<(a * a*a) = two(a)>>;
-  <<(a*b * b*c) = b>>];;
+ [{%fml|(a*a * a) = one(a)|};
+  {%fml|(a * a*a) = two(a)|};
+  {%fml|(a*b * b*c) = b|}];;
 
 complete_and_simplify ["*"; "one"; "two"] eqs;;
 
@@ -506,7 +506,7 @@ complete_and_simplify ["*"; "one"; "two"] eqs;;
 (* Simply congruence closure.                                                *)
 (* ------------------------------------------------------------------------- *)
 
-let eqs =  [<<f(f(f(f(f(1))))) = 1>>; <<f(f(f(1))) = 1>>];;
+let eqs =  [{%fml|f(f(f(f(f(1))))) = 1|}; {%fml|f(f(f(1))) = 1|}];;
 
 complete_and_simplify ["1"; "f"] eqs;;
 
@@ -517,17 +517,17 @@ complete_and_simplify ["1"; "f"] eqs;;
 (*****************
 
 let eqs =
- [<<x * i(y * (((z * i(z)) * i(u * y)) * x)) = u>>];;
+ [{%fml|x * i(y * (((z * i(z)) * i(u * y)) * x)) = u|}];;
 
 complete_and_simplify ["1"; "*"; "i"] eqs;;
 
 let eqs =
- [<<((1 / (x / (y / (((x / x) / x) / z)))) / z) = y>>];;
+ [{%fml|((1 / (x / (y / (((x / x) / x) / z)))) / z) = y|}];;
 
 complete_and_simplify ["1"; "/"] eqs;;
 
 let eqs =
- [<<i(x * i(x)) * (i(i((y * z) * u) * y) * i(u)) = z>>];;
+ [{%fml|i(x * i(x)) * (i(i((y * z) * u) * y) * i(u)) = z|}];;
 
 complete_and_simplify ["*"; "i"] eqs;;
 
@@ -537,7 +537,7 @@ complete_and_simplify ["*"; "i"] eqs;;
 (* A rather simple example from Baader & Nipkow, p. 141.                     *)
 (* ------------------------------------------------------------------------- *)
 
-let eqs =  [<<f(f(x)) = g(x)>>];;
+let eqs =  [{%fml|f(f(x)) = g(x)|}];;
 
 complete_and_simplify ["g"; "f"] eqs;;
 END_INTERACTIVE;;
@@ -547,7 +547,7 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<(x * y) * z = x * (y * z)>>; <<1 * x = x>>; <<x * 1 = x>>; <<x * x = 1>>]
+ [{%fml|(x * y) * z = x * (y * z)|}; {%fml|1 * x = x|}; {%fml|x * 1 = x|}; {%fml|x * x = 1|}]
 and wts = ["1"; "*"; "i"];;
 
 let ord = lpo_ge (weight wts);;
@@ -581,14 +581,14 @@ END_INTERACTIVE;;
 
 START_INTERACTIVE;;
 let eqs =
- [<<f(f(x)) = f(x)>>;
-  <<g(g(x)) = f(x)>>;
-  <<f(g(x)) = g(x)>>;
-  <<g(f(x)) = f(x)>>];;
+ [{%fml|f(f(x)) = f(x)|};
+  {%fml|g(g(x)) = f(x)|};
+  {%fml|f(g(x)) = g(x)|};
+  {%fml|g(f(x)) = f(x)|}];;
 
 complete_and_simplify ["f"; "g"] eqs;;
 
-let eqs =  [<<f(g(f(x))) = g(x)>>];;
+let eqs =  [{%fml|f(g(f(x))) = g(x)|}];;
 
 complete_and_simplify ["f"; "g"] eqs;;
 
@@ -597,14 +597,14 @@ complete_and_simplify ["f"; "g"] eqs;;
 (* ------------------------------------------------------------------------- *)
 
 let eqs =
- [<<0 + y = y>>;
-  <<SUC(x) + y = SUC(x + y)>>;
-  <<append(nil,l) = l>>;
-  <<append(h::t,l) = h::append(t,l)>>;
-  <<length(nil) = 0>>;
-  <<length(h::t) = SUC(length(t))>>;
-  <<rev(nil) = nil>>;
-  <<rev(h::t) = append(rev(t),h::nil)>>];;
+ [{%fml|0 + y = y|};
+  {%fml|SUC(x) + y = SUC(x + y)|};
+  {%fml|append(nil,l) = l|};
+  {%fml|append(h::t,l) = h::append(t,l)|};
+  {%fml|length(nil) = 0|};
+  {%fml|length(h::t) = SUC(length(t))|};
+  {%fml|rev(nil) = nil|};
+  {%fml|rev(h::t) = append(rev(t),h::nil)|}];;
 
 complete_and_simplify
    ["0"; "nil"; "SUC"; "::"; "+"; "length"; "append"; "rev"] eqs;;
@@ -614,32 +614,32 @@ let iprove eqs' tm =
    ["0"; "nil"; "SUC"; "::"; "+"; "append"; "rev"; "length"]
    (tm :: eqs' @ eqs);;
 
-iprove [] <<x + 0 = x>>;;
+iprove [] {%fml|x + 0 = x|};;
 
-iprove [] <<x + SUC(y) = SUC(x + y)>>;;
+iprove [] {%fml|x + SUC(y) = SUC(x + y)|};;
 
-iprove [] <<(x + y) + z = x + y + z>>;;
+iprove [] {%fml|(x + y) + z = x + y + z|};;
 
-iprove [] <<length(append(x,y)) = length(x) + length(y)>>;;
+iprove [] {%fml|length(append(x,y)) = length(x) + length(y)|};;
 
-iprove [] <<append(append(x,y),z) = append(x,append(y,z))>>;;
+iprove [] {%fml|append(append(x,y),z) = append(x,append(y,z))|};;
 
-iprove [] <<append(x,nil) = x>>;;
+iprove [] {%fml|append(x,nil) = x|};;
 
-iprove [<<append(append(x,y),z) = append(x,append(y,z))>>;
-        <<append(x,nil) = x>>]
-        <<rev(append(x,y)) = append(rev(y),rev(x))>>;;
+iprove [{%fml|append(append(x,y),z) = append(x,append(y,z))|};
+        {%fml|append(x,nil) = x|}]
+        {%fml|rev(append(x,y)) = append(rev(y),rev(x))|};;
 
-iprove [<<rev(append(x,y)) = append(rev(y),rev(x))>>;
-        <<append(x,nil) = x>>;
-        <<append(append(x,y),z) = append(x,append(y,z))>>]
-        <<rev(rev(x)) = x>>;;
+iprove [{%fml|rev(append(x,y)) = append(rev(y),rev(x))|};
+        {%fml|append(x,nil) = x|};
+        {%fml|append(append(x,y),z) = append(x,append(y,z))|}]
+        {%fml|rev(rev(x)) = x|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Here it's not immediately so obvious since we get extra equs.             *)
 (* ------------------------------------------------------------------------- *)
 
-iprove [] <<rev(rev(x)) = x>>;;
+iprove [] {%fml|rev(rev(x)) = x|};;
 
 (* ------------------------------------------------------------------------- *)
 (* With fewer lemmas, it may just need more time or may not terminate.       *)
@@ -647,8 +647,8 @@ iprove [] <<rev(rev(x)) = x>>;;
 
 (********* not enough lemmas...or maybe it just needs more runtime
 
-iprove [<<rev(append(x,y)) = append(rev(y),rev(x))>>]
-        <<rev(rev(x)) = x>>;;
+iprove [{%fml|rev(append(x,y)) = append(rev(y),rev(x))|}]
+        {%fml|rev(rev(x)) = x|};;
 
  *********)
 
@@ -656,7 +656,7 @@ iprove [<<rev(append(x,y)) = append(rev(y),rev(x))>>]
 (* Now something actually false...                                           *)
 (* ------------------------------------------------------------------------- *)
 
-iprove [] <<length(append(x,y)) = length(x)>>;; (*** try something false ***)
+iprove [] {%fml|length(append(x,y)) = length(x)|};; (*** try something false ***)
 
 *************)
 END_INTERACTIVE;;

@@ -52,7 +52,7 @@ let triggers fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-triggers <<p <=> (q /\ r)>>;;
+triggers {%fml|p <=> (q /\ r)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -61,9 +61,9 @@ END_INTERACTIVE;;
 
 let trigger =
   let [trig_and; trig_or; trig_imp; trig_iff] = map triggers
-      [<<p <=> q /\ r>>; <<p <=> q \/ r>>;
-       <<p <=> (q ==> r)>>; <<p <=> (q <=> r)>>]
-  and p = <<p>> and q = <<q>> and r = <<r>>
+      [{%fml|p <=> q /\ r|}; {%fml|p <=> q \/ r|};
+       {%fml|p <=> (q ==> r)|}; {%fml|p <=> (q <=> r)|}]
+  and p = {%fml|p|} and q = {%fml|q|} and r = {%fml|r|}
   and ddnegate fm = match fm with Not(Not p) -> p | _ -> fm in
   let inst_fn [x;y;z] =
     let subfn = fpf [P"p"; P"q"; P"r"] [x; y; z] in
@@ -177,7 +177,7 @@ let stal_intersect (eq1,_ as erf1) (eq2,_ as erf2) erf =
 
 let rec saturate n erf assigs allvars =
   let (eqv',_ as erf') = zero_saturate_and_check erf assigs in
-  if n = 0 or truefalse eqv' then erf' else
+  if n = 0 || truefalse eqv' then erf' else
   let (eqv'',_ as erf'') = splits n erf' allvars allvars in
   if eqv'' = eqv' then erf'' else saturate n erf'' [] allvars
 
@@ -200,7 +200,7 @@ let rec saturate_upto vars n m trigs assigs =
    (print_string("*** Starting "^(string_of_int n)^"-saturation");
     print_newline();
     let (eqv,_) = saturate n (unequal,relevance trigs) assigs vars in
-    truefalse eqv or saturate_upto vars (n + 1) m trigs assigs);;
+    truefalse eqv || saturate_upto vars (n + 1) m trigs assigs);;
 
 (* ------------------------------------------------------------------------- *)
 (* Overall function.                                                         *)

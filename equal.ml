@@ -64,7 +64,7 @@ let predicate_congruence (p,n) =
 (* ------------------------------------------------------------------------- *)
 
 let equivalence_axioms =
-  [<<forall x. x = x>>; <<forall x y z. x = y /\ x = z ==> y = z>>];;
+  [{%fml|forall x. x = x|}; {%fml|forall x y z. x = y /\ x = z ==> y = z|}];;
 
 let equalitize fm =
   let allpreds = predicates fm in
@@ -81,10 +81,10 @@ let equalitize fm =
 
 START_INTERACTIVE;;
 let ewd = equalitize
- <<(forall x. f(x) ==> g(x)) /\
+ {%fml|(forall x. f(x) ==> g(x)) /\
    (exists x. f(x)) /\
    (forall x y. g(x) /\ g(y) ==> x = y)
-   ==> forall y. g(y) ==> f(y)>>;;
+   ==> forall y. g(y) ==> f(y)|};;
 
 meson ewd;;
 
@@ -93,8 +93,8 @@ meson ewd;;
 (* ------------------------------------------------------------------------- *)
 
 let wishnu = equalitize
- <<(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
-   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')>>;;
+ {%fml|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
+   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|};;
 
 time meson wishnu;;
 
@@ -105,10 +105,10 @@ time meson wishnu;;
 (*********
 
 (meson ** equalitize)
- <<(forall x y z. x * (y * z) = (x * y) * z) /\
+ {%fml|(forall x y z. x * (y * z) = (x * y) * z) /\
    (forall x. 1 * x = x) /\
    (forall x. i(x) * x = 1)
-   ==> forall x. x * i(x) = 1>>;;
+   ==> forall x. x * i(x) = 1|};;
 
  ********)
 
@@ -119,18 +119,18 @@ time meson wishnu;;
 (*************
 
 (meson ** equalitize)
- <<(forall x y z. x * (y * z) = (x * y) * z) /\
+ {%fml|(forall x y z. x * (y * z) = (x * y) * z) /\
    (forall x. 1 * x = x) /\
    (forall x. x * 1 = x) /\
    (forall x. x * x = 1)
-   ==> forall x y. x * y  = y * x>>;;
+   ==> forall x y. x * y  = y * x|};;
 
 (* ------------------------------------------------------------------------- *)
 (* With symmetry at leaves and one-sided congruences (Size = 16, 54659 s).   *)
 (* ------------------------------------------------------------------------- *)
 
 let fm =
- <<(forall x. x = x) /\
+ {%fml|(forall x. x = x) /\
    (forall x y z. x * (y * z) = (x * y) * z) /\
    (forall x y z. =((x * y) * z,x * (y * z))) /\
    (forall x. 1 * x = x) /\
@@ -141,7 +141,7 @@ let fm =
    (forall x y z. x = y ==> x * z = y * z) /\
    (forall x y z. x = y ==> z * x = z * y) /\
    (forall x y z. x = y /\ y = z ==> x = z)
-   ==> forall x. x * i(x) = 1>>;;
+   ==> forall x. x * i(x) = 1|};;
 
 time meson fm;;
 
@@ -150,7 +150,7 @@ time meson fm;;
 (* ------------------------------------------------------------------------- *)
 
 let fm =
- <<(forall x y z. axiom(x * (y * z),(x * y) * z)) /\
+ {%fml|(forall x y z. axiom(x * (y * z),(x * y) * z)) /\
    (forall x y z. axiom((x * y) * z,x * (y * z)) /\
    (forall x. axiom(1 * x,x)) /\
    (forall x. axiom(x,1 * x)) /\
@@ -166,12 +166,12 @@ let fm =
    (forall s t. cchain(s,t) ==> s = t) /\
    (forall s t. achain(s,t) ==> s = t) /\
    (forall t. t = t)
-   ==> forall x. x * i(x) = 1>>;;
+   ==> forall x. x * i(x) = 1|};;
 
 time meson fm;;
 
 let fm =
- <<(forall x y z. axiom(x * (y * z),(x * y) * z)) /\
+ {%fml|(forall x y z. axiom(x * (y * z),(x * y) * z)) /\
    (forall x y z. axiom((x * y) * z,x * (y * z)) /\
    (forall x. axiom(1 * x,x)) /\
    (forall x. axiom(x,1 * x)) /\
@@ -186,7 +186,7 @@ let fm =
    (forall s t. cchain(s,t) ==> s = t) /\
    (forall s t. achain(s,t) ==> s = t) /\
    (forall t. t = t)
-   ==> forall x. x * i(x) = 1>>;;
+   ==> forall x. x * i(x) = 1|};;
 
 time meson fm;;
 
@@ -195,12 +195,12 @@ time meson fm;;
 (* ------------------------------------------------------------------------- *)
 
 let fm = equalitize
- <<forall c. f(f(f(f(f(c))))) = c /\ f(f(f(c))) = c ==> f(c) = c>>;;
+ {%fml|forall c. f(f(f(f(f(c))))) = c /\ f(f(f(c))) = c ==> f(c) = c|};;
 
 time meson fm;;
 
 let fm =
- <<axiom(f(f(f(f(f(c))))),c) /\
+ {%fml|axiom(f(f(f(f(f(c))))),c) /\
    axiom(c,f(f(f(f(f(c)))))) /\
    axiom(f(f(f(c))),c) /\
    axiom(c,f(f(f(c)))) /\
@@ -212,7 +212,7 @@ let fm =
    (forall s t. achain(s,t) ==> s = t) /\
    (forall t. t = t) /\
    (forall x y. x = y ==> cong(f(x),f(y)))
-   ==> f(c) = c>>;;
+   ==> f(c) = c|};;
 
 time meson fm;;
 
@@ -221,7 +221,7 @@ time meson fm;;
 (* ------------------------------------------------------------------------- *)
 
 let fm =
- <<(forall x y z. eqA (x * (y * z),(x * y) * z)) /\
+ {%fml|(forall x y z. eqA (x * (y * z),(x * y) * z)) /\
    (forall x y z. eqA ((x * y) * z)) /\
    (forall x. eqA (1 * x,x)) /\
    (forall x. eqA (x,1 * x)) /\
@@ -245,14 +245,14 @@ let fm =
    (forall x y z. eqA (x,y) /\ eqC (y,z) ==> eqT (x,z)) /\
    (forall x y z. eqA (x,y) /\ eqT (y,z) ==> eqT (x,z)) /\
    (forall x y z. eqC (x,y) /\ eqT (y,z) ==> eqT (x,z))
-   ==> forall x. eqT (x * i(x),1)>>;;
+   ==> forall x. eqT (x * i(x),1)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* With transitivity chains...                                               *)
 (* ------------------------------------------------------------------------- *)
 
 let fm =
- <<(forall x y z. eqA (x * (y * z),(x * y) * z)) /\
+ {%fml|(forall x y z. eqA (x * (y * z),(x * y) * z)) /\
    (forall x y z. eqA ((x * y) * z)) /\
    (forall x. eqA (1 * x,x)) /\
    (forall x. eqA (x,1 * x)) /\
@@ -270,7 +270,7 @@ let fm =
    (forall x y z. eqC (x,y) /\ eqC (y,z) ==> eqT (x,z)) /\
    (forall x y z. eqA (x,y) /\ eqT (y,z) ==> eqT (x,z)) /\
    (forall x y z. eqC (x,y) /\ eqT (y,z) ==> eqT (x,z))
-   ==> forall x. eqT (x * i(x),1) \/ eqC (x * i(x),1)>>;;
+   ==> forall x. eqT (x * i(x),1) \/ eqC (x * i(x),1)|};;
 
 time meson fm;;
 
@@ -279,7 +279,7 @@ time meson fm;;
 (* ------------------------------------------------------------------------- *)
 
 let fm =
- <<(forall x y z. eq1(x * (y * z),(x * y) * z)) /\
+ {%fml|(forall x y z. eq1(x * (y * z),(x * y) * z)) /\
    (forall x y z. eq1((x * y) * z,x * (y * z))) /\
    (forall x. eq1(1 * x,x)) /\
    (forall x. eq1(x,1 * x)) /\
@@ -289,7 +289,7 @@ let fm =
    (forall x y z. eq1(x,y) ==> eq1(z * x,z * y)) /\
    (forall x y z. eq1(x,y) /\ eq2(y,z) ==> eq2(x,z)) /\
    (forall x y. eq1(x,y) ==> eq2(x,y))
-   ==> forall x. eq2(x,i(x))>>;;
+   ==> forall x. eq2(x,i(x))|};;
 
 time meson fm;;
 

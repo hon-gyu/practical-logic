@@ -1,0 +1,11 @@
+(copy_files#
+ (files ../example.ml))
+
+(executable
+ (name example)
+ (modules example)
+ (libraries atp)
+ (flags
+  (:standard -w -a -no-strict-sequence))
+ (preprocess
+  (pps ppx_atp_quot)))

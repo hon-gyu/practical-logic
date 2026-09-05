@@ -68,6 +68,6 @@ let paramodulation fm =
 
 START_INTERACTIVE;;
 paramodulation
- <<(forall x. f(f(x)) = f(x)) /\ (forall x. exists y. f(y) = x)
-   ==> forall x. f(x) = x>>;;
+ {%fml|(forall x. f(f(x)) = f(x)) /\ (forall x. exists y. f(y) = x)
+   ==> forall x. f(x) = x|};;
 END_INTERACTIVE;;

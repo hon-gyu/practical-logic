@@ -39,7 +39,7 @@ let print_prop_formula = print_qformula print_propvar;;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let fm = <<p ==> q <=> r /\ s \/ (t <=> ~ ~u /\ v)>>;;
+let fm = {%fml|p ==> q <=> r /\ s \/ (t <=> ~ ~u /\ v)|};;
 
 And(fm,fm);;
 
@@ -56,9 +56,9 @@ let rec eval fm v =
   | True -> true
   | Atom(x) -> v(x)
   | Not(p) -> not(eval p v)
-  | And(p,q) -> (eval p v) & (eval q v)
-  | Or(p,q) -> (eval p v) or (eval q v)
-  | Imp(p,q) -> not(eval p v) or (eval q v)
+  | And(p,q) -> (eval p v) && (eval q v)
+  | Or(p,q) -> (eval p v) || (eval q v)
+  | Imp(p,q) -> not(eval p v) || (eval q v)
   | Iff(p,q) -> (eval p v) = (eval q v);;
 
 (* ------------------------------------------------------------------------- *)
@@ -66,10 +66,10 @@ let rec eval fm v =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-eval <<p /\ q ==> q /\ r>>
+eval {%fml|p /\ q ==> q /\ r|}
      (function P"p" -> true | P"q" -> false | P"r" -> true);;
 
-eval <<p /\ q ==> q /\ r>>
+eval {%fml|p /\ q ==> q /\ r|}
      (function P"p" -> true | P"q" -> true | P"r" -> false);;
 END_INTERACTIVE;;
 
@@ -84,7 +84,7 @@ let atoms fm = atom_union (fun a -> [a]) fm;;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-atoms <<p /\ q \/ s ==> ~p \/ (r <=> s)>>;;
+atoms {%fml|p /\ q \/ s ==> ~p \/ (r <=> s)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -95,7 +95,7 @@ let rec onallvaluations subfn v ats =
   match ats with
     [] -> subfn v
   | p::ps -> let v' t q = if q = p then t else v(q) in
-             onallvaluations subfn (v' false) ps &
+             onallvaluations subfn (v' false) ps &&
              onallvaluations subfn (v' true) ps;;
 
 let print_truthtable fm =
@@ -118,9 +118,9 @@ let print_truthtable fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-print_truthtable <<p /\ q ==> q /\ r>>;;
+print_truthtable {%fml|p /\ q ==> q /\ r|};;
 
-let fm = <<p /\ q ==> q /\ r>>;;
+let fm = {%fml|p /\ q ==> q /\ r|};;
 
 print_truthtable fm;;
 END_INTERACTIVE;;
@@ -130,9 +130,9 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-print_truthtable <<((p ==> q) ==> p) ==> p>>;;
+print_truthtable {%fml|((p ==> q) ==> p) ==> p|};;
 
-print_truthtable <<p /\ ~p>>;;
+print_truthtable {%fml|p /\ ~p|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -148,13 +148,13 @@ let tautology fm =
 
 START_INTERACTIVE;;
 
-tautology <<p \/ ~p>>;;
+tautology {%fml|p \/ ~p|};;
 
-tautology <<p \/ q ==> p>>;;
+tautology {%fml|p \/ q ==> p|};;
 
-tautology <<p \/ q ==> q \/ (p <=> q)>>;;
+tautology {%fml|p \/ q ==> q \/ (p <=> q)|};;
 
-tautology <<(p \/ q) /\ ~(p /\ q) ==> (~p <=> q)>>;;
+tautology {%fml|(p \/ q) /\ ~(p /\ q) ==> (~p <=> q)|};;
 
 END_INTERACTIVE;;
 
@@ -177,7 +177,7 @@ let psubst subfn = onatoms (fun p -> tryapplyd subfn p (Atom p));;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-psubst (P"p" |=> <<p /\ q>>) <<p /\ q /\ p /\ q>>;;
+psubst (P"p" |=> {%fml|p /\ q|}) {%fml|p /\ q /\ p /\ q|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -185,28 +185,28 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-tautology <<(p ==> q) \/ (q ==> p)>>;;
+tautology {%fml|(p ==> q) \/ (q ==> p)|};;
 
-tautology <<p \/ (q <=> r) <=> (p \/ q <=> p \/ r)>>;;
+tautology {%fml|p \/ (q <=> r) <=> (p \/ q <=> p \/ r)|};;
 
-tautology <<p /\ q <=> ((p <=> q) <=> p \/ q)>>;;
+tautology {%fml|p /\ q <=> ((p <=> q) <=> p \/ q)|};;
 
-tautology <<(p ==> q) <=> (~q ==> ~p)>>;;
+tautology {%fml|(p ==> q) <=> (~q ==> ~p)|};;
 
-tautology <<(p ==> ~q) <=> (q ==> ~p)>>;;
+tautology {%fml|(p ==> ~q) <=> (q ==> ~p)|};;
 
-tautology <<(p ==> q) <=> (q ==> p)>>;;
+tautology {%fml|(p ==> q) <=> (q ==> p)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Some logical equivalences allowing elimination of connectives.            *)
 (* ------------------------------------------------------------------------- *)
 
 forall tautology
- [<<true <=> false ==> false>>;
-  <<~p <=> p ==> false>>;
-  <<p /\ q <=> (p ==> q ==> false) ==> false>>;
-  <<p \/ q <=> (p ==> false) ==> q>>;
-  <<(p <=> q) <=> ((p ==> q) ==> (q ==> p) ==> false) ==> false>>];;
+ [{%fml|true <=> false ==> false|};
+  {%fml|~p <=> p ==> false|};
+  {%fml|p /\ q <=> (p ==> q ==> false) ==> false|};
+  {%fml|p \/ q <=> (p ==> false) ==> q|};
+  {%fml|(p <=> q) <=> ((p ==> q) ==> (q ==> p) ==> false) ==> false|}];;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -228,7 +228,7 @@ let rec dual fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-dual <<p \/ ~p>>;;
+dual {%fml|p \/ ~p|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -265,9 +265,9 @@ let rec psimplify fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-psimplify <<(true ==> (x <=> false)) ==> ~(y \/ false /\ z)>>;;
+psimplify {%fml|(true ==> (x <=> false)) ==> ~(y \/ false /\ z)|};;
 
-psimplify <<((x ==> y) ==> true) \/ ~false>>;;
+psimplify {%fml|((x ==> y) ==> true) \/ ~false|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -308,7 +308,7 @@ let nnf fm = nnf(psimplify fm);;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let fm = <<(p <=> q) <=> ~(r ==> s)>>;;
+let fm = {%fml|(p <=> q) <=> ~(r ==> s)|};;
 
 let fm' = nnf fm;;
 
@@ -339,8 +339,8 @@ let nenf fm = nenf(psimplify fm);;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-tautology <<(p ==> p') /\ (q ==> q') ==> (p /\ q ==> p' /\ q')>>;;
-tautology <<(p ==> p') /\ (q ==> q') ==> (p \/ q ==> p' \/ q')>>;;
+tautology {%fml|(p ==> p') /\ (q ==> q') ==> (p /\ q ==> p' /\ q')|};;
+tautology {%fml|(p ==> p') /\ (q ==> q') ==> (p \/ q ==> p' \/ q')|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -371,13 +371,13 @@ let dnf fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let fm = <<(p \/ q /\ r) /\ (~p \/ ~r)>>;;
+let fm = {%fml|(p \/ q /\ r) /\ (~p \/ ~r)|};;
 
 dnf fm;;
 
 print_truthtable fm;;
 
-dnf <<p /\ q /\ r /\ s /\ t /\ u \/ u /\ v>>;;
+dnf {%fml|p /\ q /\ r /\ s /\ t /\ u \/ u /\ v|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -401,7 +401,7 @@ let rec rawdnf fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-rawdnf <<(p \/ q /\ r) /\ (~p \/ ~r)>>;;
+rawdnf {%fml|(p \/ q /\ r) /\ (~p \/ ~r)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -421,7 +421,7 @@ let rec purednf fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-purednf <<(p \/ q /\ r) /\ (~p \/ ~r)>>;;
+purednf {%fml|(p \/ q /\ r) /\ (~p \/ ~r)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -460,7 +460,7 @@ let dnf fm = list_disj(map list_conj (simpdnf fm));;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let fm = <<(p \/ q /\ r) /\ (~p \/ ~r)>>;;
+let fm = {%fml|(p \/ q /\ r) /\ (~p \/ ~r)|};;
 dnf fm;;
 tautology(Iff(fm,dnf fm));;
 END_INTERACTIVE;;
@@ -483,7 +483,7 @@ let cnf fm = list_conj(map list_disj (simpcnf fm));;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let fm = <<(p \/ q /\ r) /\ (~p \/ ~r)>>;;
+let fm = {%fml|(p \/ q /\ r) /\ (~p \/ ~r)|};;
 cnf fm;;
 tautology(Iff(fm,cnf fm));;
 END_INTERACTIVE;;

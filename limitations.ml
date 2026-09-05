@@ -63,7 +63,7 @@ let rec gform fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-gform <<~(x = 0)>>;;
+gform {%fml|~(x = 0)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -71,8 +71,8 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-gform <<x = x>>;;
-gform <<0 < 0>>;;
+gform {%fml|x = x|};;
+gform {%fml|0 < 0|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -154,15 +154,15 @@ let rec dholds v fm =
   | Atom(R("<",[s;t])) -> dtermval v s </ dtermval v t
   | Atom(R("<=",[s;t])) -> dtermval v s <=/ dtermval v t
   | Not(p) -> not(dholds v p)
-  | And(p,q) -> dholds v p & dholds v q
-  | Or(p,q) -> dholds v p or dholds v q
-  | Imp(p,q) -> not(dholds v p) or dholds v q
+  | And(p,q) -> dholds v p && dholds v q
+  | Or(p,q) -> dholds v p || dholds v q
+  | Imp(p,q) -> not(dholds v p) || dholds v q
   | Iff(p,q) -> dholds v p = dholds v q
   | Forall(x,Imp(Atom(R(a,[Var y;t])),p)) -> dhquant forall v x y a t p
   | Exists(x,And(Atom(R(a,[Var y;t])),p)) -> dhquant exists v x y a t p
   | _ -> failwith "dholds: not an arithmetical delta-formula"
 and dhquant pred v x y a t p =
-  if x <> y or mem x (fvt t) then failwith "dholds: not delta" else
+  if x <> y || mem x (fvt t) then failwith "dholds: not delta" else
   let m = if a = "<" then dtermval v t -/ Int 1 else dtermval v t in
   pred (fun n -> dholds ((x |-> n) v) p) (Int 0 --- m);;
 
@@ -172,8 +172,8 @@ and dhquant pred v x y a t p =
 
 START_INTERACTIVE;;
 let prime_form p = subst("p" |=> numeral(Int p))
- <<S(S(0)) <= p /\
-   forall n. n < p ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)>>;;
+ {%fml|S(S(0)) <= p /\
+   forall n. n < p ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)|};;
 
 dholds undefined (prime_form 100);;
 dholds undefined (prime_form 101);;
@@ -191,15 +191,15 @@ let rec classify c n fm =
   match fm with
     False | True | Atom(_) -> true
   | Not p -> classify (opp c) n p
-  | And(p,q) | Or(p,q) -> classify c n p & classify c n q
-  | Imp(p,q) -> classify (opp c) n p & classify c n q
-  | Iff(p,q) -> classify Delta n p & classify Delta n q
-  | Exists(x,p) when n <> 0 & c = Sigma -> classify c n p
-  | Forall(x,p) when n <> 0 & c = Pi -> classify c n p
+  | And(p,q) | Or(p,q) -> classify c n p && classify c n q
+  | Imp(p,q) -> classify (opp c) n p && classify c n q
+  | Iff(p,q) -> classify Delta n p && classify Delta n q
+  | Exists(x,p) when n <> 0 && c = Sigma -> classify c n p
+  | Forall(x,p) when n <> 0 && c = Pi -> classify c n p
   | (Exists(x,And(Atom(R(("<"|"<="),[Var y;t])),p))|
      Forall(x,Imp(Atom(R(("<"|"<="),[Var y;t])),p)))
-       when x = y & not(mem x (fvt t)) -> classify c n p
-  | Exists(x,p) |  Forall(x,p) -> n <> 0 & classify (opp c) (n - 1) fm;;
+       when x = y && not(mem x (fvt t)) -> classify c n p
+  | Exists(x,p) |  Forall(x,p) -> n <> 0 && classify (opp c) (n - 1) fm;;
 
 (* ------------------------------------------------------------------------- *)
 (* Example.                                                                  *)
@@ -207,9 +207,9 @@ let rec classify c n fm =
 
 START_INTERACTIVE;;
 classify Sigma 1
-  <<forall x. x < 2
+  {%fml|forall x. x < 2
               ==> exists y z. forall w. w < x + 2
-                                        ==> w + x + y + z = 42>>;;
+                                        ==> w + x + y + z = 42|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -224,8 +224,8 @@ let rec veref sign m v fm =
   | Atom(R("<",[s;t])) -> sign(dtermval v s </ dtermval v t)
   | Atom(R("<=",[s;t])) -> sign(dtermval v s <=/ dtermval v t)
   | Not(p) -> veref (not ** sign) m v p
-  | And(p,q) -> sign(sign(veref sign m v p) & sign(veref sign m v q))
-  | Or(p,q) -> sign(sign(veref sign m v p) or sign(veref sign m v q))
+  | And(p,q) -> sign(sign(veref sign m v p) && sign(veref sign m v q))
+  | Or(p,q) -> sign(sign(veref sign m v p) || sign(veref sign m v q))
   | Imp(p,q) -> veref sign m v (Or(Not p,q))
   | Iff(p,q) -> veref sign m v (And(Imp(p,q),Imp(q,p)))
   | Exists(x,p) when sign true
@@ -238,7 +238,7 @@ let rec veref sign m v fm =
         -> verefboundquant m v x y a t sign p
 
 and verefboundquant m v x y a t sign p =
-  if x <> y or mem x (fvt t) then failwith "veref" else
+  if x <> y || mem x (fvt t) then failwith "veref" else
   let m = if a = "<" then dtermval v t -/ Int 1 else dtermval v t in
   forall (fun n -> veref sign m ((x |-> n) v) p) (Int 0 --- m);;
 
@@ -256,7 +256,7 @@ let sigma_bound fm = first (Int 0) (fun n -> sholds n undefined fm);;
 
 START_INTERACTIVE;;
 sigma_bound
-  <<exists p x.
+  {%fml|exists p x.
      p < x /\
      (S(S(0)) <= p /\
       forall n. n < p
@@ -264,7 +264,7 @@ sigma_bound
      ~(x = 0) /\
      forall z. z <= x
                ==> (exists w. w <= x /\ x = z * w)
-                   ==> z = S(0) \/ exists x. x <= z /\ z = p * x>>;;
+                   ==> z = S(0) \/ exists x. x <= z /\ z = p * x|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -372,14 +372,14 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 let robinson =
- <<(forall m n. S(m) = S(n) ==> m = n) /\
+ {%fml|(forall m n. S(m) = S(n) ==> m = n) /\
    (forall n. ~(n = 0) <=> exists m. n = S(m)) /\
    (forall n. 0 + n = n) /\
    (forall m n. S(m) + n = S(m + n)) /\
    (forall n. 0 * n = 0) /\
    (forall m n. S(m) * n = n + m * n) /\
    (forall m n. m <= n <=> exists d. m + d = n) /\
-   (forall m n. m < n <=> S(m) <= n)>>;;
+   (forall m n. m < n <=> S(m) <= n)|};;
 
 let [suc_inj; num_cases; add_0; add_suc; mul_0;
      mul_suc; le_def; lt_def] = conjths robinson;;
@@ -438,7 +438,7 @@ and robeval tm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-robeval <<|S(0) + (S(S(0)) * ((S(0) + S(S(0)) + S(0))))|>>;;
+robeval {%tm|S(0) + (S(S(0)) * ((S(0) + S(S(0)) + S(0))))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -446,7 +446,7 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 let robinson_consequences =
- <<(forall n. S(n) = 0 ==> false) /\
+ {%fml|(forall n. S(n) = 0 ==> false) /\
    (forall n. 0 = S(n) ==> false) /\
    (forall m n. (m = n ==> false) ==> (S(m) = S(n) ==> false)) /\
    (forall m n. (exists d. m + d = n) ==> m <= n) /\
@@ -459,89 +459,89 @@ let robinson_consequences =
    (forall n. n <= 0 ==> n = 0) /\
    (forall m n. S(m) <= S(n) ==> m <= n) /\
    (forall m n. m < S(n) ==> m <= n) /\
-   (forall n. n < 0 ==> false)>>;;
+   (forall n. n < 0 ==> false)|};;
 
 let robinson_thm =
   prove (Imp(robinson,robinson_consequences))
-  [note("eq_refl",<<forall x. x = x>>) using [axiom_eqrefl (Var "x")];
-   note("eq_trans",<<forall x y z. x = y ==> y = z ==> x = z>>)
+  [note("eq_refl",{%fml|forall x. x = x|}) using [axiom_eqrefl (Var "x")];
+   note("eq_trans",{%fml|forall x y z. x = y ==> y = z ==> x = z|})
       using [eq_trans (Var "x") (Var "y") (Var "z")];
-   note("eq_sym",<<forall x y. x = y ==> y = x>>)
+   note("eq_sym",{%fml|forall x y. x = y ==> y = x|})
       using [eq_sym (Var "x") (Var "y")];
-   note("suc_cong",<<forall a b. a = b ==> S(a) = S(b)>>)
+   note("suc_cong",{%fml|forall a b. a = b ==> S(a) = S(b)|})
       using [axiom_funcong "S" [Var "a"] [Var "b"]];
    note("add_cong",
-        <<forall a b c d. a = b /\ c = d ==> a + c = b + d>>)
+        {%fml|forall a b c d. a = b /\ c = d ==> a + c = b + d|})
       using [axiom_funcong "+" [Var "a"; Var "c"] [Var "b"; Var "d"]];
    note("le_cong",
-        <<forall a b c d. a = b /\ c = d ==> a <= c ==> b <= d>>)
+        {%fml|forall a b c d. a = b /\ c = d ==> a <= c ==> b <= d|})
       using [axiom_predcong "<=" [Var "a"; Var "c"] [Var "b"; Var "d"]];
    note("lt_cong",
-        <<forall a b c d. a = b /\ c = d ==> a < c ==> b < d>>)
+        {%fml|forall a b c d. a = b /\ c = d ==> a < c ==> b < d|})
       using [axiom_predcong "<" [Var "a"; Var "c"] [Var "b"; Var "d"]];
 
-   assume ["suc_inj",<<forall m n. S(m) = S(n) ==> m = n>>;
-           "num_nz",<<forall n. ~(n = 0) <=> exists m. n = S(m)>>;
-           "add_0",<<forall n. 0 + n = n>>;
-           "add_suc",<<forall m n. S(m) + n = S(m + n)>>;
-           "mul_0",<<forall n. 0 * n = 0>>;
-           "mul_suc",<<forall m n. S(m) * n = n + m * n>>;
-           "le_def",<<forall m n. m <= n <=> exists d. m + d = n>>;
-           "lt_def",<<forall m n. m < n <=> S(m) <= n>>];
-   note("not_suc_0",<<forall n. ~(S(n) = 0)>>) by ["num_nz"; "eq_refl"];
-   so conclude <<forall n. S(n) = 0 ==> false>> at once;
-   so conclude <<forall n. 0 = S(n) ==> false>> by ["eq_sym"];
-   note("num_cases",<<forall n. (n = 0) \/ exists m. n = S(m)>>)
+   assume ["suc_inj",{%fml|forall m n. S(m) = S(n) ==> m = n|};
+           "num_nz",{%fml|forall n. ~(n = 0) <=> exists m. n = S(m)|};
+           "add_0",{%fml|forall n. 0 + n = n|};
+           "add_suc",{%fml|forall m n. S(m) + n = S(m + n)|};
+           "mul_0",{%fml|forall n. 0 * n = 0|};
+           "mul_suc",{%fml|forall m n. S(m) * n = n + m * n|};
+           "le_def",{%fml|forall m n. m <= n <=> exists d. m + d = n|};
+           "lt_def",{%fml|forall m n. m < n <=> S(m) <= n|}];
+   note("not_suc_0",{%fml|forall n. ~(S(n) = 0)|}) by ["num_nz"; "eq_refl"];
+   so conclude {%fml|forall n. S(n) = 0 ==> false|} at once;
+   so conclude {%fml|forall n. 0 = S(n) ==> false|} by ["eq_sym"];
+   note("num_cases",{%fml|forall n. (n = 0) \/ exists m. n = S(m)|})
          by ["num_nz"];
-   note("suc_inj_eq",<<forall m n. S(m) = S(n) <=> m = n>>)
+   note("suc_inj_eq",{%fml|forall m n. S(m) = S(n) <=> m = n|})
      by ["suc_inj"; "suc_cong"];
    so conclude
-     <<forall m n. (m = n ==> false) ==> (S(m) = S(n) ==> false)>>
+     {%fml|forall m n. (m = n ==> false) ==> (S(m) = S(n) ==> false)|}
      at once;
-   conclude <<forall m n. (exists d. m + d = n) ==> m <= n>>
+   conclude {%fml|forall m n. (exists d. m + d = n) ==> m <= n|}
      by ["le_def"];
-   conclude <<forall m n. S(m) <= n ==> m < n>> by ["lt_def"];
-   conclude <<forall m n. (forall d. d <= n ==> d = m ==> false)
-                          ==> m <= n ==> false>>
+   conclude {%fml|forall m n. S(m) <= n ==> m < n|} by ["lt_def"];
+   conclude {%fml|forall m n. (forall d. d <= n ==> d = m ==> false)
+                          ==> m <= n ==> false|}
      by ["eq_refl"; "le_cong"];
-   conclude <<forall m n. (forall d. d < n ==> d = m ==> false)
-                          ==> m < n ==> false>>
+   conclude {%fml|forall m n. (forall d. d < n ==> d = m ==> false)
+                          ==> m < n ==> false|}
      by ["eq_refl"; "lt_cong"];
-   have <<0 <= 0>> by ["le_def"; "add_0"];
-   so have <<forall x. x = 0 ==> x <= 0>>
+   have {%fml|0 <= 0|} by ["le_def"; "add_0"];
+   so have {%fml|forall x. x = 0 ==> x <= 0|}
      by ["le_cong"; "eq_refl"; "eq_sym"];
-   so conclude <<forall n. n <= 0 \/ (exists m. S(m) = n)>>
+   so conclude {%fml|forall n. n <= 0 \/ (exists m. S(m) = n)|}
      by ["num_nz"; "eq_sym"];
-   note("add_eq_0",<<forall m n. m + n = 0 ==> m = 0 /\ n = 0>>) proof
+   note("add_eq_0",{%fml|forall m n. m + n = 0 ==> m = 0 /\ n = 0|}) proof
     [fix "m"; fix "n";
-     assume ["A",<<m + n = 0>>];
-     cases <<m = 0 \/ exists p. m = S(p)>> by ["num_cases"];
-       so conclude <<m = 0>> at once;
-       so have <<m + n = 0 + n>> by ["add_cong"; "eq_refl"];
+     assume ["A",{%fml|m + n = 0|}];
+     cases {%fml|m = 0 \/ exists p. m = S(p)|} by ["num_cases"];
+       so conclude {%fml|m = 0|} at once;
+       so have {%fml|m + n = 0 + n|} by ["add_cong"; "eq_refl"];
        so our thesis by ["A"; "add_0"; "eq_sym"; "eq_trans"];
      qed;
-       so consider ("p",<<m = S(p)>>) at once;
-       so have <<m + n = S(p) + n>> by ["add_cong"; "eq_refl"];
-       so have <<m + n = S(p + n)>> by ["eq_trans"; "add_suc"];
-       so have <<S(p + n) = 0>> by ["A"; "eq_sym"; "eq_trans"];
+       so consider ("p",{%fml|m = S(p)|}) at once;
+       so have {%fml|m + n = S(p) + n|} by ["add_cong"; "eq_refl"];
+       so have {%fml|m + n = S(p + n)|} by ["eq_trans"; "add_suc"];
+       so have {%fml|S(p + n) = 0|} by ["A"; "eq_sym"; "eq_trans"];
        so our thesis by ["not_suc_0"];
      qed];
-   so conclude <<forall n. n <= 0 ==> n = 0>> by ["le_def"];
-   have <<forall m n. S(m) <= S(n) ==> m <= n>> proof
+   so conclude {%fml|forall n. n <= 0 ==> n = 0|} by ["le_def"];
+   have {%fml|forall m n. S(m) <= S(n) ==> m <= n|} proof
     [fix "m"; fix "n";
-     assume ["lesuc",<<S(m) <= S(n)>>];
-     so consider("d",<<S(m) + d = S(n)>>) by ["le_def"];
-     so have <<S(m + d) = S(n)>> by ["add_suc"; "eq_sym"; "eq_trans"];
-     so have <<m + d = n>> by ["suc_inj"];
-     so conclude <<m <= n>> by ["le_def"];
+     assume ["lesuc",{%fml|S(m) <= S(n)|}];
+     so consider("d",{%fml|S(m) + d = S(n)|}) by ["le_def"];
+     so have {%fml|S(m + d) = S(n)|} by ["add_suc"; "eq_sym"; "eq_trans"];
+     so have {%fml|m + d = n|} by ["suc_inj"];
+     so conclude {%fml|m <= n|} by ["le_def"];
      qed];
-   so conclude <<forall m n. S(m) <= S(n) ==> m <= n>> at once;
-   so conclude <<forall m n. m < S(n) ==> m <= n>> by ["lt_def"];
+   so conclude {%fml|forall m n. S(m) <= S(n) ==> m <= n|} at once;
+   so conclude {%fml|forall m n. m < S(n) ==> m <= n|} by ["lt_def"];
    fix "n";
-   assume ["hyp",<<n < 0>>];
-   so have <<S(n) <= 0>> by ["lt_def"];
-   so consider("d",<<S(n) + d = 0>>) by ["le_def"];
-   so have <<S(n + d) = 0>> by ["add_suc"; "eq_trans"; "eq_sym"];
+   assume ["hyp",{%fml|n < 0|}];
+   so have {%fml|S(n) <= 0|} by ["lt_def"];
+   so consider("d",{%fml|S(n) + d = 0|}) by ["le_def"];
+   so have {%fml|S(n + d) = 0|} by ["add_suc"; "eq_trans"; "eq_sym"];
    so our thesis by ["not_suc_0"];
    qed];;
 
@@ -575,9 +575,9 @@ let rob_ne s t =
   right_imp_trans (right_mp (imp_trans sth xth) tth) th;;
 
 START_INTERACTIVE;;
-rob_ne <<|S(0) + S(0) + S(0)|>> <<|S(S(0)) * S(S(0))|>>;;
-rob_ne <<|0 + 0 * S(0)|>> <<|S(S(0)) + 0|>>;;
-rob_ne <<|S(S(0)) + 0|>> <<|0 + 0 + 0 * 0|>>;;
+rob_ne {%tm|S(0) + S(0) + S(0)|} {%tm|S(S(0)) * S(S(0))|};;
+rob_ne {%tm|0 + 0 * S(0)|} {%tm|S(S(0)) + 0|};;
+rob_ne {%tm|S(S(0)) + 0|} {%tm|0 + 0 + 0 * 0|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -668,7 +668,7 @@ let rec sigma_prove fm =
         let th = sigma_prove (Imp(consequent(concl ith),False)) in
         imp_swap(imp_trans ith (imp_swap th))
   | Forall(x,Imp(Atom(R(("<="|"<" as a),[Var x';t])),q))
-        when x' = x & not(occurs_in (Var x) t) -> bounded_prove(a,x,t,q)
+        when x' = x && not(occurs_in (Var x) t) -> bounded_prove(a,x,t,q)
   | _ -> let th = sigma_elim fm in
          right_mp th (sigma_prove (antecedent(consequent(concl th))))
 
@@ -718,10 +718,10 @@ and boundednum_prove(a,x,t,q) =
 
 START_INTERACTIVE;;
 sigma_prove
-  <<exists p.
+  {%fml|exists p.
       S(S(0)) <= p /\
       forall n. n < p
-                ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)>>;;
+                ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -730,11 +730,11 @@ END_INTERACTIVE;;
 
 START_INTERACTIVE;;
 meson
- <<(True(G) <=> ~(|--(G))) /\ Pi(G) /\
+ {%fml|(True(G) <=> ~(|--(G))) /\ Pi(G) /\
    (forall p. Sigma(p) ==> (|--(p) <=> True(p))) /\
    (forall p. True(Not(p)) <=> ~True(p)) /\
    (forall p. Pi(p) ==> Sigma(Not(p)))
-   ==> (|--(Not(G)) <=> |--(G))>>;;
+   ==> (|--(Not(G)) <=> |--(G))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -743,31 +743,31 @@ END_INTERACTIVE;;
 
 START_INTERACTIVE;;
 let godel_2 = prove
- <<(forall p. |--(p) ==> |--(Pr(p))) /\
+ {%fml|(forall p. |--(p) ==> |--(Pr(p))) /\
    (forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))) /\
    (forall p. |--(imp(Pr(p),Pr(Pr(p)))))
    ==> (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
        (forall p q. |--(imp(q,imp(p,q)))) /\
        (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r)))))
        ==> |--(imp(G,imp(Pr(G),F))) /\ |--(imp(imp(Pr(G),F),G))
-           ==> |--(imp(Pr(F),F)) ==> |--(F)>>
- [assume["lob1",<<forall p. |--(p) ==> |--(Pr(p))>>;
-         "lob2",<<forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))>>;
-         "lob3",<<forall p. |--(imp(Pr(p),Pr(Pr(p))))>>];
-  assume["logic",<<(forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+           ==> |--(imp(Pr(F),F)) ==> |--(F)|}
+ [assume["lob1",{%fml|forall p. |--(p) ==> |--(Pr(p))|};
+         "lob2",{%fml|forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))|};
+         "lob3",{%fml|forall p. |--(imp(Pr(p),Pr(Pr(p))))|}];
+  assume["logic",{%fml|(forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
                    (forall p q. |--(imp(q,imp(p,q)))) /\
                    (forall p q r. |--(imp(imp(p,imp(q,r)),
-                                      imp(imp(p,q),imp(p,r)))))>>];
-  assume ["fix1",<<|--(imp(G,imp(Pr(G),F)))>>;
-          "fix2",<<|--(imp(imp(Pr(G),F),G))>>];
-  assume["consistency",<<|--(imp(Pr(F),F))>>];
-  have <<|--(Pr(imp(G,imp(Pr(G),F))))>> by ["lob1"; "fix1"];
-  so have <<|--(imp(Pr(G),Pr(imp(Pr(G),F))))>> by ["lob2"; "logic"];
-  so have <<|--(imp(Pr(G),imp(Pr(Pr(G)),Pr(F))))>> by ["lob2"; "logic"];
-  so have <<|--(imp(Pr(G),Pr(F)))>> by ["lob3"; "logic"];
-  so note("L",<<|--(imp(Pr(G),F))>>) by ["consistency"; "logic"];
-  so have <<|--(G)>> by ["fix2"; "logic"];
-  so have <<|--(Pr(G))>> by ["lob1"; "logic"];
-  so conclude <<|--(F)>> by ["L"; "logic"];
+                                      imp(imp(p,q),imp(p,r)))))|}];
+  assume ["fix1",{%fml||--(imp(G,imp(Pr(G),F)))|};
+          "fix2",{%fml||--(imp(imp(Pr(G),F),G))|}];
+  assume["consistency",{%fml||--(imp(Pr(F),F))|}];
+  have {%fml||--(Pr(imp(G,imp(Pr(G),F))))|} by ["lob1"; "fix1"];
+  so have {%fml||--(imp(Pr(G),Pr(imp(Pr(G),F))))|} by ["lob2"; "logic"];
+  so have {%fml||--(imp(Pr(G),imp(Pr(Pr(G)),Pr(F))))|} by ["lob2"; "logic"];
+  so have {%fml||--(imp(Pr(G),Pr(F)))|} by ["lob3"; "logic"];
+  so note("L",{%fml||--(imp(Pr(G),F))|}) by ["consistency"; "logic"];
+  so have {%fml||--(G)|} by ["fix2"; "logic"];
+  so have {%fml||--(Pr(G))|} by ["lob1"; "logic"];
+  so conclude {%fml||--(F)|} by ["L"; "logic"];
   qed];;
 END_INTERACTIVE;;

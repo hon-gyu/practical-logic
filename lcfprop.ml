@@ -427,9 +427,9 @@ let lcftaut p =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-lcftaut <<(p ==> q) \/ (q ==> p)>>;;
+lcftaut {%fml|(p ==> q) \/ (q ==> p)|};;
 
-lcftaut <<p /\ q <=> ((p <=> q) <=> p \/ q)>>;;
+lcftaut {%fml|p /\ q <=> ((p <=> q) <=> p \/ q)|};;
 
-lcftaut <<((p <=> q) <=> r) <=> (p <=> (q <=> r))>>;;
+lcftaut {%fml|((p <=> q) <=> r) <=> (p <=> (q <=> r))|};;
 END_INTERACTIVE;;

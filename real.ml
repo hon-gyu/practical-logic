@@ -87,7 +87,7 @@ let pdivide_pos vars sgns s p =
   let a = head vars p and (k,r) = pdivide vars s p in
   let sgn = findsign sgns a in
   if sgn = Zero then failwith "pdivide_pos: zero head coefficient"
-  else if sgn = Positive or k mod 2 = 0 then r
+  else if sgn = Positive || k mod 2 = 0 then r
   else if sgn = Negative then poly_neg r else poly_mul vars a r;;
 
 (* ------------------------------------------------------------------------- *)
@@ -150,35 +150,35 @@ let real_qelim =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-real_qelim <<exists x. x^4 + x^2 + 1 = 0>>;;
+real_qelim {%fml|exists x. x^4 + x^2 + 1 = 0|};;
 
-real_qelim <<exists x. x^3 - x^2 + x - 1 = 0>>;;
+real_qelim {%fml|exists x. x^3 - x^2 + x - 1 = 0|};;
 
-real_qelim <<exists x y. x^3 - x^2 + x - 1 = 0 /\
-                         y^3 - y^2 + y - 1 = 0 /\ ~(x = y)>>;;
+real_qelim {%fml|exists x y. x^3 - x^2 + x - 1 = 0 /\
+                         y^3 - y^2 + y - 1 = 0 /\ ~(x = y)|};;
 
 #trace testform;;
-real_qelim <<exists x. x^2 - 3 * x + 2 = 0 /\ 2 * x - 3 = 0>>;;
+real_qelim {%fml|exists x. x^2 - 3 * x + 2 = 0 /\ 2 * x - 3 = 0|};;
 #untrace testform;;
 
 real_qelim
- <<forall a f k. (forall e. k < e ==> f < a * e) ==> f <= a * k>>;;
+ {%fml|forall a f k. (forall e. k < e ==> f < a * e) ==> f <= a * k|};;
 
-real_qelim <<exists x. a * x^2 + b * x + c = 0>>;;
+real_qelim {%fml|exists x. a * x^2 + b * x + c = 0|};;
 
-real_qelim <<forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
-                           b^2 >= 4 * a * c>>;;
+real_qelim {%fml|forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
+                           b^2 >= 4 * a * c|};;
 
-real_qelim <<forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
+real_qelim {%fml|forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
                            a = 0 /\ (b = 0 ==> c = 0) \/
-                           ~(a = 0) /\ b^2 >= 4 * a * c>>;;
+                           ~(a = 0) /\ b^2 >= 4 * a * c|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Termination ordering for group theory completion.                         *)
 (* ------------------------------------------------------------------------- *)
 
-real_qelim <<1 < 2 /\ (forall x. 1 < x ==> 1 < x^2) /\
-             (forall x y. 1 < x /\ 1 < y ==> 1 < x * (1 + 2 * y))>>;;
+real_qelim {%fml|1 < 2 /\ (forall x. 1 < x ==> 1 < x^2) /\
+             (forall x y. 1 < x /\ 1 < y ==> 1 < x * (1 + 2 * y))|};;
 END_INTERACTIVE;;
 
 let rec grpterm tm =
@@ -195,7 +195,7 @@ let grpform (Atom(R("=",[s;t]))) =
 
 START_INTERACTIVE;;
 let eqs = complete_and_simplify ["1"; "*"; "i"]
-  [<<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>];;
+  [{%fml|1 * x = x|}; {%fml|i(x) * x = 1|}; {%fml|(x * y) * z = x * y * z|}];;
 
 let fm = list_conj (map grpform eqs);;
 
@@ -212,10 +212,10 @@ let real_qelim' =
                       basic_real_qelim;;
 
 real_qelim'
- <<forall d.
+ {%fml|forall d.
      (exists c. forall a b. (a = d /\ b = c) \/ (a = c /\ b = 1)
                             ==> a^2 = b)
-     <=> d^4 = 1>>;;
+     <=> d^4 = 1|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Didn't seem worth it in the book, but monicization can help a lot.        *)

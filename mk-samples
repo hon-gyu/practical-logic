@@ -1,6 +1,15 @@
 #!/bin/bash
+#
+# Split the interactive example blocks out of each source file into
+# <outdir>/x-<name>.ml, for #use'ing one at a time from the toplevel.
 
-input=$1
+set -e
 
-mkdir -p samples
-sed -n -e '/START_INTERACTIVE;;/,/END_INTERACTIVE/p' <$input >samples/x-$input
+outdir="$1"
+shift
+mkdir -p "$outdir"
+
+for input in "$@"; do
+  sed -n -e '/START_INTERACTIVE;;/,/END_INTERACTIVE/p' <"$input" \
+    >"$outdir/x-$(basename "$input")"
+done

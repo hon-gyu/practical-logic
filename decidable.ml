@@ -5,8 +5,8 @@
 (* ========================================================================= *)
 
 (***
-meson <<forall x. p(x)>>;;
-tab <<forall x. p(x)>>;;
+meson {%fml|forall x. p(x)|};;
+tab {%fml|forall x. p(x)|};;
  ***)
 
 (* ------------------------------------------------------------------------- *)
@@ -14,7 +14,7 @@ tab <<forall x. p(x)>>;;
 (* ------------------------------------------------------------------------- *)
 
 (***
-resolution <<forall x. p(x)>>;;
+resolution {%fml|forall x. p(x)|};;
  ***)
 
 (* ------------------------------------------------------------------------- *)
@@ -23,11 +23,11 @@ resolution <<forall x. p(x)>>;;
 
 START_INTERACTIVE;;
 let los =
- <<(forall x y z. P(x,y) /\ P(y,z) ==> P(x,z)) /\
+ {%fml|(forall x y z. P(x,y) /\ P(y,z) ==> P(x,z)) /\
    (forall x y z. Q(x,y) /\ Q(y,z) ==> Q(x,z)) /\
    (forall x y. P(x,y) ==> P(y,x)) /\
    (forall x y. P(x,y) \/ Q(x,y))
-   ==> (forall x y. P(x,y)) \/ (forall x y. Q(x,y))>>;;
+   ==> (forall x y. P(x,y)) \/ (forall x y. Q(x,y))|};;
 skolemize(Not los);;
 
 (* ------------------------------------------------------------------------- *)
@@ -67,7 +67,7 @@ END_INTERACTIVE;;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let fm = <<(forall x. p(x)) \/ (exists y. p(y))>>;;
+let fm = {%fml|(forall x. p(x)) \/ (exists y. p(y))|};;
 
 pnf fm;;
 
@@ -76,25 +76,25 @@ pnf fm;;
 (* ------------------------------------------------------------------------- *)
 
 aedecide
- <<(forall x. P(1,x,x)) /\ (forall x. P(x,x,1)) /\
+ {%fml|(forall x. P(1,x,x)) /\ (forall x. P(x,x,1)) /\
    (forall u v w x y z.
         P(x,y,u) /\ P(y,z,w) ==> (P(x,w,v) <=> P(u,z,v)))
-   ==> forall a b c. P(a,b,c) ==> P(b,a,c)>>;;
+   ==> forall a b c. P(a,b,c) ==> P(b,a,c)|};;
 
 aedecide
- <<(forall x. P(x,x,1)) /\
+ {%fml|(forall x. P(x,x,1)) /\
    (forall u v w x y z.
         P(x,y,u) /\ P(y,z,w) ==> (P(x,w,v) <=> P(u,z,v)))
-   ==> forall a b c. P(a,b,c) ==> P(b,a,c)>>;;
+   ==> forall a b c. P(a,b,c) ==> P(b,a,c)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* A bigger example.                                                         *)
 (* ------------------------------------------------------------------------- *)
 
 aedecide
- <<(exists x. P(x)) /\ (exists x. G(x))
+ {%fml|(exists x. P(x)) /\ (exists x. G(x))
    ==> ((forall x. P(x) ==> H(x)) /\ (forall x. G(x) ==> J(x)) <=>
-        (forall x y. P(x) /\ G(y) ==> H(x) /\ J(y)))>>;;
+        (forall x y. P(x) /\ G(y) ==> H(x) /\ J(y)))|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -103,9 +103,9 @@ END_INTERACTIVE;;
 
 (*** This is p18
 
-aedecide <<exists y. forall x. P(y) ==> P(x)>>;;
+aedecide {%fml|exists y. forall x. P(y) ==> P(x)|};;
 
-davisputnam <<exists y. forall x. P(y) ==> P(x)>>;;
+davisputnam {%fml|exists y. forall x. P(y) ==> P(x)|};;
 
  ***)
 
@@ -138,11 +138,11 @@ let rec miniscope fm =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-miniscope(nnf <<exists y. forall x. P(y) ==> P(x)>>);;
+miniscope(nnf {%fml|exists y. forall x. P(y) ==> P(x)|});;
 
 let fm = miniscope(nnf
- <<(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
-   ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))>>);;
+ {%fml|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+   ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|});;
 
 pnf(nnf fm);;
 END_INTERACTIVE;;
@@ -159,18 +159,18 @@ let wang fm = aedecide(miniscope(nnf(simplify fm)));;
 
 START_INTERACTIVE;;
 wang
- <<(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
-   ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))>>;;
+ {%fml|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+   ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|};;
 
 (* ------------------------------------------------------------------------- *)
 (* But not on this one!                                                      *)
 (* ------------------------------------------------------------------------- *)
 
 pnf(nnf(miniscope(nnf
- <<((exists x. forall y. P(x) <=> P(y)) <=>
+ {%fml|((exists x. forall y. P(x) <=> P(y)) <=>
     ((exists x. Q(x)) <=> (forall y. Q(y)))) <=>
    ((exists x. forall y. Q(x) <=> Q(y)) <=>
-    ((exists x. P(x)) <=> (forall y. P(y))))>>)));;
+    ((exists x. P(x)) <=> (forall y. P(y))))|})));;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -217,7 +217,7 @@ END_INTERACTIVE;;
 
 let all_possible_syllogisms' =
   let p =
-    <<(exists x. P(x)) /\ (exists x. M(x)) /\ (exists x. S(x))>> in
+    {%fml|(exists x. P(x)) /\ (exists x. M(x)) /\ (exists x. S(x))|} in
   map (fun t -> Imp(p,t)) all_possible_syllogisms;;
 
 START_INTERACTIVE;;
@@ -276,16 +276,16 @@ let decide_fmp fm =
 
 START_INTERACTIVE;;
 decide_fmp
- <<(forall x y. R(x,y) \/ R(y,x)) ==> forall x. R(x,x)>>;;
+ {%fml|(forall x y. R(x,y) \/ R(y,x)) ==> forall x. R(x,x)|};;
 
 decide_fmp
- <<(forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)) ==> forall x. R(x,x)>>;;
+ {%fml|(forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)) ==> forall x. R(x,x)|};;
 
 (*** This fails to terminate: has countermodels, but only infinite ones
 decide_fmp
- <<~((forall x. ~R(x,x)) /\
+ {%fml|~((forall x. ~R(x,x)) /\
      (forall x. exists z. R(x,z)) /\
-     (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))>>;;
+     (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))|};;
 ****)
 END_INTERACTIVE;;
 
@@ -296,7 +296,7 @@ END_INTERACTIVE;;
 let decide_monadic fm =
   let funcs = functions fm and preds = predicates fm in
   let monadic,other = partition (fun (_,ar) -> ar = 1) preds in
-  if funcs <> [] or exists (fun (_,ar) -> ar > 1) other
+  if funcs <> [] || exists (fun (_,ar) -> ar > 1) other
   then failwith "Not in the monadic subset" else
   let n = funpow (length monadic) (( * ) 2) 1 in
   decide_finite n fm;;
@@ -307,15 +307,15 @@ let decide_monadic fm =
 
 START_INTERACTIVE;;
 decide_monadic
- <<((exists x. forall y. P(x) <=> P(y)) <=>
+ {%fml|((exists x. forall y. P(x) <=> P(y)) <=>
     ((exists x. Q(x)) <=> (forall y. Q(y)))) <=>
     ((exists x. forall y. Q(x) <=> Q(y)) <=>
-   ((exists x. P(x)) <=> (forall y. P(y))))>>;;
+   ((exists x. P(x)) <=> (forall y. P(y))))|};;
 
 (**** This is not feasible
 decide_monadic
- <<(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
-   ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))>>;;
+ {%fml|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+   ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|};;
  ****)
 END_INTERACTIVE;;
 
@@ -328,23 +328,23 @@ START_INTERACTIVE;;
 (*** Our claimed equivalences are indeed correct ***)
 
 meson
- <<(exists x y z. forall u.
+ {%fml|(exists x y z. forall u.
         R(x,x) \/ ~R(x,u) \/ (R(x,y) /\ R(y,z) /\ ~R(x,z))) <=>
    ~((forall x. ~R(x,x)) /\
      (forall x. exists z. R(x,z)) /\
-     (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))>>;;
+     (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))|};;
 
 meson
- <<(exists x. forall y. exists z. R(x,x) \/ ~R(x,y) \/ (R(y,z) /\ ~R(x,z))) <=>
+ {%fml|(exists x. forall y. exists z. R(x,x) \/ ~R(x,y) \/ (R(y,z) /\ ~R(x,z))) <=>
    ~((forall x. ~R(x,x)) /\
-     (forall x. exists y. R(x,y) /\ forall z. R(y,z) ==> R(x,z)))>>;;
+     (forall x. exists y. R(x,y) /\ forall z. R(y,z) ==> R(x,z)))|};;
 
 (*** The second formula implies the first ***)
 
 meson
-<<~((forall x. ~R(x,x)) /\
+{%fml|~((forall x. ~R(x,x)) /\
     (forall x. exists y. R(x,y) /\ forall z. R(y,z) ==> R(x,z)))
   ==> ~((forall x. ~R(x,x)) /\
         (forall x. exists z. R(x,z)) /\
-        (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))>>;;
+        (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))|};;
 END_INTERACTIVE;;

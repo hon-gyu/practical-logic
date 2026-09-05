@@ -5,7 +5,7 @@
 (* ========================================================================= *)
 
 START_INTERACTIVE;;
-cnf <<p <=> (q <=> r)>>;;
+cnf {%fml|p <=> (q <=> r)|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -40,7 +40,7 @@ let max_varindex pfx =
   let m = String.length pfx in
   fun s n ->
     let l = String.length s in
-    if l <= m or String.sub s 0 m <> pfx then n else
+    if l <= m || String.sub s 0 m <> pfx then n else
     let s' = String.sub s m (l - m) in
     if forall numeric (explode s') then max_num n (num_of_string s')
     else n;;
@@ -63,7 +63,7 @@ let defcnf fm = list_conj(map list_disj(mk_defcnf maincnf fm));;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-defcnf <<(p \/ (q /\ ~r)) /\ s>>;;
+defcnf {%fml|(p \/ (q /\ ~r)) /\ s|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)
@@ -93,7 +93,7 @@ let defcnf fm = list_conj (map list_disj (defcnfs fm));;
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-defcnf <<(p \/ (q /\ ~r)) /\ s>>;;
+defcnf {%fml|(p \/ (q /\ ~r)) /\ s|};;
 END_INTERACTIVE;;
 
 (* ------------------------------------------------------------------------- *)

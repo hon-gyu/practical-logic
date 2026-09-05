@@ -6,8 +6,8 @@
 
 let rec istriv env x t =
   match t with
-    Var y -> y = x or defined env y & istriv env x (apply env y)
-  | Fn(f,args) -> exists (istriv env x) args & failwith "cyclic";;
+    Var y -> y = x || defined env y && istriv env x (apply env y)
+  | Fn(f,args) -> exists (istriv env x) args && failwith "cyclic";;
 
 (* ------------------------------------------------------------------------- *)
 (* Main unification procedure                                                *)
@@ -17,7 +17,7 @@ let rec unify env eqs =
   match eqs with
     [] -> env
   | (Fn(f,fargs),Fn(g,gargs))::oth ->
-        if f = g & length fargs = length gargs
+        if f = g && length fargs = length gargs
         then unify env (zip fargs gargs @ oth)
         else failwith "impossible unification"
   | (Var x,t)::oth | (t,Var x)::oth ->
@@ -48,15 +48,15 @@ let unify_and_apply eqs =
   map apply eqs;;
 
 START_INTERACTIVE;;
-unify_and_apply [<<|f(x,g(y))|>>,<<|f(f(z),w)|>>];;
+unify_and_apply [{%tm|f(x,g(y))|},{%tm|f(f(z),w)|}];;
 
-unify_and_apply [<<|f(x,y)|>>,<<|f(y,x)|>>];;
+unify_and_apply [{%tm|f(x,y)|},{%tm|f(y,x)|}];;
 
-(****  unify_and_apply [<<|f(x,g(y))|>>,<<|f(y,x)|>>];; *****)
+(****  unify_and_apply [{%tm|f(x,g(y))|},{%tm|f(y,x)|}];; *****)
 
-unify_and_apply [<<|x_0|>>,<<|f(x_1,x_1)|>>;
-                 <<|x_1|>>,<<|f(x_2,x_2)|>>;
-                 <<|x_2|>>,<<|f(x_3,x_3)|>>];;
+unify_and_apply [{%tm|x_0|},{%tm|f(x_1,x_1)|};
+                 {%tm|x_1|},{%tm|f(x_2,x_2)|};
+                 {%tm|x_2|},{%tm|f(x_3,x_3)|}];;
 
 let cyclic() = "cyclic" |=> parse_term "0";;
 

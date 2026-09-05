@@ -1,2 +1,3 @@
 
+(* Run "dune build @lib/top" first; loadall.ml loads build artifacts. *)
 #use "loadall.ml";;

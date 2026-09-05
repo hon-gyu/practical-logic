@@ -1,0 +1,294 @@
+; Harrison's files shadow each other on purpose (default_parser is redefined
+; in intro.ml, prop.ml and fol.ml), so they are concatenated into a single
+; module in this order rather than built as separate dune modules.
+(rule
+ (targets atp_batch.ml)
+ (deps
+  ../Mk_ml_file
+  ../initialization.ml
+  ../lib.ml
+  ../intro.ml
+  ../formulas.ml
+  ../prop.ml
+  ../propexamples.ml
+  ../defcnf.ml
+  ../dp.ml
+  ../stal.ml
+  ../bdd.ml
+  ../fol.ml
+  ../skolem.ml
+  ../herbrand.ml
+  ../unif.ml
+  ../tableaux.ml
+  ../resolution.ml
+  ../prolog.ml
+  ../meson.ml
+  ../skolems.ml
+  ../equal.ml
+  ../cong.ml
+  ../rewrite.ml
+  ../order.ml
+  ../completion.ml
+  ../eqelim.ml
+  ../paramodulation.ml
+  ../decidable.ml
+  ../qelim.ml
+  ../cooper.ml
+  ../complex.ml
+  ../real.ml
+  ../grobner.ml
+  ../geom.ml
+  ../interpolation.ml
+  ../combining.ml
+  ../lcf.ml
+  ../lcfprop.ml
+  ../folderived.ml
+  ../lcffol.ml
+  ../tactics.ml
+  ../print-fpf.ml)
+ (action
+  (with-stdout-to
+   atp_batch.ml
+   (run
+    bash
+    ../Mk_ml_file
+    ../initialization.ml
+    ../lib.ml
+    ../intro.ml
+    ../formulas.ml
+    ../prop.ml
+    ../propexamples.ml
+    ../defcnf.ml
+    ../dp.ml
+    ../stal.ml
+    ../bdd.ml
+    ../fol.ml
+    ../skolem.ml
+    ../herbrand.ml
+    ../unif.ml
+    ../tableaux.ml
+    ../resolution.ml
+    ../prolog.ml
+    ../meson.ml
+    ../skolems.ml
+    ../equal.ml
+    ../cong.ml
+    ../rewrite.ml
+    ../order.ml
+    ../completion.ml
+    ../eqelim.ml
+    ../paramodulation.ml
+    ../decidable.ml
+    ../qelim.ml
+    ../cooper.ml
+    ../complex.ml
+    ../real.ml
+    ../grobner.ml
+    ../geom.ml
+    ../interpolation.ml
+    ../combining.ml
+    ../lcf.ml
+    ../lcfprop.ml
+    ../folderived.ml
+    ../lcffol.ml
+    ../tactics.ml
+    ../print-fpf.ml))))
+
+; wrapped false keeps the module name Atp_batch, so "open Atp_batch" in the
+; toplevel and "include Atp_batch" in example.ml keep working unchanged.
+; -w -a matches the Makefile, which built this concatenation with warnings off.
+; -no-strict-sequence is required because dune enables -strict-sequence by
+; default, which rejects lib.ml's "let can f x = try f x; true with ...".
+(library
+ (name atp)
+ (wrapped false)
+ (modules atp_batch)
+ (libraries num str)
+ (flags
+  (:standard -w -a -no-strict-sequence))
+ (preprocess
+  (pps ppx_atp_quot)))
+
+; The printers that the Makefile used to grep out of the sources; #use'd by
+; loadall.ml so the toplevel displays formulas in the book's notation.
+(rule
+ (targets printers.ml)
+ (deps
+  ../initialization.ml
+  ../lib.ml
+  ../intro.ml
+  ../formulas.ml
+  ../prop.ml
+  ../propexamples.ml
+  ../defcnf.ml
+  ../dp.ml
+  ../stal.ml
+  ../bdd.ml
+  ../fol.ml
+  ../skolem.ml
+  ../herbrand.ml
+  ../unif.ml
+  ../tableaux.ml
+  ../resolution.ml
+  ../prolog.ml
+  ../meson.ml
+  ../skolems.ml
+  ../equal.ml
+  ../cong.ml
+  ../rewrite.ml
+  ../order.ml
+  ../completion.ml
+  ../eqelim.ml
+  ../paramodulation.ml
+  ../decidable.ml
+  ../qelim.ml
+  ../cooper.ml
+  ../complex.ml
+  ../real.ml
+  ../grobner.ml
+  ../geom.ml
+  ../interpolation.ml
+  ../combining.ml
+  ../lcf.ml
+  ../lcfprop.ml
+  ../folderived.ml
+  ../lcffol.ml
+  ../tactics.ml
+  ../print-fpf.ml)
+ (action
+  (with-stdout-to
+   printers.ml
+   (run grep -h "#install_printer"
+    ../initialization.ml
+    ../lib.ml
+    ../intro.ml
+    ../formulas.ml
+    ../prop.ml
+    ../propexamples.ml
+    ../defcnf.ml
+    ../dp.ml
+    ../stal.ml
+    ../bdd.ml
+    ../fol.ml
+    ../skolem.ml
+    ../herbrand.ml
+    ../unif.ml
+    ../tableaux.ml
+    ../resolution.ml
+    ../prolog.ml
+    ../meson.ml
+    ../skolems.ml
+    ../equal.ml
+    ../cong.ml
+    ../rewrite.ml
+    ../order.ml
+    ../completion.ml
+    ../eqelim.ml
+    ../paramodulation.ml
+    ../decidable.ml
+    ../qelim.ml
+    ../cooper.ml
+    ../complex.ml
+    ../real.ml
+    ../grobner.ml
+    ../geom.ml
+    ../interpolation.ml
+    ../combining.ml
+    ../lcf.ml
+    ../lcfprop.ml
+    ../folderived.ml
+    ../lcffol.ml
+    ../tactics.ml
+    ../print-fpf.ml))))
+
+; The interactive example blocks, split out of each source file into
+; samples/x-<name>.ml, to be #use'd one at a time from the toplevel.
+(rule
+ (targets
+  (dir samples))
+ (deps
+  ../mk-samples
+  ../formulas.ml
+  ../propexamples.ml
+  ../defcnf.ml
+  ../dp.ml
+  ../stal.ml
+  ../bdd.ml
+  ../fol.ml
+  ../skolem.ml
+  ../herbrand.ml
+  ../unif.ml
+  ../tableaux.ml
+  ../resolution.ml
+  ../prolog.ml
+  ../meson.ml
+  ../skolems.ml
+  ../equal.ml
+  ../cong.ml
+  ../rewrite.ml
+  ../order.ml
+  ../completion.ml
+  ../eqelim.ml
+  ../paramodulation.ml
+  ../decidable.ml
+  ../qelim.ml
+  ../cooper.ml
+  ../complex.ml
+  ../real.ml
+  ../grobner.ml
+  ../geom.ml
+  ../interpolation.ml
+  ../combining.ml
+  ../lcf.ml
+  ../lcfprop.ml
+  ../folderived.ml
+  ../lcffol.ml
+  ../tactics.ml)
+ (action
+  (run bash ../mk-samples samples
+    ../formulas.ml
+    ../propexamples.ml
+    ../defcnf.ml
+    ../dp.ml
+    ../stal.ml
+    ../bdd.ml
+    ../fol.ml
+    ../skolem.ml
+    ../herbrand.ml
+    ../unif.ml
+    ../tableaux.ml
+    ../resolution.ml
+    ../prolog.ml
+    ../meson.ml
+    ../skolems.ml
+    ../equal.ml
+    ../cong.ml
+    ../rewrite.ml
+    ../order.ml
+    ../completion.ml
+    ../eqelim.ml
+    ../paramodulation.ml
+    ../decidable.ml
+    ../qelim.ml
+    ../cooper.ml
+    ../complex.ml
+    ../real.ml
+    ../grobner.ml
+    ../geom.ml
+    ../interpolation.ml
+    ../combining.ml
+    ../lcf.ml
+    ../lcfprop.ml
+    ../folderived.ml
+    ../lcffol.ml
+    ../tactics.ml)))
+
+; Everything the toplevel needs: "dune build @lib/top", or plain
+; "dune build" via the default alias below.
+(alias
+ (name top)
+ (deps
+  atp.cma
+  printers.ml
+  samples
+  ../ppx/driver/ppx_atp_driver.exe))

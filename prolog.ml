@@ -42,10 +42,10 @@ let hornprove fm =
 
 START_INTERACTIVE;;
 let p32 = hornprove
- <<(forall x. P(x) /\ (G(x) \/ H(x)) ==> Q(x)) /\
+ {%fml|(forall x. P(x) /\ (G(x) \/ H(x)) ==> Q(x)) /\
    (forall x. Q(x) /\ H(x) ==> J(x)) /\
    (forall x. R(x) ==> H(x))
-   ==> (forall x. P(x) /\ R(x) ==> J(x))>>;;
+   ==> (forall x. P(x) /\ R(x) ==> J(x))|};;
 
 (* ------------------------------------------------------------------------- *)
 (* A non-Horn example.                                                       *)
@@ -53,7 +53,7 @@ let p32 = hornprove
 
 (****************
 
-hornprove <<(p \/ q) /\ (~p \/ q) /\ (p \/ ~q) ==> ~(~q \/ ~q)>>;;
+hornprove {%fml|(p \/ q) /\ (~p \/ q) /\ (p \/ ~q) ==> ~(~q \/ ~q)|};;
 
 **********)
 END_INTERACTIVE;;
@@ -66,7 +66,7 @@ let parserule s =
   let c,rest =
     parse_formula (parse_infix_atom,parse_atom) [] (lex(explode s)) in
   let asm,rest1 =
-    if rest <> [] & hd rest = ":-"
+    if rest <> [] && hd rest = ":-"
     then parse_list ","
           (parse_formula (parse_infix_atom,parse_atom) []) (tl rest)
     else [],rest in

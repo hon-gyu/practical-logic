@@ -34,9 +34,9 @@ let urinterpolate p q =
 
 START_INTERACTIVE;;
 let p = prenex
- <<(forall x. R(x,f(x))) /\ (forall x y. S(x,y) <=> R(x,y) \/ R(y,x))>>
+ {%fml|(forall x. R(x,f(x))) /\ (forall x y. S(x,y) <=> R(x,y) \/ R(y,x))|}
 and q = prenex
- <<(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(0,0)>>;;
+ {%fml|(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(0,0)|};;
 
 let c = urinterpolate p q;;
 
@@ -119,11 +119,11 @@ let interpolate p q =
 
 START_INTERACTIVE;;
 let p =
- <<(forall x. exists y. R(x,y)) /\
-   (forall x y. S(v,x,y) <=> R(x,y) \/ R(y,x))>>
+ {%fml|(forall x. exists y. R(x,y)) /\
+   (forall x y. S(v,x,y) <=> R(x,y) \/ R(y,x))|}
 and q =
- <<(forall x y z. S(v,x,y) /\ S(v,y,z) ==> T(x,z)) /\
-   (exists u. ~T(u,u))>>;;
+ {%fml|(forall x y z. S(v,x,y) /\ S(v,y,z) ==> T(x,z)) /\
+   (exists u. ~T(u,u))|};;
 
 let c = interpolate p q;;
 
@@ -146,8 +146,8 @@ let einterpolate p q =
 (* ------------------------------------------------------------------------- *)
 
 START_INTERACTIVE;;
-let p = <<(p ==> q /\ r)>>
-and q = <<~((q ==> p) ==> s ==> (p <=> q))>>;;
+let p = {%fml|(p ==> q /\ r)|}
+and q = {%fml|~((q ==> p) ==> s ==> (p <=> q))|};;
 
 let c = interpolate p q;;
 
@@ -160,9 +160,9 @@ tautology(Imp(q,Not c));;
 (* A more interesting example.                                               *)
 (* ------------------------------------------------------------------------- *)
 
-let p = <<(forall x. exists y. R(x,y)) /\
-          (forall x y. S(x,y) <=> R(x,y) \/ R(y,x))>>
-and q = <<(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(u,u)>>;;
+let p = {%fml|(forall x. exists y. R(x,y)) /\
+          (forall x y. S(x,y) <=> R(x,y) \/ R(y,x))|}
+and q = {%fml|(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(u,u)|};;
 
 meson(Imp(And(p,q),False));;
 
@@ -175,10 +175,10 @@ meson(Imp(q,Not c));;
 (* A variant where u is free in both parts.                                  *)
 (* ------------------------------------------------------------------------- *)
 
-let p = <<(forall x. exists y. R(x,y)) /\
+let p = {%fml|(forall x. exists y. R(x,y)) /\
           (forall x y. S(x,y) <=> R(x,y) \/ R(y,x)) /\
-          (forall v. R(u,v) ==> Q(v,u))>>
-and q = <<(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(u,u)>>;;
+          (forall v. R(u,v) ==> Q(v,u))|}
+and q = {%fml|(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(u,u)|};;
 
 meson(Imp(And(p,q),False));;
 
@@ -196,17 +196,17 @@ let test_interp fm =
   let c = interpolate p q in
   meson(Imp(And(p,q),False)); meson(Imp(p,c)); meson(Imp(q,Not c)); c;;
 
-test_interp <<forall x. P(x) ==> exists y. forall z. P(z) ==> Q(y)>>;;
+test_interp {%fml|forall x. P(x) ==> exists y. forall z. P(z) ==> Q(y)|};;
 
-test_interp <<forall y. exists y. forall z. exists a.
-                P(a,x,y,z) ==> P(x,y,z,a)>>;;
+test_interp {%fml|forall y. exists y. forall z. exists a.
+                P(a,x,y,z) ==> P(x,y,z,a)|};;
 
 (* ------------------------------------------------------------------------- *)
 (* Hintikka's examples.                                                      *)
 (* ------------------------------------------------------------------------- *)
 
-let p = <<forall x. L(x,b)>>
-and q = <<(forall y. L(b,y) ==> m = y) /\ ~(m = b)>>;;
+let p = {%fml|forall x. L(x,b)|}
+and q = {%fml|(forall y. L(b,y) ==> m = y) /\ ~(m = b)|};;
 
 let c = einterpolate p q;;
 
@@ -214,9 +214,9 @@ meson(Imp(p,c));;
 meson(Imp(q,Not c));;
 
 let p =
- <<(forall x. A(x) /\ C(x) ==> B(x)) /\ (forall x. D(x) \/ ~D(x) ==> C(x))>>
+ {%fml|(forall x. A(x) /\ C(x) ==> B(x)) /\ (forall x. D(x) \/ ~D(x) ==> C(x))|}
 and q =
- <<~(forall x. E(x) ==> A(x) ==> B(x))>>;;
+ {%fml|~(forall x. E(x) ==> A(x) ==> B(x))|};;
 
 let c = interpolate p q;;
 meson(Imp(p,c));;

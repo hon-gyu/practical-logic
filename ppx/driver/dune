@@ -1,0 +1,3 @@
+(executable
+ (name ppx_atp_driver)
+ (libraries ppxlib ppx_atp_quot))
