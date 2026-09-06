@@ -60,10 +60,14 @@ let prawitz fm =
   let fm0 = skolemize(Not(generalize fm)) in
   snd(prawitz_loop (simpdnf fm0) (fv fm0) [[]] 0);;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg: Examples" =
+  let p20 = prawitz
+   {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+     ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|} in
+  print_fol_formula
+    (p20);
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Comparison of number of ground instances.                                 *)
@@ -72,6 +76,58 @@ let prawitz fm =
 let compare fm =
   prawitz fm,davisputnam fm;;
 
+
+let%expect_test _ =
+  let p19 = compare
+   {%fol|exists x. forall y z. (P(y) ==> Q(z)) ==> P(x) ==> Q(x)|} in
+  print_fol_formula
+    (p19);
+  let p20 = compare
+   {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+     ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|} in
+  print_fol_formula
+    (p20);
+  let p24 = compare
+   {%fol|~(exists x. U(x) /\ Q(x)) /\
+     (forall x. P(x) ==> Q(x) \/ R(x)) /\
+     ~(exists x. P(x) ==> (exists x. Q(x))) /\
+     (forall x. Q(x) /\ R(x) ==> U(x))
+     ==> (exists x. P(x) /\ R(x))|} in
+  print_fol_formula
+    (p24);
+  let p39 = compare
+   {%fol|~(exists x. forall y. P(y,x) <=> ~P(y,y))|} in
+  print_fol_formula
+    (p39);
+  let p42 = compare
+   {%fol|~(exists y. forall x. P(x,y) <=> ~(exists z. P(x,z) /\ P(z,x)))|} in
+  print_fol_formula
+    (p42);
+  (***** Too slow?
+
+  let p43 = compare
+   {%fol|(forall x y. Q(x,y) <=> forall z. P(z,x) <=> P(z,y))
+     ==> forall x y. Q(x,y) <=> Q(y,x)|};;
+
+   ******)
+  let p44 = compare
+   {%fol|(forall x. P(x) ==> (exists y. G(y) /\ H(x,y)) /\
+     (exists y. G(y) /\ ~H(x,y))) /\
+     (exists x. J(x) /\ (forall y. G(y) ==> H(x,y)))
+     ==> (exists x. J(x) /\ ~P(x))|} in
+  print_fol_formula
+    (p44);
+  let p59 = compare
+   {%fol|(forall x. P(x) <=> ~P(f(x))) ==> (exists x. P(x) /\ ~P(f(x)))|} in
+  print_fol_formula
+    (p59);
+  let p60 = compare
+   {%fol|forall x. P(x,f(x)) <=>
+               exists y. (forall z. P(z,y) ==> P(z,f(x))) /\ P(x,y)|} in
+  print_fol_formula
+    (p60);
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* More standard tableau procedure, effectively doing DNF incrementally.     *)
@@ -114,9 +170,19 @@ let tab fm =
   let sfm = askolemize(Not(generalize fm)) in
   if sfm = False then 0 else tabrefute [sfm];;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  let p38 = tab
+   {%fol|(forall x.
+       P(a) /\ (P(x) ==> (exists y. P(y) /\ R(x,y))) ==>
+       (exists z w. P(z) /\ R(x,w) /\ R(w,z))) <=>
+     (forall x.
+       (~P(a) \/ P(x) \/ (exists z w. P(z) /\ R(x,w) /\ R(w,z))) /\
+       (~P(a) \/ ~(exists y. P(y) /\ R(x,y)) \/
+       (exists z w. P(z) /\ R(x,w) /\ R(w,z))))|} in
+  print_fol_formula
+    (p38);
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -126,9 +192,27 @@ let tab fm =
 let splittab fm = 
   map tabrefute (simpdnf(askolemize(Not(generalize fm))));;
 
-(* ------------------------------------------------------------------------- *)
-(* Example: the Andrews challenge.                                           *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: the Andrews challenge" =
+  let p34 = splittab
+   {%fol|((exists x. forall y. P(x) <=> P(y)) <=>
+      ((exists x. Q(x)) <=> (forall y. Q(y)))) <=>
+     ((exists x. forall y. Q(x) <=> Q(y)) <=>
+      ((exists x. P(x)) <=> (forall y. P(y))))|} in
+  print_fol_formula
+    (p34);
+  (* ------------------------------------------------------------------------- *)
+  (* Another nice example from EWD 1602.                                       *)
+  (* ------------------------------------------------------------------------- *)
+  let ewd1062 = splittab
+   {%fol|(forall x. x <= x) /\
+     (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+     (forall x y. f(x) <= y <=> x <= g(y))
+     ==> (forall x y. x <= y ==> f(x) <= f(y)) /\
+         (forall x y. x <= y ==> g(x) <= g(y))|} in
+  print_fol_formula
+    (ewd1062);
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)

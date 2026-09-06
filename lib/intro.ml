@@ -16,10 +16,30 @@ type expression =
  | Add of expression * expression
  | Mul of expression * expression;;
 
+(* This chapter builds up to print_exp at the end, so the examples before it
+   have nothing to print with.  The toplevel showed the constructor tree there;
+   this does the same. *)
+let rec dump_exp e =
+  match e with
+    Var s -> print_string ("Var \"" ^ s ^ "\"")
+  | Const n -> print_string ("Const " ^ string_of_int n)
+  | Add(e1,e2) ->
+        print_string "Add("; dump_exp e1; print_string ","; dump_exp e2;
+        print_string ")"
+  | Mul(e1,e2) ->
+        print_string "Mul("; dump_exp e1; print_string ","; dump_exp e2;
+        print_string ")";;
+
 (* ------------------------------------------------------------------------- *)
 (* Trivial example of using the type constructors.                           *)
 (* ------------------------------------------------------------------------- *)
 
+
+let%expect_test "eg: Trivial example of using the type constructors" =
+  dump_exp
+    (Add(Mul(Const 2,Var "x"),Var "y"));
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Simplification example.                                                   *)
@@ -43,9 +63,16 @@ let rec simplify expr =
   | Mul(e1,e2) -> simplify1(Mul(simplify e1,simplify e2))
   | _ -> simplify1 expr;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  let e = Add(Mul(Add(Mul(Const(0),Var "x"),Const(1)),Const(3)),
+              Const(12)) in
+  dump_exp
+    (e);
+  dump_exp
+    (simplify e);
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Lexical analysis.                                                         *)
@@ -73,6 +100,14 @@ let rec lex inp =
                         else fun c -> false in
              let toktl,rest = lexwhile prop cs in
              (c^toktl)::lex rest;;
+
+let%expect_test _ =
+  dump_exp
+    (lex(explode "2*((var_1 + x') + 11)"));
+  dump_exp
+    (lex(explode "if (*p1-- == *p2++) then f() else g()"));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -113,6 +148,15 @@ let make_parser pfn s =
 
 let parse_expr = make_parser parse_expression;;
 
+let%expect_test _ =
+  dump_exp
+    (parse_expr "x + 1");
+  (* ------------------------------------------------------------------------- *)
+  (* Demonstrate automatic installation.                                       *)
+  (* ------------------------------------------------------------------------- *)
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Conservatively bracketing first attempt at printer.                       *)
@@ -125,9 +169,11 @@ let rec string_of_exp e =
   | Add(e1,e2) -> "("^(string_of_exp e1)^" + "^(string_of_exp e2)^")"
   | Mul(e1,e2) -> "("^(string_of_exp e1)^" * "^(string_of_exp e2)^")";;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  dump_exp
+    (string_of_exp {%expr|x + 3 * y|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)

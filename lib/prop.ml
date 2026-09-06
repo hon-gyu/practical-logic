@@ -40,6 +40,17 @@ let print_prop_formula = print_qformula print_propvar;;
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: Testing the parser and printer" =
+  let fm = {%prop|p ==> q <=> r /\ s \/ (t <=> ~ ~u /\ v)|} in
+  print_prop_formula
+    (fm);
+  print_prop_formula
+    (And(fm,fm));
+  print_prop_formula
+    (And(Or(fm,fm),fm));
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Interpretation of formulas.                                               *)
 (* ------------------------------------------------------------------------- *)
@@ -55,9 +66,15 @@ let rec eval fm v =
   | Imp(p,q) -> not(eval p v) || (eval q v)
   | Iff(p,q) -> (eval p v) = (eval q v);;
 
-(* ------------------------------------------------------------------------- *)
-(* Example of use.                                                           *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: use" =
+  print_prop_formula
+    (eval {%prop|p /\ q ==> q /\ r|}
+         (function P"p" -> true | P"q" -> false | P"r" -> true));
+  print_prop_formula
+    (eval {%prop|p /\ q ==> q /\ r|}
+         (function P"p" -> true | P"q" -> true | P"r" -> false));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -66,9 +83,11 @@ let rec eval fm v =
 
 let atoms fm = atom_union (fun a -> [a]) fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (atoms {%prop|p /\ q \/ s ==> ~p \/ (r <=> s)|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -97,14 +116,29 @@ let print_truthtable fm =
   let _ = onallvaluations mk_row (fun x -> false) ats in
   print_string separator; print_newline();;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (print_truthtable {%prop|p /\ q ==> q /\ r|});
+  let fm = {%prop|p /\ q ==> q /\ r|} in
+  print_prop_formula
+    (fm);
+  print_prop_formula
+    (print_truthtable fm);
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
 (* Additional examples illustrating formula classes.                         *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Additional examples illustrating formula classes" =
+  print_prop_formula
+    (print_truthtable {%prop|((p ==> q) ==> p) ==> p|});
+  print_prop_formula
+    (print_truthtable {%prop|p /\ ~p|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -114,9 +148,17 @@ let print_truthtable fm =
 let tautology fm =
   onallvaluations (eval fm) (fun s -> false) (atoms fm);;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_prop_formula
+    (tautology {%prop|p \/ ~p|});
+  print_prop_formula
+    (tautology {%prop|p \/ q ==> p|});
+  print_prop_formula
+    (tautology {%prop|p \/ q ==> q \/ (p <=> q)|});
+  print_prop_formula
+    (tautology {%prop|(p \/ q) /\ ~(p /\ q) ==> (~p <=> q)|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -133,14 +175,42 @@ let satisfiable fm = not(unsatisfiable fm);;
 
 let psubst subfn = onatoms (fun p -> tryapplyd subfn p (Atom p));;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (psubst (P"p" |=> {%prop|p /\ q|}) {%prop|p /\ q /\ p /\ q|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
 (* Surprising tautologies including Dijkstra's "Golden rule".                *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Surprising tautologies including Dijkstra's 'Golden rule'" =
+  print_prop_formula
+    (tautology {%prop|(p ==> q) \/ (q ==> p)|});
+  print_prop_formula
+    (tautology {%prop|p \/ (q <=> r) <=> (p \/ q <=> p \/ r)|});
+  print_prop_formula
+    (tautology {%prop|p /\ q <=> ((p <=> q) <=> p \/ q)|});
+  print_prop_formula
+    (tautology {%prop|(p ==> q) <=> (~q ==> ~p)|});
+  print_prop_formula
+    (tautology {%prop|(p ==> ~q) <=> (q ==> ~p)|});
+  print_prop_formula
+    (tautology {%prop|(p ==> q) <=> (q ==> p)|});
+  (* ------------------------------------------------------------------------- *)
+  (* Some logical equivalences allowing elimination of connectives.            *)
+  (* ------------------------------------------------------------------------- *)
+  print_prop_formula
+    (forall tautology
+     [{%prop|true <=> false ==> false|};
+      {%prop|~p <=> p ==> false|};
+      {%prop|p /\ q <=> (p ==> q ==> false) ==> false|};
+      {%prop|p \/ q <=> (p ==> false) ==> q|};
+      {%prop|(p <=> q) <=> ((p ==> q) ==> (q ==> p) ==> false) ==> false|}]);
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -157,9 +227,11 @@ let rec dual fm =
   | Or(p,q) -> And(dual p,dual q)
   | _ -> failwith "Formula involves connectives ==> or <=>";;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (dual {%prop|p \/ ~p|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -191,9 +263,13 @@ let rec psimplify fm =
   | Iff(p,q) -> psimplify1 (Iff(psimplify p,psimplify q))
   | _ -> fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (psimplify {%prop|(true ==> (x <=> false)) ==> ~(y \/ false /\ z)|});
+  print_prop_formula
+    (psimplify {%prop|((x ==> y) ==> true) \/ ~false|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -229,10 +305,17 @@ let rec nnf fm =
 
 let nnf fm = nnf(psimplify fm);;
 
-(* ------------------------------------------------------------------------- *)
-(* Example of NNF function in action.                                        *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg: NNF function in action" =
+  let fm = {%prop|(p <=> q) <=> ~(r ==> s)|} in
+  print_prop_formula
+    (fm);
+  let fm' = nnf fm in
+  print_prop_formula
+    (fm');
+  print_prop_formula
+    (tautology(Iff(fm,fm')));
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Simple negation-pushing when we don't care to distinguish occurrences.    *)
@@ -256,6 +339,14 @@ let nenf fm = nenf(psimplify fm);;
 (* ------------------------------------------------------------------------- *)
 (* Some tautologies remarked on.                                             *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Some tautologies remarked on" =
+  print_prop_formula
+    (tautology {%prop|(p ==> p') /\ (q ==> q') ==> (p /\ q ==> p' /\ q')|});
+  print_prop_formula
+    (tautology {%prop|(p ==> p') /\ (q ==> q') ==> (p \/ q ==> p' \/ q')|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -281,10 +372,18 @@ let dnf fm =
   let satvals = allsatvaluations (eval fm) (fun s -> false) pvs in
   list_disj (map (mk_lits (map (fun p -> Atom p) pvs)) satvals);;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg: Examples" =
+  let fm = {%prop|(p \/ q /\ r) /\ (~p \/ ~r)|} in
+  print_prop_formula
+    (fm);
+  print_prop_formula
+    (dnf fm);
+  print_prop_formula
+    (print_truthtable fm);
+  print_prop_formula
+    (dnf {%prop|p /\ q /\ r /\ s /\ t /\ u \/ u /\ v|});
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* DNF via distribution.                                                     *)
@@ -302,9 +401,11 @@ let rec rawdnf fm =
   | Or(p,q) -> Or(rawdnf p,rawdnf q)
   | _ -> fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (rawdnf {%prop|(p \/ q /\ r) /\ (~p \/ ~r)|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -319,9 +420,11 @@ let rec purednf fm =
   | Or(p,q) -> union (purednf p) (purednf q)
   | _ -> [[fm]];;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (purednf {%prop|(p \/ q /\ r) /\ (~p \/ ~r)|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -332,9 +435,11 @@ let trivial lits =
   let pos,neg = partition positive lits in
   intersect pos (image negate neg) <> [];;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (filter (non trivial) (purednf fm));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -352,10 +457,16 @@ let simpdnf fm =
 
 let dnf fm = list_disj(map list_conj (simpdnf fm));;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg" =
+  let fm = {%prop|(p \/ q /\ r) /\ (~p \/ ~r)|} in
+  print_prop_formula
+    (fm);
+  print_prop_formula
+    (dnf fm);
+  print_prop_formula
+    (tautology(Iff(fm,dnf fm)));
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Conjunctive normal form (CNF) by essentially the same code.               *)
@@ -370,6 +481,13 @@ let simpcnf fm =
 
 let cnf fm = list_conj(map list_disj (simpcnf fm));;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  let fm = {%prop|(p \/ q /\ r) /\ (~p \/ ~r)|} in
+  print_prop_formula
+    (fm);
+  print_prop_formula
+    (cnf fm);
+  print_prop_formula
+    (tautology(Iff(fm,cnf fm)));
+  [%expect {| |}]
+;;

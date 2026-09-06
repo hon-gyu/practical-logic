@@ -19,10 +19,13 @@ open Formulas
 type term = Var of string
           | Fn of string * term list;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg" =
+  print_fol_formula
+    (Fn("sqrt",[Fn("-",[Fn("1",[]);
+                       Fn("cos",[Fn("power",[Fn("+",[Var "x"; Var "y"]);
+                                            Fn("2",[])])])])]));
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Abbreviation for FOL formula.                                             *)
@@ -39,6 +42,12 @@ let onformula f = onatoms(fun (R(p,a)) -> Atom(R(p,map f a)));;
 (* ------------------------------------------------------------------------- *)
 (* Trivial example of "x + y < z".                                           *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Trivial example of 'x + y < z'" =
+  print_fol_formula
+    (Atom(R("<",[Fn("+",[Var "x"; Var "y"]); Var "z"])));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -210,6 +219,25 @@ let mod_interp n =
     | _ -> failwith "uninterpreted predicate" in
   (0--(n-1),func,pred);;
 
+let%expect_test _ =
+  print_fol_formula
+    (holds bool_interp undefined {%fol|forall x. (x = 0) \/ (x = 1)|});
+  print_fol_formula
+    (holds (mod_interp 2) undefined {%fol|forall x. (x = 0) \/ (x = 1)|});
+  print_fol_formula
+    (holds (mod_interp 3) undefined {%fol|forall x. (x = 0) \/ (x = 1)|});
+  let fm = {%fol|forall x. ~(x = 0) ==> exists y. x * y = 1|} in
+  print_fol_formula
+    (fm);
+  print_fol_formula
+    (filter (fun n -> holds (mod_interp n) undefined fm) (1--45));
+  print_fol_formula
+    (holds (mod_interp 3) undefined {%fol|(forall x. x = 0) ==> 1 = 0|});
+  print_fol_formula
+    (holds (mod_interp 3) undefined {%fol|forall x. x = 0 ==> 1 = 0|});
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Free variables in terms and formulas.                                     *)
@@ -258,6 +286,16 @@ let rec tsubst sfn tm =
 let rec variant x vars =
   if mem x vars then variant (x^"'") vars else x;;
 
+let%expect_test _ =
+  print_fol_formula
+    (variant "x" ["y"; "z"]);
+  print_fol_formula
+    (variant "x" ["x"; "y"]);
+  print_fol_formula
+    (variant "x" ["x"; "x'"]);
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Substitution in formulas, with variable renaming.                         *)
@@ -282,6 +320,10 @@ and substq subfn quant x p =
            then variant x (fv(subst (undefine x subfn) p)) else x in
   quant x' (subst ((x |-> Var x') subfn) p);;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_fol_formula
+    (subst ("y" |=> Var "x") {%fol|forall x. x = y|});
+  print_fol_formula
+    (subst ("y" |=> Var "x") {%fol|forall x x'. x = y ==> x = x'|});
+  [%expect {| |}]
+;;

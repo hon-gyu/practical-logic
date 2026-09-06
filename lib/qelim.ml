@@ -111,6 +111,73 @@ let afn_dlo vars fm =
 let quelim_dlo =
   lift_qelim afn_dlo (dnf ** cnnf lfn_dlo) (fun v -> dlobasic);;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_fol_formula
+    (quelim_dlo {%fol|forall x y. exists z. z < x /\ z < y|});
+  print_fol_formula
+    (quelim_dlo {%fol|exists z. z < x /\ z < y|});
+  print_fol_formula
+    (quelim_dlo {%fol|exists z. x < z /\ z < y|});
+  print_fol_formula
+    (quelim_dlo {%fol|(forall x. x < a ==> x < b)|});
+  print_fol_formula
+    (quelim_dlo {%fol|forall a b. (forall x. x < a ==> x < b) <=> a <= b|});
+  print_fol_formula
+    (quelim_dlo {%fol|forall a b. (forall x. x < a <=> x < b) <=> a = b|});
+  print_fol_formula
+    (quelim_dlo {%fol|exists x y z. forall u.
+                     x < x \/ ~x < u \/ (x < y /\ y < z /\ ~x < z)|});
+  (* ------------------------------------------------------------------------- *)
+  (* More tests (not in the text).                                             *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x. exists y. x < y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y z. x < y /\ y < z ==> x < z|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y. x < y \/ (x = y) \/ y < x|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists x y. x < y /\ y < x|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y. exists z. z < x /\ x < y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists z. z < x /\ x < y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y. exists z. z < x /\ z < y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y. x < y ==> exists z. x < z /\ z < y|});
+  print_fol_formula
+    (time quelim_dlo
+      {%fol|forall x y. ~(x = y) ==> exists u. u < x /\ (y < u \/ x < y)|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists x. x = x|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists x. x = x /\ x = y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists z. x < z /\ z < y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists z. x <= z /\ z <= y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists z. x < z /\ z <= y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y z. exists u. u < x /\ u < y /\ u < z|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall y. x < y /\ y < z ==> w < z|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y. x < y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|exists z. z < x /\ x < y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall a b. (forall x. x < a ==> x < b) <=> a <= b|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x. x < a ==> x < b|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x. x < a ==> x <= b|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall a b. exists x. ~(x = a) \/ ~(x = b) \/ (a = b)|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y. x <= y \/ x > y|});
+  print_fol_formula
+    (time quelim_dlo {%fol|forall x y. x <= y \/ x < y|});
+  [%expect {| |}]
+;;

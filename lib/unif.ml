@@ -49,3 +49,47 @@ let unify_and_apply eqs =
   let i = fullunify eqs in
   let apply (t1,t2) = tsubst i t1,tsubst i t2 in
   map apply eqs;;
+
+let%expect_test _ =
+  print_fol_formula
+    (unify_and_apply [{%tm|f(x,g(y))|},{%tm|f(f(z),w)|}]);
+  print_fol_formula
+    (unify_and_apply [{%tm|f(x,y)|},{%tm|f(y,x)|}]);
+  (****  unify_and_apply [{%tm|f(x,g(y))|},{%tm|f(y,x)|}];; *****)
+  print_fol_formula
+    (unify_and_apply [{%tm|x_0|},{%tm|f(x_1,x_1)|};
+                     {%tm|x_1|},{%tm|f(x_2,x_2)|};
+                     {%tm|x_2|},{%tm|f(x_3,x_3)|}]);
+  let cyclic() = "cyclic" |=> parse_term "0" in
+  print_fol_formula
+    (fullunify [parse_term "x", parse_term "x"]);
+  print_fol_formula
+    (fullunify [parse_term "p(X,Y)", parse_term "p(Y,X)"]);
+  (* Makes solve do some work. *)
+  print_fol_formula
+    (fullunify [parse_term "p(x,x)", parse_term "p(y,0)"]);
+  print_fol_formula
+    (try fullunify [parse_term "p(x,x)", parse_term "p(y,f(y))"]
+    with Failure _ ->  cyclic());
+  print_fol_formula
+    (fullunify [parse_term "p(X,Y,2)", parse_term "p(Y,X,X)"]);
+  print_fol_formula
+    (try fullunify [parse_term "Q(a, x, f(x))", parse_term "Q(2, y, y)"]
+    with Failure _ -> cyclic());
+  print_fol_formula
+    (fullunify [parse_term "Q(x, y, z)", parse_term "Q(u, h(v, v), u)"]);
+  print_fol_formula
+    (fullunify [parse_term "q(p(X,Y),p(Y,X))", parse_term "q(Z,Z)"]);
+  (* This one gives "solve" some work to do. *)
+  let expander = [
+    (parse_term "x"),(parse_term "f(y,y)");
+    (parse_term "y"),(parse_term "f(z,z)");
+    (parse_term "z"),(parse_term "f(w,w)")] in
+  print_fol_formula
+    (expander);
+  print_fol_formula
+    (unify undefined expander);
+  print_fol_formula
+    (fullunify expander);
+  [%expect {| |}]
+;;

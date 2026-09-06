@@ -74,3 +74,11 @@ let paramodulation fm =
 (* ------------------------------------------------------------------------- *)
 (* Test.                                                                     *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Test" =
+  print_fol_formula
+    (paramodulation
+     {%fol|(forall x. f(f(x)) = f(x)) /\ (forall x. exists y. f(y) = x)
+       ==> forall x. f(x) = x|});
+  [%expect {| |}]
+;;

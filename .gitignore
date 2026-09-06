@@ -4,3 +4,5 @@ _build
 # Toplevel session files, kept local to each user.
 .ocamlinit
 toplevel/utop-prefs.ml
+
+__pycache__

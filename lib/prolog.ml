@@ -54,6 +54,26 @@ let hornprove fm =
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: A Horn example" =
+  let p32 = hornprove
+   {%fol|(forall x. P(x) /\ (G(x) \/ H(x)) ==> Q(x)) /\
+     (forall x. Q(x) /\ H(x) ==> J(x)) /\
+     (forall x. R(x) ==> H(x))
+     ==> (forall x. P(x) /\ R(x) ==> J(x))|} in
+  print_fol_formula
+    (p32);
+  (* ------------------------------------------------------------------------- *)
+  (* A non-Horn example.                                                       *)
+  (* ------------------------------------------------------------------------- *)
+
+  (****************
+
+  hornprove {%fol|(p \/ q) /\ (~p \/ q) /\ (p \/ ~q) ==> ~(~q \/ ~q)|};;
+
+  **********)
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Parsing rules in a Prolog-like syntax.                                    *)
 (* ------------------------------------------------------------------------- *)
@@ -79,6 +99,22 @@ let simpleprolog rules gl =
 (* Ordering example.                                                         *)
 (* ------------------------------------------------------------------------- *)
 
+let%expect_test "eg: Ordering example" =
+  let lerules = ["0 <= X"; "S(X) <= S(Y) :- X <= Y"] in
+  print_fol_formula
+    (lerules);
+  print_fol_formula
+    (simpleprolog lerules "S(S(0)) <= S(S(S(0)))");
+  (*** simpleprolog lerules "S(S(0)) <= S(0)";;
+   ***)
+  let env = simpleprolog lerules "S(S(0)) <= X" in
+  print_fol_formula
+    (env);
+  print_fol_formula
+    (apply env "X");
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* With instantiation collection to produce a more readable result.          *)
@@ -88,6 +124,72 @@ let prolog rules gl =
   let i = solve(simpleprolog rules gl) in
   mapfilter (fun x -> Atom(R("=",[Var x; apply i x]))) (fv(parse_fol_formula gl));;
 
-(* ------------------------------------------------------------------------- *)
-(* Example again.                                                            *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: again" =
+  print_fol_formula
+    (prolog lerules "S(S(0)) <= X");
+  (* ------------------------------------------------------------------------- *)
+  (* Append example, showing symmetry between inputs and outputs.              *)
+  (* ------------------------------------------------------------------------- *)
+  let appendrules =
+    ["append(nil,L,L)"; "append(H::T,L,H::A) :- append(T,L,A)"] in
+  print_fol_formula
+    (appendrules);
+  print_fol_formula
+    (prolog appendrules "append(1::2::nil,3::4::nil,Z)");
+  print_fol_formula
+    (prolog appendrules "append(1::2::nil,Y,1::2::3::4::nil)");
+  print_fol_formula
+    (prolog appendrules "append(X,3::4::nil,1::2::3::4::nil)");
+  print_fol_formula
+    (prolog appendrules "append(X,Y,1::2::3::4::nil)");
+  (* ------------------------------------------------------------------------- *)
+  (* However this way round doesn't work.                                      *)
+  (* ------------------------------------------------------------------------- *)
+
+  (***
+   *** prolog appendrules "append(X,3::4::nil,X)";;
+   ***)
+
+  (* ------------------------------------------------------------------------- *)
+  (* A sorting example (from Lloyd's "Foundations of Logic Programming").      *)
+  (* ------------------------------------------------------------------------- *)
+  let sortrules =
+   ["sort(X,Y) :- perm(X,Y),sorted(Y)";
+    "sorted(nil)";
+    "sorted(X::nil)";
+    "sorted(X::Y::Z) :- X <= Y, sorted(Y::Z)";
+    "perm(nil,nil)";
+    "perm(X::Y,U::V) :- delete(U,X::Y,Z), perm(Z,V)";
+    "delete(X,X::Y,Y)";
+    "delete(X,Y::Z,Y::W) :- delete(X,Z,W)";
+    "0 <= X";
+    "S(X) <= S(Y) :- X <= Y"] in
+  print_fol_formula
+    (sortrules);
+  print_fol_formula
+    (prolog sortrules
+      "sort(S(S(S(S(0))))::S(0)::0::S(S(0))::S(0)::nil,X)");
+  (* ------------------------------------------------------------------------- *)
+  (* Yet with a simple swap of the first two predicates...                     *)
+  (* ------------------------------------------------------------------------- *)
+  let badrules =
+   ["sort(X,Y) :- sorted(Y), perm(X,Y)";
+    "sorted(nil)";
+    "sorted(X::nil)";
+    "sorted(X::Y::Z) :- X <= Y, sorted(Y::Z)";
+    "perm(nil,nil)";
+    "perm(X::Y,U::V) :- delete(U,X::Y,Z), perm(Z,V)";
+    "delete(X,X::Y,Y)";
+    "delete(X,Y::Z,Y::W) :- delete(X,Z,W)";
+    "0 <= X";
+    "S(X) <= S(Y) :- X <= Y"] in
+  print_fol_formula
+    (badrules);
+  (*** This no longer works
+
+  prolog badrules
+    "sort(S(S(S(S(0))))::S(0)::0::S(S(0))::S(0)::nil,X)";;
+
+   ***)
+  [%expect {| |}]
+;;

@@ -67,6 +67,22 @@ let ccvalid fm =
   let fms = simpdnf(askolemize(Not(generalize fm))) in
   not (exists ccsatisfiable fms);;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_fol_formula
+    (ccvalid {%fol|f(f(f(f(f(c))))) = c /\ f(f(f(c))) = c
+              ==> f(c) = c \/ f(g(c)) = g(f(c))|});
+  print_fol_formula
+    (ccvalid {%fol|f(f(f(f(c)))) = c /\ f(f(c)) = c ==> f(c) = c|});
+  (* ------------------------------------------------------------------------- *)
+  (* For debugging. Maybe I will incorporate into a prettyprinter one day.     *)
+  (* ------------------------------------------------------------------------- *)
+
+  (**********
+
+  let showequiv ptn =
+    let fn = reverseq (equated ptn) ptn in
+    map (apply fn) (dom fn);;
+
+   **********)
+  [%expect {| |}]
+;;

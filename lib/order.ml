@@ -17,6 +17,20 @@ let rec termsize tm =
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: This fails the rewrite properties" =
+  let s = {%tm|f(x,x,x)|} and t = {%tm|g(x,y)|} in
+  print_fol_formula
+    (s);
+  print_fol_formula
+    (termsize s > termsize t);
+  let i = ("y" |=> {%tm|f(x,x,x)|}) in
+  print_fol_formula
+    (i);
+  print_fol_formula
+    (termsize (tsubst i s) > termsize (tsubst i t));
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Lexicographic path order.                                                 *)
 (* ------------------------------------------------------------------------- *)

@@ -78,6 +78,38 @@ let gilmore fm =
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: First example and a little tracing" =
+  print_fol_formula
+    (gilmore {%fol|exists x. forall y. P(x) ==> P(y)|});
+  let sfm = skolemize(Not {%fol|exists x. forall y. P(x) ==> P(y)|}) in
+  print_fol_formula
+    (sfm);
+  (* ------------------------------------------------------------------------- *)
+  (* Quick example.                                                            *)
+  (* ------------------------------------------------------------------------- *)
+  let p24 = gilmore
+   {%fol|~(exists x. U(x) /\ Q(x)) /\
+     (forall x. P(x) ==> Q(x) \/ R(x)) /\
+     ~(exists x. P(x) ==> (exists x. Q(x))) /\
+     (forall x. Q(x) /\ R(x) ==> U(x))
+     ==> (exists x. P(x) /\ R(x))|} in
+  print_fol_formula
+    (p24);
+  (* ------------------------------------------------------------------------- *)
+  (* Slightly less easy example.                                               *)
+  (* ------------------------------------------------------------------------- *)
+  let p45 = gilmore
+   {%fol|(forall x. P(x) /\ (forall y. G(y) /\ H(x,y) ==> J(x,y))
+                ==> (forall y. G(y) /\ H(x,y) ==> R(y))) /\
+     ~(exists y. L(y) /\ R(y)) /\
+     (exists x. P(x) /\ (forall y. H(x,y) ==> L(y)) /\
+                        (forall y. G(y) /\ H(x,y) ==> J(x,y)))
+     ==> (exists x. P(x) /\ ~(exists y. G(y) /\ H(x,y)))|} in
+  print_fol_formula
+    (p45);
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Apparently intractable example.                                           *)
 (* ------------------------------------------------------------------------- *)
@@ -108,6 +140,15 @@ let davisputnam fm =
 (* Show how much better than the Gilmore procedure this can be.              *)
 (* ------------------------------------------------------------------------- *)
 
+let%expect_test "eg: Show how much better than the Gilmore procedure this can be" =
+  let p20 = davisputnam
+   {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+     ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|} in
+  print_fol_formula
+    (p20);
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Try to cut out useless instantiations in final result.                    *)
@@ -135,3 +176,21 @@ let davisputnam' fm =
   let fvs = fv sfm and consts,funcs = herbfuns sfm in
   let cntms = image (fun (c,_) -> Fn(c,[])) consts in
   length(dp_refine_loop (simpcnf sfm) cntms funcs fvs 0 [] [] []);;
+
+let%expect_test _ =
+  let p36 = davisputnam'
+   {%fol|(forall x. exists y. P(x,y)) /\
+     (forall x. exists y. G(x,y)) /\
+     (forall x y. P(x,y) \/ G(x,y)
+                  ==> (forall z. P(y,z) \/ G(y,z) ==> H(x,z)))
+     ==> (forall x. exists y. H(x,y))|} in
+  print_fol_formula
+    (p36);
+  let p29 = davisputnam'
+   {%fol|(exists x. P(x)) /\ (exists x. G(x)) ==>
+     ((forall x. P(x) ==> H(x)) /\ (forall x. G(x) ==> J(x)) <=>
+      (forall x y. P(x) /\ G(y) ==> H(x) /\ J(y)))|} in
+  print_fol_formula
+    (p29);
+  [%expect {| |}]
+;;

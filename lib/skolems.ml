@@ -24,3 +24,10 @@ let rec skolems fms corr =
         p'::ps',corr'';;
 
 let skolemizes fms = fst(skolems fms []);;
+
+let%expect_test _ =
+  print_fol_formula
+    (skolemizes [{%fol|exists x y. x + y = 2|};
+                {%fol|forall x. exists y. x + 1 = y|}]);
+  [%expect {| |}]
+;;

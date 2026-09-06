@@ -81,9 +81,23 @@ let rec gform fm =
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: One explicit example" =
+  print_fol_formula
+    (gform {%fol|~(x = 0)|});
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Some more examples of things in or not in the set of true formulas.       *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Some more examples of things in or not in the set of true formulas" =
+  print_fol_formula
+    (gform {%fol|x = x|});
+  print_fol_formula
+    (gform {%fol|0 < 0|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -106,6 +120,14 @@ let diag s =
     | h::t -> h^replacex n t in
   replacex 0 (explode s);;
 
+let%expect_test _ =
+  print_fol_formula
+    (diag("p(x)"));
+  print_fol_formula
+    (diag("This string is diag(x)"));
+  [%expect {| |}]
+;;
+
 
 let phi = diag("P(diag(x))");;
 
@@ -119,6 +141,13 @@ let phi = qdiag("P(qdiag(x))");;
 (* ------------------------------------------------------------------------- *)
 (* Analogous construct in natural language.                                  *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Analogous construct in natural language" =
+  print_fol_formula
+    (diag("The result of substituting the quotation of x for `x' in x \
+            has property P"));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -169,9 +198,16 @@ and dhquant pred v x y a t p =
   let m = if a = "<" then dtermval v t -/ Int 1 else dtermval v t in
   pred (fun n -> dholds ((x |-> n) v) p) (Int 0 --- m);;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  let prime_form p = subst("p" |=> numeral(Int p))
+   {%fol|S(S(0)) <= p /\
+     forall n. n < p ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)|} in
+  print_fol_formula
+    (dholds undefined (prime_form 100));
+  print_fol_formula
+    (dholds undefined (prime_form 101));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -196,9 +232,14 @@ let rec classify c n fm =
        when x = y && not(mem x (fvt t)) -> classify c n p
   | Exists(x,p) |  Forall(x,p) -> n <> 0 && classify (opp c) (n - 1) fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_fol_formula
+    (classify Sigma 1
+      {%fol|forall x. x < 2
+                  ==> exists y z. forall w. w < x + 2
+                                            ==> w + x + y + z = 42|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -239,9 +280,20 @@ let sholds = veref (fun b -> b);;
 
 let sigma_bound fm = first (Int 0) (fun n -> sholds n undefined fm);;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_fol_formula
+    (sigma_bound
+      {%fol|exists p x.
+         p < x /\
+         (S(S(0)) <= p /\
+          forall n. n < p
+                    ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)) /\
+         ~(x = 0) /\
+         forall z. z <= x
+                   ==> (exists w. w <= x /\ x = z * w)
+                       ==> z = S(0) \/ exists x. x <= z /\ z = p * x|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -322,9 +374,26 @@ let exec prog args =
   let Config(_,t) = run prog c in
   output_tape t;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example program (successor).                                              *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: program (successor)" =
+  let prog_suc = itlist (fun m -> m)
+   [(1,Blank) |-> (Blank,Right,2);
+    (2,One) |-> (One,Right,2);
+    (2,Blank) |-> (One,Right,3);
+    (3,Blank) |-> (Blank,Left,4);
+    (3,One) |-> (Blank,Left,4);
+    (4,One) |-> (One,Left,4);
+    (4,Blank) |-> (Blank,Stay,0)]
+   undefined in
+  print_fol_formula
+    (prog_suc);
+  print_fol_formula
+    (exec prog_suc [0]);
+  print_fol_formula
+    (exec prog_suc [1]);
+  print_fol_formula
+    (exec prog_suc [19]);
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -393,9 +462,11 @@ and robeval tm =
         right_trans (imp_trans th1 th4) th2
   | _ -> add_assum robinson (axiom_eqrefl tm);;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_fol_formula
+    (robeval {%tm|S(0) + (S(S(0)) * ((S(0) + S(S(0)) + S(0))))|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -531,6 +602,16 @@ let rob_ne s t =
   let xth = axiom_predcong "=" [s; t] [s'; t'] in
   right_imp_trans (right_mp (imp_trans sth xth) tth) th;;
 
+let%expect_test _ =
+  print_fol_formula
+    (rob_ne {%tm|S(0) + S(0) + S(0)|} {%tm|S(S(0)) * S(S(0))|});
+  print_fol_formula
+    (rob_ne {%tm|0 + 0 * S(0)|} {%tm|S(S(0)) + 0|});
+  print_fol_formula
+    (rob_ne {%tm|S(S(0)) + 0|} {%tm|0 + 0 + 0 * 0|});
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Dual version of "eliminate_connective" for unnegated case.                *)
@@ -664,16 +745,67 @@ and boundednum_prove(a,x,t,q) =
                                 subst (x |=> Fn("S",[Var x])) q)) in
         boundquant_step (sigma_prove fm') (sigma_prove fm'');;
 
-(* ------------------------------------------------------------------------- *)
-(* Example in the text.                                                      *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: in the text" =
+  print_fol_formula
+    (sigma_prove
+      {%fol|exists p.
+          S(S(0)) <= p /\
+          forall n. n < p
+                    ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
 (* The essence of Goedel's first theorem.                                    *)
 (* ------------------------------------------------------------------------- *)
 
+let%expect_test "eg: The essence of Goedel's first theorem" =
+  print_fol_formula
+    (meson
+     {%fol|(True(G) <=> ~(|--(G))) /\ Pi(G) /\
+       (forall p. Sigma(p) ==> (|--(p) <=> True(p))) /\
+       (forall p. True(Not(p)) <=> ~True(p)) /\
+       (forall p. Pi(p) ==> Sigma(Not(p)))
+       ==> (|--(Not(G)) <=> |--(G))|});
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Godel's second theorem.                                                   *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Godel's second theorem" =
+  let godel_2 = prove
+   {%fol|(forall p. |--(p) ==> |--(Pr(p))) /\
+     (forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))) /\
+     (forall p. |--(imp(Pr(p),Pr(Pr(p)))))
+     ==> (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+         (forall p q. |--(imp(q,imp(p,q)))) /\
+         (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r)))))
+         ==> |--(imp(G,imp(Pr(G),F))) /\ |--(imp(imp(Pr(G),F),G))
+             ==> |--(imp(Pr(F),F)) ==> |--(F)|}
+   [assume["lob1",{%fol|forall p. |--(p) ==> |--(Pr(p))|};
+           "lob2",{%fol|forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))|};
+           "lob3",{%fol|forall p. |--(imp(Pr(p),Pr(Pr(p))))|}];
+    assume["logic",{%fol|(forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+                     (forall p q. |--(imp(q,imp(p,q)))) /\
+                     (forall p q r. |--(imp(imp(p,imp(q,r)),
+                                        imp(imp(p,q),imp(p,r)))))|}];
+    assume ["fix1",{%fol||--(imp(G,imp(Pr(G),F)))|};
+            "fix2",{%fol||--(imp(imp(Pr(G),F),G))|}];
+    assume["consistency",{%fol||--(imp(Pr(F),F))|}];
+    have {%fol||--(Pr(imp(G,imp(Pr(G),F))))|} by ["lob1"; "fix1"];
+    so have {%fol||--(imp(Pr(G),Pr(imp(Pr(G),F))))|} by ["lob2"; "logic"];
+    so have {%fol||--(imp(Pr(G),imp(Pr(Pr(G)),Pr(F))))|} by ["lob2"; "logic"];
+    so have {%fol||--(imp(Pr(G),Pr(F)))|} by ["lob3"; "logic"];
+    so note("L",{%fol||--(imp(Pr(G),F))|}) by ["consistency"; "logic"];
+    so have {%fol||--(G)|} by ["fix2"; "logic"];
+    so have {%fol||--(Pr(G))|} by ["lob1"; "logic"];
+    so conclude {%fol||--(F)|} by ["L"; "logic"];
+    qed] in
+  print_fol_formula
+    (godel_2);
+  [%expect {| |}]
+;;

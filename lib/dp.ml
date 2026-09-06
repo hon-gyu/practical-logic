@@ -63,10 +63,13 @@ let dpsat fm = dp(defcnfs fm);;
 
 let dptaut fm = not(dpsat(Not fm));;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg: Examples" =
+  print_prop_formula
+    (tautology(prime 11));
+  print_prop_formula
+    (dptaut(prime 11));
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* The same thing but with the DPLL procedure.                               *)
@@ -89,9 +92,11 @@ let dpllsat fm = dpll(defcnfs fm);;
 
 let dplltaut fm = not(dpllsat(Not fm));;                   
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_prop_formula
+    (dplltaut(prime 11));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -170,6 +175,10 @@ let dplbsat fm = dplb (defcnfs fm) [];;
 
 let dplbtaut fm = not(dplbsat(Not fm));;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_prop_formula
+    (dplitaut(prime 101));
+  print_prop_formula
+    (dplbtaut(prime 101));
+  [%expect {| |}]
+;;

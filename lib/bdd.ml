@@ -124,10 +124,11 @@ let rec mkbdd (bdd,comp as bddcomp) fm =
 
 let bddtaut fm = snd(mkbdd (mk_bdd (<),undefined) fm) = 1;;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg: Examples" =
+  print_prop_formula
+    (bddtaut (mk_adder_test 4 2));
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Towards a more intelligent treatment of "definitions".                    *)
@@ -181,6 +182,10 @@ let ebddtaut fm =
                               (itlist mk_imp noneqs r) in
   snd(mkbdds undefined (mk_bdd (<),undefined) defs fm') = 1;;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_prop_formula
+    (ebddtaut (prime 101));
+  print_prop_formula
+    (ebddtaut (mk_adder_test 9 5));
+  [%expect {| |}]
+;;

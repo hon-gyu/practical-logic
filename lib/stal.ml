@@ -61,6 +61,12 @@ let triggers fm =
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: An example" =
+  print_prop_formula
+    (triggers {%prop|p <=> (q /\ r)|});
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Precompute and instantiate triggers for standard triplets.                *)
 (* ------------------------------------------------------------------------- *)
@@ -222,6 +228,8 @@ let stalmarck fm =
   and vars = map (fun p -> Atom p) (unions(map atoms triplets)) in
   saturate_upto vars 0 2 (graph trigfn) [p,True];;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_prop_formula
+    (time stalmarck (mk_adder_test 6 3));
+  [%expect {| |}]
+;;

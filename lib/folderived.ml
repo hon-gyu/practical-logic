@@ -46,10 +46,12 @@ let rec icongruence s t stm ttm =
         imp_trans_chain ths (axiom_funcong fs (map lhs ts) (map rhs ts))
   | _ -> failwith "icongruence: not congruent";;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg" =
+  print_fol_formula
+    (icongruence {%tm|s|} {%tm|t|} {%tm|f(s,g(s,t,s),u,h(h(s)))|}
+                                {%tm|f(s,g(t,t,s),u,h(h(t)))|});
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* |- (forall x. p ==> q(x)) ==> p ==> (forall x. q(x))                      *)
@@ -198,3 +200,53 @@ let spec t th = modusponens (ispec t (concl th)) th;;
 (* ------------------------------------------------------------------------- *)
 (* An example.                                                               *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: An example" =
+  print_fol_formula
+    (ispec {%tm|y|} {%fol|forall x y z. x + y + z = z + y + x|});
+  (* ------------------------------------------------------------------------- *)
+  (* Additional tests not in main text.                                        *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (isubst {%tm|x + x|} {%tm|2 * x|}
+            {%fol|x + x = x ==> x = 0|} {%fol|2 * x = x ==> x = 0|});
+  print_fol_formula
+    (isubst {%tm|x + x|}  {%tm|2 * x|}
+           {%fol|(x + x = y + y) ==> (y + y + y = x + x + x)|}
+           {%fol|2 * x = y + y ==> y + y + y = x + 2 * x|});
+  print_fol_formula
+    (ispec {%tm|x|} {%fol|forall x y z. x + y + z = y + z + z|});
+  print_fol_formula
+    (ispec {%tm|x|} {%fol|forall x. x = x|});
+  print_fol_formula
+    (ispec {%tm|w + y + z|} {%fol|forall x y z. x + y + z = y + z + z|});
+  print_fol_formula
+    (ispec {%tm|x + y + z|} {%fol|forall x y z. x + y + z = y + z + z|});
+  print_fol_formula
+    (ispec {%tm|x + y + z|} {%fol|forall x y z. nothing_much|});
+  print_fol_formula
+    (isubst {%tm|x + x|} {%tm|2 * x|}
+           {%fol|(x + x = y + y) <=> (something \/ y + y + y = x + x + x)|});
+  print_fol_formula
+    (isubst {%tm|x + x|}  {%tm|2 * x|}
+           {%fol|(exists x. x = 2) <=> exists y. y + x + x = y + y + y|}
+           {%fol|(exists x. x = 2) <=> (exists y. y + 2 * x = y + y + y)|});
+  print_fol_formula
+    (isubst {%tm|x|}  {%tm|y|}
+            {%fol|(forall z. x = z) <=> (exists x. y < z) /\ (forall y. y < x)|}
+            {%fol|(forall z. y = z) <=> (exists x. y < z) /\ (forall y'. y' < y)|});
+  (* ------------------------------------------------------------------------- *)
+  (* The bug is now fixed.                                                     *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (ispec {%tm|x'|} {%fol|forall x x' x''. x + x' + x'' = 0|});
+  print_fol_formula
+    (ispec {%tm|x''|} {%fol|forall x x' x''. x + x' + x'' = 0|});
+  print_fol_formula
+    (ispec {%tm|x' + x''|} {%fol|forall x x' x''. x + x' + x'' = 0|});
+  print_fol_formula
+    (ispec {%tm|x + x' + x''|} {%fol|forall x x' x''. x + x' + x'' = 0|});
+  print_fol_formula
+    (ispec {%tm|2 * x|} {%fol|forall x x'. x + x' = x' + x|});
+  [%expect {| |}]
+;;

@@ -29,6 +29,16 @@ let ramsey s t n =
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: Some currently tractable examples" =
+  print_prop_formula
+    (ramsey 3 3 4);
+  print_prop_formula
+    (tautology(ramsey 3 3 5));
+  print_prop_formula
+    (tautology(ramsey 3 3 6));
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Half adder.                                                               *)
 (* ------------------------------------------------------------------------- *)
@@ -70,6 +80,13 @@ let ripplecarry x y c out n =
 let mk_index x i = Atom(P(x^"_"^(string_of_int i)))
 and mk_index2 x i j =
   Atom(P(x^"_"^(string_of_int i)^"_"^(string_of_int j)));;
+
+let%expect_test _ =
+  let [x; y; out; c] = map mk_index ["X"; "Y"; "OUT"; "C"] in
+  print_prop_formula
+    (ripplecarry x y c out 2);
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -168,6 +185,12 @@ let prime p =
   Not(And(multiplier m u v out (n - 1),
       congruent_to out p (max n (2 * n - 2))));;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_prop_formula
+    (tautology(prime 7));
+  print_prop_formula
+    (tautology(prime 9));
+  print_prop_formula
+    (tautology(prime 11));
+  [%expect {| |}]
+;;

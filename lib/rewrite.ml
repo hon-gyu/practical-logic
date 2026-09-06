@@ -31,10 +31,13 @@ let rec rewrite eqs tm =
   | Fn(f,args) -> let tm' = Fn(f,map (rewrite eqs) args) in
                   if tm' = tm then tm else rewrite eqs tm';;
 
-(* ------------------------------------------------------------------------- *)
-(* Example: 3 * 2 + 4 in successor notation.                                 *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg: 3 * 2 + 4 in successor notation" =
+  print_fol_formula
+    (rewrite [{%fol|0 + x = x|}; {%fol|S(x) + y = S(x + y)|};
+             {%fol|0 * x = 0|}; {%fol|S(x) * y = y + x * y|}]
+            {%tm|S(S(S(0))) * S(S(0)) + S(S(S(S(0))))|});
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Note that ML doesn't accept nonlinear patterns.                           *)

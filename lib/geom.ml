@@ -53,6 +53,12 @@ let coordinate = onatoms
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: Trivial example" =
+  print_fol_formula
+    (coordinate {%fol|collinear(a,b,c) ==> collinear(b,a,c)|});
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Verify equivalence under rotation.                                        *)
 (* ------------------------------------------------------------------------- *)
@@ -66,15 +72,34 @@ let invariant (x',y') ((s:string),z) =
 
 let invariant_under_translation = invariant ({%tm|x + X|},{%tm|y + Y|});;
 
+let%expect_test _ =
+  print_fol_formula
+    (forall (grobner_decide ** invariant_under_translation) coordinations);
+  [%expect {| |}]
+;;
+
 
 let invariant_under_rotation fm =
   Imp({%fol|s^2 + c^2 = 1|},
       invariant ({%tm|c * x - s * y|},{%tm|s * x + c * y|}) fm);;
 
 
+let%expect_test _ =
+  print_fol_formula
+    (forall (grobner_decide ** invariant_under_rotation) coordinations);
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* And show we can always invent such a transformation to zero a y:          *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: And show we can always invent such a transformation to zero a y:" =
+  print_fol_formula
+    (real_qelim
+     {%fol|forall x y. exists s c. s^2 + c^2 = 1 /\ s * x + c * y = 0|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -95,6 +120,14 @@ let invariant_under_scaling fm =
 
 let invariant_under_shearing = invariant({%tm|x + b * y|},{%tm|y|});;
 
+let%expect_test _ =
+  print_fol_formula
+    (forall (grobner_decide ** invariant_under_scaling) coordinations);
+  print_fol_formula
+    (partition (grobner_decide ** invariant_under_shearing) coordinations);
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* One from "Algorithms for Computer Algebra"                                *)
@@ -102,6 +135,27 @@ let invariant_under_shearing = invariant({%tm|x + b * y|},{%tm|y|});;
 
 
 (* ------------------------------------------------------------------------- *)
+let%expect_test "eg: One from 'Algorithms for Computer Algebra'" =
+  print_fol_formula
+    ((grobner_decide ** originate)
+     {%fol|is_midpoint(m,a,c) /\ perpendicular(a,c,m,b)
+       ==> lengths_eq(a,b,b,c)|});
+  (* ------------------------------------------------------------------------- *)
+  (* Parallelogram theorem (Chou's expository example at the start).           *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    ((grobner_decide ** originate)
+     {%fol|parallel(a,b,d,c) /\ parallel(a,d,b,c) /\
+       is_intersection(e,a,c,b,d)
+       ==> lengths_eq(a,e,e,c)|});
+  print_fol_formula
+    ((grobner_decide ** originate)
+     {%fol|parallel(a,b,d,c) /\ parallel(a,d,b,c) /\
+       is_intersection(e,a,c,b,d) /\ ~collinear(a,b,c)
+       ==> lengths_eq(a,e,e,c)|});
+  [%expect {| |}]
+;;
+
 (* Reduce p using triangular set, collecting degenerate conditions.          *)
 (* ------------------------------------------------------------------------- *)
 
@@ -151,6 +205,79 @@ let wu fm vars zeros =
 (* ------------------------------------------------------------------------- *)
 (* Simson's theorem.                                                         *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Simson's theorem" =
+  let simson =
+   {%fol|lengths_eq(o,a,o,b) /\
+     lengths_eq(o,a,o,c) /\
+     lengths_eq(o,a,o,d) /\
+     collinear(e,b,c) /\
+     collinear(f,a,c) /\
+     collinear(g,a,b) /\
+     perpendicular(b,c,d,e) /\
+     perpendicular(a,c,d,f) /\
+     perpendicular(a,b,d,g)
+     ==> collinear(e,f,g)|} in
+  print_fol_formula
+    (simson);
+  let vars =
+   ["g_y"; "g_x"; "f_y"; "f_x"; "e_y"; "e_x"; "d_y"; "d_x"; "c_y"; "c_x";
+    "b_y"; "b_x"; "o_x"]
+  and zeros = ["a_x"; "a_y"; "o_y"] in
+  print_fol_formula
+    (vars);
+  print_fol_formula
+    (wu simson vars zeros);
+  (* ------------------------------------------------------------------------- *)
+  (* Try without special coordinates.                                          *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (wu simson (vars @ zeros) []);
+  (* ------------------------------------------------------------------------- *)
+  (* Pappus (Chou's figure 6).                                                 *)
+  (* ------------------------------------------------------------------------- *)
+  let pappus =
+   {%fol|collinear(a1,b2,d) /\
+     collinear(a2,b1,d) /\
+     collinear(a2,b3,e) /\
+     collinear(a3,b2,e) /\
+     collinear(a1,b3,f) /\
+     collinear(a3,b1,f)
+     ==> collinear(d,e,f)|} in
+  print_fol_formula
+    (pappus);
+  let vars = ["f_y"; "f_x"; "e_y"; "e_x"; "d_y"; "d_x";
+              "b3_y"; "b2_y"; "b1_y"; "a3_x"; "a2_x"; "a1_x"]
+  and zeros = ["a1_y"; "a2_y"; "a3_y"; "b1_x"; "b2_x"; "b3_x"] in
+  print_fol_formula
+    (vars);
+  print_fol_formula
+    (wu pappus vars zeros);
+  (* ------------------------------------------------------------------------- *)
+  (* The Butterfly (figure 9).                                                 *)
+  (* ------------------------------------------------------------------------- *)
+
+  (****
+  let butterfly =
+   {%fol|lengths_eq(b,o,a,o) /\ lengths_eq(c,o,a,o) /\ lengths_eq(d,o,a,o) /\
+     collinear(a,e,c) /\ collinear(d,e,b) /\
+     perpendicular(e,f,o,e) /\
+     collinear(a,f,d) /\ collinear(f,e,g) /\ collinear(b,c,g)
+     ==> is_midpoint(e,f,g)|};;
+
+  let vars = ["g_y"; "g_x"; "f_y"; "f_x"; "e_y"; "e_x"; "d_y"; "c_y";
+              "b_y"; "d_x"; "c_x"; "b_x"; "a_x"]
+  and zeros = ["a_y"; "o_x"; "o_y"];;
+
+   **** This one is costly (too big for laptop, but doable in about 300M)
+   **** However, it gives exactly the same degenerate conditions as Chou
+
+  wu butterfly vars zeros;;
+
+   ****
+   ****)
+  [%expect {| |}]
+;;
 
 
 (*** Other examples removed from text

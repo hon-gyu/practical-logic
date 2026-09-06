@@ -36,6 +36,25 @@ resolution {%fol|forall x. p(x)|};;
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: The Los example; see how Skolemized form has no non-nullary functions" =
+  let los =
+   {%fol|(forall x y z. P(x,y) /\ P(y,z) ==> P(x,z)) /\
+     (forall x y z. Q(x,y) /\ Q(y,z) ==> Q(x,z)) /\
+     (forall x y. P(x,y) ==> P(y,x)) /\
+     (forall x y. P(x,y) \/ Q(x,y))
+     ==> (forall x y. P(x,y)) \/ (forall x y. Q(x,y))|} in
+  print_fol_formula
+    (los);
+  print_fol_formula
+    (skolemize(Not los));
+  (* ------------------------------------------------------------------------- *)
+  (* The old DP procedure works.                                               *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (davisputnam los);
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* However, we can just form all the ground instances.                       *)
 (* ------------------------------------------------------------------------- *)
@@ -57,10 +76,48 @@ let aedecide fm =
 (* In this case it's quicker.                                                *)
 (* ------------------------------------------------------------------------- *)
 
+let%expect_test "eg: In this case it's quicker" =
+  print_fol_formula
+    (aedecide los);
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Show how we need to do PNF transformation with care.                      *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Show how we need to do PNF transformation with care" =
+  let fm = {%fol|(forall x. p(x)) \/ (exists y. p(y))|} in
+  print_fol_formula
+    (fm);
+  print_fol_formula
+    (pnf fm);
+  (* ------------------------------------------------------------------------- *)
+  (* Also the group theory problem.                                            *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (aedecide
+     {%fol|(forall x. P(1,x,x)) /\ (forall x. P(x,x,1)) /\
+       (forall u v w x y z.
+            P(x,y,u) /\ P(y,z,w) ==> (P(x,w,v) <=> P(u,z,v)))
+       ==> forall a b c. P(a,b,c) ==> P(b,a,c)|});
+  print_fol_formula
+    (aedecide
+     {%fol|(forall x. P(x,x,1)) /\
+       (forall u v w x y z.
+            P(x,y,u) /\ P(y,z,w) ==> (P(x,w,v) <=> P(u,z,v)))
+       ==> forall a b c. P(a,b,c) ==> P(b,a,c)|});
+  (* ------------------------------------------------------------------------- *)
+  (* A bigger example.                                                         *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (aedecide
+     {%fol|(exists x. P(x)) /\ (exists x. G(x))
+       ==> ((forall x. P(x) ==> H(x)) /\ (forall x. G(x) ==> J(x)) <=>
+            (forall x y. P(x) /\ G(y) ==> H(x) /\ J(y)))|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -99,9 +156,18 @@ let rec miniscope fm =
   | Exists(x,p) -> pushquant x (miniscope p)
   | _ -> fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  print_fol_formula
+    (miniscope(nnf {%fol|exists y. forall x. P(y) ==> P(x)|}));
+  let fm = miniscope(nnf
+   {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+     ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|}) in
+  print_fol_formula
+    (fm);
+  print_fol_formula
+    (pnf(nnf fm));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -113,6 +179,23 @@ let wang fm = aedecide(miniscope(nnf(simplify fm)));;
 (* ------------------------------------------------------------------------- *)
 (* It works well on simple monadic formulas.                                 *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: It works well on simple monadic formulas" =
+  print_fol_formula
+    (wang
+     {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+       ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|});
+  (* ------------------------------------------------------------------------- *)
+  (* But not on this one!                                                      *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (pnf(nnf(miniscope(nnf
+     {%fol|((exists x. forall y. P(x) <=> P(y)) <=>
+        ((exists x. Q(x)) <=> (forall y. Q(y)))) <=>
+       ((exists x. forall y. Q(x) <=> Q(y)) <=>
+        ((exists x. P(x)) <=> (forall y. P(y))))|}))));
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -145,6 +228,17 @@ let all_possible_syllogisms =
   and prems3 = allpairs (fun x -> x) sylltypes ["S","P"] in
   allpairs mk_imp (allpairs mk_and prems1 prems2) prems3;;
 
+let%expect_test _ =
+  let all_valid_syllogisms = filter aedecide all_possible_syllogisms in
+  print_fol_formula
+    (all_valid_syllogisms);
+  print_fol_formula
+    (length all_valid_syllogisms);
+  print_fol_formula
+    (map anglicize_syllogism all_valid_syllogisms);
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* We can "fix" the traditional list by assuming nonemptiness.               *)
@@ -155,6 +249,17 @@ let all_possible_syllogisms' =
     {%fol|(exists x. P(x)) /\ (exists x. M(x)) /\ (exists x. S(x))|} in
   map (fun t -> Imp(p,t)) all_possible_syllogisms;;
 
+
+let%expect_test _ =
+  let all_valid_syllogisms' = filter aedecide all_possible_syllogisms' in
+  print_fol_formula
+    (all_valid_syllogisms');
+  print_fol_formula
+    (length all_valid_syllogisms');
+  print_fol_formula
+    (map (anglicize_syllogism ** consequent) all_valid_syllogisms');
+  [%expect {| |}]
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Decide a formula on all models of size n.                                 *)
@@ -202,6 +307,22 @@ let decide_fmp fm =
     if decide_finite n fm then test (n + 1) else false in
   test 1;;
 
+let%expect_test _ =
+  print_fol_formula
+    (decide_fmp
+     {%fol|(forall x y. R(x,y) \/ R(y,x)) ==> forall x. R(x,x)|});
+  print_fol_formula
+    (decide_fmp
+     {%fol|(forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)) ==> forall x. R(x,x)|});
+  (*** This fails to terminate: has countermodels, but only infinite ones
+  decide_fmp
+   {%fol|~((forall x. ~R(x,x)) /\
+       (forall x. exists z. R(x,z)) /\
+       (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))|};;
+  ****)
+  [%expect {| |}]
+;;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Semantic decision procedure for the monadic fragment.                     *)
@@ -215,11 +336,47 @@ let decide_monadic fm =
   let n = funpow (length monadic) (( * ) 2) 1 in
   decide_finite n fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_fol_formula
+    (decide_monadic
+     {%fol|((exists x. forall y. P(x) <=> P(y)) <=>
+        ((exists x. Q(x)) <=> (forall y. Q(y)))) <=>
+        ((exists x. forall y. Q(x) <=> Q(y)) <=>
+       ((exists x. P(x)) <=> (forall y. P(y))))|});
+  (**** This is not feasible
+  decide_monadic
+   {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
+     ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|};;
+   ****)
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
 (* Little auxiliary results for failure of finite model property.            *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Little auxiliary results for failure of finite model property" =
+  (*** Our claimed equivalences are indeed correct ***)
+  print_fol_formula
+    (meson
+     {%fol|(exists x y z. forall u.
+            R(x,x) \/ ~R(x,u) \/ (R(x,y) /\ R(y,z) /\ ~R(x,z))) <=>
+       ~((forall x. ~R(x,x)) /\
+         (forall x. exists z. R(x,z)) /\
+         (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))|});
+  print_fol_formula
+    (meson
+     {%fol|(exists x. forall y. exists z. R(x,x) \/ ~R(x,y) \/ (R(y,z) /\ ~R(x,z))) <=>
+       ~((forall x. ~R(x,x)) /\
+         (forall x. exists y. R(x,y) /\ forall z. R(y,z) ==> R(x,z)))|});
+  (*** The second formula implies the first ***)
+  print_fol_formula
+    (meson
+    {%fol|~((forall x. ~R(x,x)) /\
+        (forall x. exists y. R(x,y) /\ forall z. R(y,z) ==> R(x,z)))
+      ==> ~((forall x. ~R(x,x)) /\
+            (forall x. exists z. R(x,z)) /\
+            (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z)))|});
+  [%expect {| |}]
+;;

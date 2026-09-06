@@ -163,6 +163,39 @@ let real_qelim =
 (* ------------------------------------------------------------------------- *)
 
 
+let%expect_test "eg: First examples" =
+  print_fol_formula
+    (real_qelim {%fol|exists x. x^4 + x^2 + 1 = 0|});
+  print_fol_formula
+    (real_qelim {%fol|exists x. x^3 - x^2 + x - 1 = 0|});
+  print_fol_formula
+    (real_qelim {%fol|exists x y. x^3 - x^2 + x - 1 = 0 /\
+                             y^3 - y^2 + y - 1 = 0 /\ ~(x = y)|});
+  (* #trace testform *)
+  print_fol_formula
+    (real_qelim {%fol|exists x. x^2 - 3 * x + 2 = 0 /\ 2 * x - 3 = 0|});
+  (* #untrace testform *)
+  print_fol_formula
+    (real_qelim
+     {%fol|forall a f k. (forall e. k < e ==> f < a * e) ==> f <= a * k|});
+  print_fol_formula
+    (real_qelim {%fol|exists x. a * x^2 + b * x + c = 0|});
+  print_fol_formula
+    (real_qelim {%fol|forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
+                               b^2 >= 4 * a * c|});
+  print_fol_formula
+    (real_qelim {%fol|forall a b c. (exists x. a * x^2 + b * x + c = 0) <=>
+                               a = 0 /\ (b = 0 ==> c = 0) \/
+                               ~(a = 0) /\ b^2 >= 4 * a * c|});
+  (* ------------------------------------------------------------------------- *)
+  (* Termination ordering for group theory completion.                         *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (real_qelim {%fol|1 < 2 /\ (forall x. 1 < x ==> 1 < x^2) /\
+                 (forall x y. 1 < x /\ 1 < y ==> 1 < x * (1 + 2 * y))|});
+  [%expect {| |}]
+;;
+
 let rec grpterm tm =
   match tm with
     Fn("*",[s;t]) -> let t2 = Fn("*",[Fn("2",[]); grpterm t]) in
@@ -174,6 +207,19 @@ let rec grpterm tm =
 let grpform (Atom(R("=",[s;t]))) =
   let fm = generalize(Atom(R(">",[grpterm s; grpterm t]))) in
   relativize(fun x -> Atom(R(">",[Var x;Fn("1",[])]))) fm;;
+
+let%expect_test _ =
+  let eqs = complete_and_simplify ["1"; "*"; "i"]
+    [{%fol|1 * x = x|}; {%fol|i(x) * x = 1|}; {%fol|(x * y) * z = x * y * z|}] in
+  print_fol_formula
+    (eqs);
+  let fm = list_conj (map grpform eqs) in
+  print_fol_formula
+    (fm);
+  print_fol_formula
+    (real_qelim fm);
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
@@ -195,3 +241,54 @@ real_qelim'
 (* Didn't seem worth it in the book, but monicization can help a lot.        *)
 (* Now this is just set as an exercise.                                      *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Didn't seem worth it in the book, but monicization can help a lot. Now this is just set as an exercise" =
+  let rec casesplit vars dun pols cont sgns =
+    match pols with
+      [] -> monicize vars dun cont sgns
+    | p::ops -> split_trichotomy sgns (head vars p)
+                  (if is_constant vars p then delconst vars dun p ops cont
+                   else casesplit vars dun (behead vars p :: ops) cont)
+                  (if is_constant vars p then delconst vars dun p ops cont
+                   else casesplit vars (dun@[p]) ops cont)
+
+  and delconst vars dun p ops cont sgns =
+    let cont' m = cont(map (insertat (length dun) (findsign sgns p)) m) in
+    casesplit vars dun ops cont' sgns
+
+  and matrix vars pols cont sgns =
+    if pols = [] then try cont [[]] with Failure _ -> False else
+    let p = hd(sort(decreasing (degree vars)) pols) in
+    let p' = poly_diff vars p and i = index p pols in
+    let qs = let p1,p2 = chop_list i pols in p'::p1 @ tl p2 in
+    let gs = map (pdivide_pos vars sgns p) qs in
+    let cont' m = cont(map (fun l -> insertat i (hd l) (tl l)) m) in
+    casesplit vars [] (qs@gs) (dedmatrix cont') sgns
+
+  and monicize vars pols cont sgns =
+    let mols,swaps = unzip(map monic pols) in
+    let sols = setify mols in
+    let indices = map (fun p -> index p sols) mols in
+    let transform m =
+      map2 (fun sw i -> swap sw (el i m)) swaps indices in
+    let cont' mat = cont(map transform mat) in
+    matrix vars sols cont' sgns in
+  let basic_real_qelim vars (Exists(x,p)) =
+    let pols = atom_union
+      (function (R(a,[t;Fn("0",[])])) -> [t] | _ -> []) p in
+    let cont mat = if exists (fun m -> testform (zip pols m) p) mat
+                   then True else False in
+    casesplit (x::vars) [] pols cont init_sgns in
+  let real_qelim =
+    simplify ** evalc **
+    lift_qelim polyatom (simplify ** evalc) basic_real_qelim in
+  print_fol_formula
+    (real_qelim);
+  let real_qelim' =
+    simplify ** evalc **
+    lift_qelim polyatom (dnf ** cnnf (fun x -> x) ** evalc)
+                        basic_real_qelim in
+  print_fol_formula
+    (real_qelim');
+  [%expect {| |}]
+;;

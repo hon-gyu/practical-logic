@@ -433,3 +433,13 @@ let lcftaut p =
 (* ------------------------------------------------------------------------- *)
 (* The examples in the text.                                                 *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: The examples in the text" =
+  print_fol_formula
+    (lcftaut {%fol|(p ==> q) \/ (q ==> p)|});
+  print_fol_formula
+    (lcftaut {%fol|p /\ q <=> ((p <=> q) <=> p \/ q)|});
+  print_fol_formula
+    (lcftaut {%fol|((p <=> q) <=> r) <=> (p <=> (q <=> r))|});
+  [%expect {| |}]
+;;

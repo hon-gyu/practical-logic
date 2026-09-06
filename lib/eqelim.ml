@@ -18,6 +18,29 @@ open Equal
 (* ========================================================================= *)
 
 
+let%expect_test _ =
+  (* ------------------------------------------------------------------------- *)
+  (* The x^2 = 1 implies Abelian problem.                                      *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (meson
+     {%fol|(forall x. P(1,x,x)) /\
+       (forall x. P(x,x,1)) /\
+       (forall u v w x y z. P(x,y,u) /\ P(y,z,w)
+                            ==> (P(x,w,v) <=> P(u,z,v)))
+       ==> forall a b c. P(a,b,c) ==> P(b,a,c)|});
+  (* ------------------------------------------------------------------------- *)
+  (* Lemma for equivalence elimination.                                        *)
+  (* ------------------------------------------------------------------------- *)
+  print_fol_formula
+    (meson
+     {%fol|(forall x. R(x,x)) /\
+       (forall x y. R(x,y) ==>  R(y,x)) /\
+       (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z))
+       <=> (forall x y. R(x,y) <=> (forall z. R(x,z) <=> R(y,z)))|});
+  [%expect {| |}]
+;;
+
 (* ------------------------------------------------------------------------- *)
 (* Brand's S and T modifications on clauses.                                 *)
 (* ------------------------------------------------------------------------- *)
@@ -103,11 +126,158 @@ let bmeson fm =
   let fm1 = askolemize(Not(generalize fm)) in
   map (bpuremeson ** list_conj) (simpdnf fm1);;
 
-(* ------------------------------------------------------------------------- *)
-(* Examples.                                                                 *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg: Examples" =
+  let emeson fm = meson (equalitize fm) in
+  print_fol_formula
+    (time bmeson
+     {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
+       (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|});
+  print_fol_formula
+    (time emeson
+     {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
+       (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|});
+  print_fol_formula
+    (time bmeson
+     {%fol|(forall x y z. x * (y * z) = (x * y) * z) /\
+       (forall x. e * x = x) /\
+       (forall x. i(x) * x = e)
+       ==> forall x. x * i(x) = e|});
+  [%expect {| |}]
+;;
 
 
 (* ------------------------------------------------------------------------- *)
 (* Older stuff not now in the text.                                          *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test "eg: Older stuff not now in the text" =
+  let ewd =
+   {%fol|(forall x. f(x) ==> g(x)) /\
+     (exists x. f(x)) /\
+     (forall x y. g(x) /\ g(y) ==> x = y)
+     ==> forall y. g(y) ==> f(y)|} in
+  print_fol_formula
+    (ewd);
+  let wishnu =
+   {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
+     (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|} in
+  print_fol_formula
+    (wishnu);
+  let group1 =
+   {%fol|(forall x y z. x * (y * z) = (x * y) * z) /\
+     (forall x. e * x = x) /\
+     (forall x. i(x) * x = e)
+     ==> forall x. x * e = x|} in
+  print_fol_formula
+    (group1);
+  let group2 =
+   {%fol|(forall x y z. x * (y * z) = (x * y) * z) /\
+     (forall x. e * x = x) /\
+     (forall x. i(x) * x = e)
+     ==> forall x. x * i(x) = e|} in
+  print_fol_formula
+    (group2);
+  print_fol_formula
+    (time bmeson ewd);
+  print_fol_formula
+    (time emeson ewd);
+  (***********
+
+  time bmeson wishnu;;
+  time emeson wishnu;;
+
+  time bmeson group1;;
+  time emeson group1;;
+
+  time bmeson group2;;
+  time emeson group2;;
+
+   *************)
+
+  (* ------------------------------------------------------------------------- *)
+  (* Nice function composition exercise from "Conceptual Mathematics".         *)
+  (* ------------------------------------------------------------------------- *)
+
+  (**************
+
+  let fm =
+   {%fol|(forall x y z. x * (y * z) = (x * y) * z) /\ p * q * p = p
+     ==> exists q'. p * q' * p = p /\ q' * p * q' = q'|};;
+
+  time bmeson fm;;        (** Seems to take a bit longer than below version  **)
+
+  time emeson fm;;        (** Works in 64275 seconds(!), depth 30, on laptop **)
+
+  ****************)
+
+  (**** Some other predicate formulations no longer in the main text
+
+  meson
+   {%fol|(forall x. P(1,x,x)) /\
+     (forall x. P(i(x),x,1)) /\
+     (forall u v w x y z. P(x,y,u) /\ P(y,z,w) ==> (P(x,w,v) <=> P(u,z,v)))
+     ==> forall x. P(x,1,x)|};;
+
+  meson
+   {%fol|(forall x. P(1,x,x)) /\
+     (forall x. P(i(x),x,1)) /\
+     (forall u v w x y z. P(x,y,u) /\ P(y,z,w) ==> (P(x,w,v) <=> P(u,z,v)))
+     ==> forall x. P(x,i(x),1)|};;
+
+  (* ------------------------------------------------------------------------- *)
+  (* See how efficiency drops when we assert completeness.                     *)
+  (* ------------------------------------------------------------------------- *)
+
+  meson
+   {%fol|(forall x. P(1,x,x)) /\
+     (forall x. P(x,x,1)) /\
+     (forall x y. exists z. P(x,y,z)) /\
+     (forall u v w x y z. P(x,y,u) /\ P(y,z,w) ==> (P(x,w,v) <=> P(u,z,v)))
+     ==> forall a b c. P(a,b,c) ==> P(b,a,c)|};;
+
+  ****)
+
+  (*** More reductions, not now explicitly in the text.
+
+  meson
+   {%fol|(forall x. R(x,x)) /\
+     (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z))
+     <=> (forall x y. R(x,y) <=> (forall z. R(y,z) ==> R(x,z)))|};;
+
+  meson
+   {%fol|(forall x y. R(x,y) ==>  R(y,x)) <=>
+     (forall x y. R(x,y) <=> R(x,y) /\ R(y,x))|};;
+
+  (* ------------------------------------------------------------------------- *)
+  (* Show how Equiv' reduces to triviality.                                    *)
+  (* ------------------------------------------------------------------------- *)
+
+  meson
+   {%fol|(forall x. (forall w. R'(x,w) <=> R'(x,w))) /\
+     (forall x y. (forall w. R'(x,w) <=> R'(y,w))
+                  ==> (forall w. R'(y,w) <=> R'(x,w))) /\
+     (forall x y z. (forall w. R'(x,w) <=> R'(y,w)) /\
+                    (forall w. R'(y,w) <=> R'(z,w))
+                    ==> (forall w. R'(x,w) <=> R'(z,w)))|};;
+
+  (* ------------------------------------------------------------------------- *)
+  (* More auxiliary proofs for Brand's S and T modification.                   *)
+  (* ------------------------------------------------------------------------- *)
+
+  meson
+   {%fol|(forall x y. R(x,y) <=> (forall z. R'(x,z) <=> R'(y,z))) /\
+     (forall x. R'(x,x))
+     ==> forall x y. ~R'(x,y) ==> ~R(x,y)|};;
+
+  meson
+   {%fol|(forall x y. R(x,y) <=> (forall z. R'(y,z) ==> R'(x,z))) /\
+     (forall x. R'(x,x))
+     ==> forall x y. ~R'(x,y) ==> ~R(x,y)|};;
+
+  meson
+   {%fol|(forall x y. R(x,y) <=> R'(x,y) /\ R'(y,x))
+     ==> forall x y. ~R'(x,y) ==> ~R(x,y)|};;
+
+  ***)
+  [%expect {| |}]
+;;
