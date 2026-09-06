@@ -1,9 +1,6 @@
-.ocamlinit
-utop-prefs.ml
-*.cm*
-atp_batch.ml
-printers.ml
-example
-samples/**
-
 _build
+*.cm*
+
+# Toplevel session files, kept local to each user.
+.ocamlinit
+toplevel/utop-prefs.ml

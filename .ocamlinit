@@ -1,3 +1,3 @@
 
-(* Run "dune build @lib/top" first; loadall.ml loads build artifacts. *)
-#use "loadall.ml";;
+(* Run "dune build" first; loadall.ml loads build artifacts. *)
+#use "toplevel/loadall.ml";;

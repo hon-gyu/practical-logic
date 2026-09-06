@@ -7,7 +7,8 @@ current OCaml language and tooling.
 
 This repository was created to help people like myself, who are not very familiar with
 OCaml or its toolset, to use Harrison's sample code with recent versions of OCaml
-and tools.  It builds with OCaml 5 and dune, and no longer needs camlp5.
+and tools.  It builds with OCaml 5 and dune, no longer needs camlp5, and the sources are
+ordinary OCaml modules rather than one concatenated file.
 
 The material here started with exactly the tar file referenced on Harrison's resource page
 https://www.cl.cam.ac.uk/~jrh13/atp/index.html.  It has been updated slightly to work with much
@@ -44,6 +45,8 @@ of this with:
 opam install num dune ppxlib ocamlfind utop
 ```
 
+```just``` is optional; it only runs the shortcuts in the ```justfile```.
+
 camlp5 is no longer required.
 
 ## Formula and term quotations
@@ -58,80 +61,96 @@ OCaml cannot parse:
 
 Rather than depend on camlp5, this repository uses an equivalent syntax built on
 OCaml's own extension nodes and quoted string literals, expanded by a small ppx
-rewriter in ```ppx/```:
+rewriter in ```ppx/```.  camlp5 had a single ```<<...>>``` meaning "whichever
+parser is currently in scope", so the book's sources redefine ```default_parser```
+as they go; here the level is named explicitly instead:
 
 ```
-{%fml|p ==> q <=> ~q ==> ~p|}      (* a formula *)
-{%tm|x + y|}                       (* a term *)
+{%expr|2 * x + y|}                 (* an arithmetic expression, chapter 1 *)
+{%prop|p ==> q <=> ~q ==> ~p|}     (* a propositional formula *)
+{%fol|forall x. P(x) ==> Q(x)|}    (* a first-order formula *)
+{%tm|x + y|}                       (* a first-order term *)
 ```
 
-```{%fml|...|}``` expands to ```default_parser "..."``` and ```{%tm|...|}``` to
-```secondary_parser "..."```, which is exactly what the camlp5 expander did, so the
-progressive redefinition of ```default_parser``` through intro.ml, prop.ml and fol.ml
-still selects the right parser at each point.  Because ```{|...|}``` needs no escaping,
-the ```/\``` and ```\/``` connectives are written just as in the book.
+Each expands to a plain function call -- ```parse_prop_formula "..."``` and so on
+-- so a quotation means the same thing wherever it appears.  That is what lets
+the sources be ordinary modules instead of one concatenated file.  Because
+```{|...|}``` needs no escaping, the ```/\``` and ```\/``` connectives are written
+just as in the book.
 
 ## Using Harrison's code
 
-Build everything first:
+Build everything with
 
 ```
 dune build
 ```
 
-(```make``` still works; it just calls dune.)  Then invoke the OCaml command line by
-running ```ocaml``` or ```utop``` in the top directory of the repo.  Utop provides an
-OCaml toplevel with many additional conveniences for interactive use compared with
-plain ocaml.  In the top directory is a .ocamlinit file that loads most of Harrison's
-code, including the quotation syntax.
+or ```just build```; ```just --list``` shows the other shortcuts (```just test```,
+```just example```, ```just top```).
 
-The build puts each file's interactive examples in ```_build/default/lib/samples```,
-which .ocamlinit adds to the toplevel search path, so you can run any file of examples
-with
+The code is the library ```atp```, one module per chapter topic: ```Atp.Prop```,
+```Atp.Fol```, ```Atp.Resolution```, ```Atp.Meson``` and so on.  Open the modules
+you need, or ```open Atp.All``` to get every name at once, which is what the
+single concatenated module used to give you.
 
-```
-#use "x-<name>.ml";;
-```
+```ocaml
+open Atp
+open Fol
+open Meson
 
-The files intro.ml, prop.ml, and limitations.ml are a little different.  To run one of
-these enter:
-
-```
-#use "intro.ml";;
-```
-or
-```
-#use "prop.ml";;
-```
-or
-```
-#use "limitations.ml";;
+let () =
+  Initialization.init ();
+  ignore (meson {%fol|exists y. forall x. P(y) ==> P(x)|})
 ```
 
-on your OCaml command line.  In this case restart OCaml before attempting to run other
-samples.
+```Atp.Initialization.init ()``` raises the stack limit and sets the print
+margin.  Those used to happen as a side effect of loading the code; deep proof
+search can overflow the default stack without it.
 
-To run the batch examples in example.ml as a native executable:
+Goedel's theorem and relatives live in a separate library, ```atp_limitations```,
+because that module runs a second or so of proof search when it loads.
+
+To run the test suite:
+
+```
+dune test
+```
+
+To run the batch examples in bin/example.ml as a native executable:
 
 ```
 dune exec bin/example.exe
 ```
 
-The ```Makefile``` and ```lib/dune``` comments have more details on what is available.
+### Toplevel
+
+Optional, and not required to use the library.  Run ```ocaml``` or ```utop``` in
+the top directory: ```.ocamlinit``` loads ```toplevel/loadall.ml```, which loads
+the library, enables the quotation syntax and installs the printers that display
+a formula as ```<<p ==> q>>``` rather than as its constructor tree.  The printers
+are in ```toplevel/printers.ml``` and can simply be left out.
+
+The worked examples from the book -- the blocks that used to be bracketed by
+```START_INTERACTIVE``` in each source file -- are in ```examples/```, one file per
+chapter topic, to be pasted into a toplevel that has done ```open Atp.All```.
 
 ## Customization
 
-You can customize the OCaml top level further by modifying ```.ocamlinit```, or provide UTop-specific
-customizations in ```utop-prefs.ml```, both in the repository top level directory.
+You can customize the OCaml top level further by modifying ```.ocamlinit``` in the
+repository top level directory, or provide UTop-specific customizations in
+```toplevel/utop-prefs.ml```.  Both are gitignored, so they stay local to you.
 
 ## Layout
 
 | path | what it is |
 | --- | --- |
-| ```*.ml``` (top level) | Harrison's sources, one per chapter topic |
-| ```ppx/``` | the ```{%fml\|...\|}``` / ```{%tm\|...\|}``` quotation rewriter |
+| ```lib/``` | Harrison's sources, one module per chapter topic |
+| ```lib/limitations/``` | Goedel's theorem, separate because it is slow to load |
+| ```ppx/``` | the quotation rewriter |
 | ```ppx/driver/``` | standalone driver, so the quotations also work in the toplevel |
-| ```lib/``` | dune rules concatenating the sources into the ```atp``` library |
 | ```bin/``` | the example.ml executable |
-| ```tools/modernize.py``` | the one-shot OCaml 4 to 5 source conversion, kept for reference |
-
+| ```tests/``` | the test suite, run with ```dune test``` |
+| ```examples/``` | the book's interactive example blocks, for pasting into a toplevel |
+| ```toplevel/``` | optional toplevel setup: loader and printers |
+| ```tools/``` | one-shot migration scripts, kept for reference |

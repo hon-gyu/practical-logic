@@ -1,5 +1,6 @@
-(executable
- (name example)
+; Opt-in: "open Atp_limitations.Limitations" or dune-depend on atp_limitations.
+(library
+ (name atp_limitations)
  (libraries atp num str)
  (flags
   (:standard
