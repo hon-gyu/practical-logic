@@ -2,10 +2,7 @@
    library compiles with them on.  See lib/dune. *)
 [@@@warning "-39"]
 
-
-(* ========================================================================= *)
-(* Misc library functions to set up a nice environment.                      *)
-(* ========================================================================= *)
+(** Misc library functions to set up a nice environment. *)
 
 let identity x = x;;
 
@@ -75,6 +72,7 @@ let tl l =
    h::t -> t
   | _ -> failwith "tl";;
 
+(** List fold left *)
 let rec itlist f l b =
   match l with
     [] -> b

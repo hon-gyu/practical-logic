@@ -140,7 +140,7 @@ and mk_imp p q = Imp(p,q) and mk_iff p q = Iff(p,q)
 and mk_forall x p = Forall(x,p) and mk_exists x p = Exists(x,p);;
 
 (* ------------------------------------------------------------------------- *)
-(* Destructors.                                                              *)
+(** {1 Destructors} *)
 (* ------------------------------------------------------------------------- *)
 
 let dest_iff fm =
@@ -180,10 +180,7 @@ let rec onatoms f fm =
   | Exists(x,p) -> Exists(x,onatoms f p)
   | _ -> fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Formula analog of list iterator "itlist".                                 *)
-(* ------------------------------------------------------------------------- *)
-
+(** Formula analog of list iterator "itlist". *)
 let rec overatoms f fm b =
   match fm with
     Atom(a) -> f a b
@@ -193,8 +190,5 @@ let rec overatoms f fm b =
   | Forall(x,p) | Exists(x,p) -> overatoms f p b
   | _ -> b;;
 
-(* ------------------------------------------------------------------------- *)
-(* Special case of a union of the results of a function over the atoms.      *)
-(* ------------------------------------------------------------------------- *)
-
+(** Special case of a union of the results of a function over the atoms. *)
 let atom_union f fm = setify (overatoms (fun h t -> f(h)@t) fm []);;

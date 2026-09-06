@@ -31,3 +31,7 @@ fmt:
 # Remove build artifacts.
 clean:
     dune clean
+
+# Clean ligature
+clean-ligature:
+    git ls-files -z | xargs -0 perl -CSD -i -pe 'BEGIN{%m=("\x{FB00}","ff","\x{FB01}","fi","\x{FB02}","fl","\x{FB03}","ffi","\x{FB04}","ffl","\x{FB05}","st","\x{FB06}","st")} s/([\x{FB00}-\x{FB06}])/$m{$1}/g'

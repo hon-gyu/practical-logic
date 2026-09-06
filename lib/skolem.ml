@@ -1,4 +1,7 @@
-(** Prenex and Skolem normal forms *)
+(** Prenex and Skolem normal forms
+
+- Soklemization: eliminate existential quantiﬁers and leaving only universal ones
+*)
 open Lib
 open Formulas
 open Prop
@@ -37,7 +40,15 @@ let%expect_test "eg" =
   [%expect {| <<(forall x. P(x)) ==> Q>> |}]
 ;;
 
-(** Negation normal form. *)
+(** Negation normal form.
+
+A formula is in negation normal form (NNF) if it is constructed from literals using
+only the binary connectives ‘∧’ and ‘∨’, or else is one of the degenerate cases ‘⊥’ or
+‘⊤’.
+
+In other words it does not involve the other binary connectives ‘⇒’ and ‘⇔’, and ‘¬’
+is applied only to atomic formulas.
+*)
 let rec nnf fm =
   match fm with
     And(p,q) -> And(nnf p,nnf q)
@@ -92,7 +103,7 @@ and pullq(l,r) fm quant op x y p q =
   and q' = if r then subst (y |=> Var z) q else q in
   quant z (pullquants(op p' q'));;
 
-let rec prenex fm =
+let rec prenex : fol formula -> fol formula = fun fm ->
   match fm with
     Forall(x,p) -> Forall(x,prenex p)
   | Exists(x,p) -> Exists(x,prenex p)
@@ -100,6 +111,9 @@ let rec prenex fm =
   | Or(p,q) -> pullquants(Or(prenex p,prenex q))
   | _ -> fm;;
 
+(** A first-order formula is said to be in prenex normal form (PNF)
+    if all quantifiers occur on the outside with a body (or ‘matrix’)
+    where only propositional connectives are used.  *)
 let pnf fm = prenex(nnf(simplify fm));;
 
 let%expect_test "eg" =
@@ -113,12 +127,12 @@ let%expect_test "eg" =
 (* Get the functions in a term and formula.                                  *)
 (* ------------------------------------------------------------------------- *)
 
-let rec funcs tm =
+let rec funcs (tm : term) : (string * int) list =
   match tm with
     Var x -> []
   | Fn(f,args) -> itlist (union ** funcs) args [f,length args];;
 
-let functions fm =
+let functions (fm : fol formula) : (string * int) list =
   atom_union (fun (R(p,a)) -> itlist (union ** funcs) a []) fm;;
 
 (* ------------------------------------------------------------------------- *)
@@ -146,7 +160,7 @@ and skolem2 cons (p,q) fns =
 (* Overall Skolemization function.                                           *)
 (* ------------------------------------------------------------------------- *)
 
-let askolemize fm =
+let askolemize (fm : fol formula) : fol formula =
   fst(skolem (nnf(simplify fm)) (map fst (functions fm)));;
 
 let rec specialize fm =

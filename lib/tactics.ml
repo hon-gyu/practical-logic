@@ -304,12 +304,24 @@ let%expect_test "eg: A simple example" =
               (forall x y z. x <= y /\ y <= z ==> x <= z) /\
               (forall x y. f(x) <= y <=> x <= g(y)) ==>
               (forall x y. x <= y ==> f(x) <= f(y))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
+Searching with depth limit 3
+Searching with depth limit 4
+Searching with depth limit 5
+Searching with depth limit 6
     Proving <<(forall x. x <= x) /\
               (forall x y z. x <= y /\ y <= z ==> x <= z) /\
               (forall x y. f(x) <= y <=> x <= g(y)) ==>
               (forall x y. x <= y ==> g(x) <= g(y))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
+Searching with depth limit 3
+Searching with depth limit 4
+Searching with depth limit 5
+Searching with depth limit 6
     No subgoals|-
                (forall x. x <= x) /\
                (forall x y z. x <= y /\ y <= z ==> x <= z) /\
@@ -326,12 +338,24 @@ let%expect_test "eg: A simple example" =
                                                                  x <= y ==>
                                                                  f(x) <= f(
                                                                  y))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
+Searching with depth limit 3
+Searching with depth limit 4
+Searching with depth limit 5
+Searching with depth limit 6
     Proving <<(forall x. x <= x) /\
               (forall x y z. x <= y /\ y <= z ==> x <= z) /\
               (forall x y. f(x) <= y <=> x <= g(y)) ==>
               (forall x y. x <= y ==> g(x) <= g(y))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
+Searching with depth limit 3
+Searching with depth limit 4
+Searching with depth limit 5
+Searching with depth limit 6
     |-
     (forall x. x <= x) /\
     (forall x y z. x <= y /\ y <= z ==> x <= z) /\
@@ -435,25 +459,43 @@ let%expect_test "eg: A simple example" =
   [%expect {|
     Proving <<(forall x y z. x = y ==> y = z ==> x = z) ==>
               (forall x y z. x = y /\ y = z ==> x = z)>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
+Searching with depth limit 3
     Proving <<x <= y ==> (forall x y. x <= y <=> x * y = x) ==> x * y = x>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<x * y = x ==>
               (forall x y. x = y ==> f(x) = f(y)) ==> f(x * y) = f(x)>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<f(x * y) = f(x) ==>
               (forall x y. x = y ==> y = x) ==> f(x) = f(x * y)>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<f(x) = f(x * y) ==>
               (forall x y z. x = y /\ y = z ==> x = z) ==>
               (forall x y. f(x * y) = f(x) * f(y)) ==> f(x) = f(x) * f(y)>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
+Searching with depth limit 3
+Searching with depth limit 4
+Searching with depth limit 5
     Proving <<f(x) = f(x) * f(y) ==>
               (forall x y. x = y ==> y = x) ==> f(x) * f(y) = f(x)>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<f(x) * f(y) = f(x) ==>
               (forall x y. x <= y <=> x * y = x) ==> f(x) <= f(y)>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     |-
     (forall x y. x <= y <=> x * y = x) /\ (forall x y. f(x * y) = f(x) * f(y)) ==>
     (forall x y. x <= y ==> f(x) <= f(y))
@@ -647,63 +689,87 @@ let%expect_test "eg: More examples not in the main text" =
   *****)
   [%expect {|
     Proving <<(forall x. p(x) ==> p(f(x))) ==> (forall x. p(x) ==> p(f(f(x))))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<(forall x. p(x) ==> p(f(f(x)))) ==>
               (forall x. p(x) ==> p(f(f(f(f(x))))))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<(exists x. p(x)) ==> (exists a. p(a))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<p(a) ==> (forall x. p(x) ==> p(f(f(f(f(x)))))) ==> p(f(f(f(f(a)))))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     |-
     (exists x. p(x)) ==>
     (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(f(f(f(y))))))Proving
     <<(forall x. p(x) ==> p(f(x))) ==> (forall x. p(x) ==> p(f(f(x))))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<(forall x. p(x) ==> p(f(f(x)))) ==>
               (forall x. p(x) ==> p(f(f(f(f(x))))))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<(exists x. p(x)) ==> (exists a. p(a))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<p(a) ==> (forall x. p(x) ==> p(f(f(f(f(x)))))) ==> p(f(f(f(f(a)))))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     |-
     (exists x. p(x)) ==>
     (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(f(f(f(y))))))Proving
     <<p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     |- p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
     <<(forall x. p(x) ==> p(f(x))) ==> (forall x. p(x) ==> p(f(f(x))))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<(forall x. p(x) ==> p(f(f(x)))) ==>
               (forall x. p(x) ==> p(f(f(f(f(x))))))>>
-    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0
+Searching with depth limit 1
+Searching with depth limit 2
     Proving <<(exists x. p(x)) ==> (exists a. p(a))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<p(a) ==> (forall x. p(x) ==> p(f(f(f(f(x)))))) ==> p(f(f(f(f(a)))))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     |-
     (exists x. p(x)) ==>
     (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(f(f(f(y))))))Proving
     <<(forall x. p(x) ==> p(f(x))) ==> p(c) ==> p(f(c))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<(p(c) ==> p(f(c))) ==> (p(c) ==> p(f(c))) ==> p(c) ==> p(f(c))>>
     Searching with depth limit 0
     |-
     forall a.
       p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
     <<p(c) ==> (forall x. p(x) ==> p(f(x))) ==> p(f(c))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     |- p(c) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
     <<(forall x. p(x) ==> p(f(x))) ==> p(c) ==> p(f(c))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<(p(c) ==> p(f(c))) ==> p(c) ==> p(f(c))>>
     Searching with depth limit 0
     |-
     forall a.
       p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
     <<(forall x. p(x) ==> p(f(x))) ==> p(c) ==> p(f(c))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<(p(c) ==> p(f(c))) ==> p(c) ==> p(c) ==> p(c) /\ p(f(c))>>
     Searching with depth limit 0
     |-
@@ -712,21 +778,27 @@ let%expect_test "eg: More examples not in the main text" =
     |- p(a) \/ p(b) ==> q ==> (exists y. p(y))Proving <<(forall x.
                                                            p(x) ==> p(f(x))) ==>
                                                         p(a) ==> p(f(a))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<p(a) ==> (p(a) ==> p(f(a))) ==> p(f(a))>>
     Searching with depth limit 0
     Proving <<p(b) ==> (forall x. p(x) ==> p(f(x))) ==> p(f(b))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     |- (p(a) \/ p(b)) /\ (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(y)))Proving
     <<(exists x. p(x)) ==> (exists a. p(a))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<p(a) ==> (forall x. p(x) ==> p(f(x))) ==> p(f(a))>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     |- (exists x. p(x)) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(y)))Proving
     <<(forall x. p(x) ==> q(x)) ==> p(a) ==> q(a)>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<(forall x. q(x) ==> p(x)) ==> q(a) ==> p(a)>>
-    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0
+Searching with depth limit 1
     Proving <<(p(a) ==> q(a)) ==> (q(a) ==> p(a)) ==> (p(a) <=> q(a))>>
     Searching with depth limit 0
     |-

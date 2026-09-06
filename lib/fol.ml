@@ -42,6 +42,7 @@ let%expect_test "eg" =
 (* Abbreviation for FOL formula.                                             *)
 (* ------------------------------------------------------------------------- *)
 
+(* CR: what does [R] stand for? *)
 type fol = R of string * term list;;
 
 let dump_fol fm =
@@ -102,25 +103,25 @@ let parset = make_parser (parse_term []);;
 (* Parsing of formulas.                                                      *)
 (* ------------------------------------------------------------------------- *)
 
-let parse_infix_atom vs inp =       
+let parse_infix_atom vs inp =
   let tm,rest = parse_term vs inp in
-  if exists (nextin rest) ["="; "<"; "<="; ">"; ">="] then                     
-        papply (fun tm' -> Atom(R(hd rest,[tm;tm'])))                          
-               (parse_term vs (tl rest))                                       
+  if exists (nextin rest) ["="; "<"; "<="; ">"; ">="] then
+        papply (fun tm' -> Atom(R(hd rest,[tm;tm'])))
+               (parse_term vs (tl rest))
   else failwith "";;
-                                                               
+
 let parse_atom vs inp =
-  try parse_infix_atom vs inp with Failure _ ->                                
-  match inp with                                                               
-  | p::"("::")"::rest -> Atom(R(p,[])),rest                                    
+  try parse_infix_atom vs inp with Failure _ ->
+  match inp with
+  | p::"("::")"::rest -> Atom(R(p,[])),rest
   | p::"("::rest ->
       papply (fun args -> Atom(R(p,args)))
              (parse_bracketed (parse_list "," (parse_term vs)) ")" rest)
   | p::rest when p <> "(" -> Atom(R(p,[])),rest
   | _ -> failwith "parse_atom";;
-                                                                               
-let parse_fol_formula = make_parser                                                        
-  (parse_formula (parse_infix_atom,parse_atom) []);;              
+
+let parse_fol_formula = make_parser
+  (parse_formula (parse_infix_atom,parse_atom) []);;
 
 (* ------------------------------------------------------------------------- *)
 (* Example.                                                                  *)
