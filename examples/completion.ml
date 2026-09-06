@@ -1,5 +1,4 @@
-(* Interactive examples from completion.ml, lifted out of the source by
-   tools/migrate_to_modules.py.  Not compiled: these are meant to be
+(* Interactive examples from completion.ml, lifted out of the source.  Not compiled: these are meant to be
    pasted into a toplevel that has opened Atp.All. *)
 
 let eq = {%fol|f(f(x)) = g(x)|} in critical_pairs eq eq;;

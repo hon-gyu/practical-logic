@@ -1,5 +1,4 @@
-(* Interactive examples from real.ml, lifted out of the source by
-   tools/migrate_to_modules.py.  Not compiled: these are meant to be
+(* Interactive examples from real.ml, lifted out of the source.  Not compiled: these are meant to be
    pasted into a toplevel that has opened Atp.All. *)
 
 real_qelim {%fol|exists x. x^4 + x^2 + 1 = 0|};;

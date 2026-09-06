@@ -1,5 +1,7 @@
 # Code from John Harrison's book
 
+<!--TODO global: why is this file using triple quote for verbatim inline span?-->
+
 John Harrison's remarkable book, **"Handbook of Practical Logic and Automated Reasoning"**,
 comes with OCaml code implementing and demonstrating many of the ideas presented there.
 Unfortunately the web page and code distribution for them are considerably behind the
@@ -45,8 +47,6 @@ of this with:
 opam install num dune ppxlib ocamlfind utop
 ```
 
-```just``` is optional; it only runs the shortcuts in the ```justfile```.
-
 camlp5 is no longer required.
 
 ## Formula and term quotations
@@ -85,10 +85,6 @@ Build everything with
 ```
 dune build
 ```
-
-or ```just build```; ```just --list``` shows the other shortcuts (```just test```,
-```just example```, ```just top```).
-
 The code is the library ```atp```, one module per chapter topic: ```Atp.Prop```,
 ```Atp.Fol```, ```Atp.Resolution```, ```Atp.Meson``` and so on.  Open the modules
 you need, or ```open Atp.All``` to get every name at once, which is what the

@@ -1,5 +1,4 @@
-(* Interactive examples from bdd.ml, lifted out of the source by
-   tools/migrate_to_modules.py.  Not compiled: these are meant to be
+(* Interactive examples from bdd.ml, lifted out of the source.  Not compiled: these are meant to be
    pasted into a toplevel that has opened Atp.All. *)
 
 bddtaut (mk_adder_test 4 2);;

@@ -1,5 +1,4 @@
-(* Interactive examples from eqelim.ml, lifted out of the source by
-   tools/migrate_to_modules.py.  Not compiled: these are meant to be
+(* Interactive examples from eqelim.ml, lifted out of the source.  Not compiled: these are meant to be
    pasted into a toplevel that has opened Atp.All. *)
 
 (* ------------------------------------------------------------------------- *)
@@ -28,17 +27,17 @@ meson
 let emeson fm = meson (equalitize fm);;
 
 time bmeson
- {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>          
-   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|};;          
-                                                                               
-time emeson                                                            
- {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>           
-   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|};;        
-                                                            
+ {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
+   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|};;
+
+time emeson
+ {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
+   (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|};;
+
 time bmeson
  {%fol|(forall x y z. x * (y * z) = (x * y) * z) /\
-   (forall x. e * x = x) /\  
-   (forall x. i(x) * x = e)                                              
+   (forall x. e * x = x) /\
+   (forall x. i(x) * x = e)
    ==> forall x. x * i(x) = e|};;
 
 (* ---- *)

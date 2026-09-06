@@ -1,8 +1,4 @@
-(* Tests for the atp library.  Run with "dune test".
-
-   Everything is checked against the library's own vocabulary: formulas are
-   written in the book's quotation syntax and compared structurally, so a
-   test reads roughly like the corresponding line of a sample block. *)
+(* Tests for the atp library. *)
 
 open Atp
 open Lib

@@ -1,6 +1,5 @@
 ; Harrison's sources, one module per chapter topic.  Each module opens the
-; ones it actually depends on; tools/trim_opens.py derives that list from the
-; compiler, so warning 33 stays on below to keep it honest.
+; ones it actually depends on.
 ;
 ; -open Format -open Num -open Str replaces the opens initialization.ml used
 ; to contribute to every file back when the sources were concatenated into a

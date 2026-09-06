@@ -1,5 +1,4 @@
-(* Interactive examples from cooper.ml, lifted out of the source by
-   tools/migrate_to_modules.py.  Not compiled: these are meant to be
+(* Interactive examples from cooper.ml, lifted out of the source.  Not compiled: these are meant to be
    pasted into a toplevel that has opened Atp.All. *)
 
 integer_qelim {%fol|forall x y. ~(2 * x + 1 = 2 * y)|};;

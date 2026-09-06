@@ -1,5 +1,4 @@
-(* Interactive examples from meson.ml, lifted out of the source by
-   tools/migrate_to_modules.py.  Not compiled: these are meant to be
+(* Interactive examples from meson.ml, lifted out of the source.  Not compiled: these are meant to be
    pasted into a toplevel that has opened Atp.All. *)
 
 tab {%fol|forall a. ~(P(a) /\ (forall y z. Q(y) \/ R(z)) /\ ~P(a))|};;

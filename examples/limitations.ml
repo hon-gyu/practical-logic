@@ -1,5 +1,4 @@
-(* Interactive examples from limitations.ml, lifted out of the source by
-   tools/migrate_to_modules.py.  Not compiled. *)
+(* Interactive examples from limitations.ml, lifted out of the source.  Not compiled. *)
 
 gform {%fol|~(x = 0)|};;
 
