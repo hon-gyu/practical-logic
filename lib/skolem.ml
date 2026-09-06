@@ -1,3 +1,4 @@
+(** Prenex and Skolem normal forms *)
 open Lib
 open Formulas
 open Prop
@@ -10,17 +11,17 @@ open Fol
 (* ========================================================================= *)
 
 (* ------------------------------------------------------------------------- *)
-(* Routine simplification. Like "psimplify" but with quantifier clauses.     *)
+(** Routine simplification. Like {! Prop.psimplify } but with quantifier clauses.     *)
 (* ------------------------------------------------------------------------- *)
 
-let simplify1 fm =
+let simplify1 (fm : fol formula) : fol formula =
   match fm with
     Forall(x,p) -> if mem x (fv p) then fm else p
   | Exists(x,p) -> if mem x (fv p) then fm else p
   | _ -> psimplify1 fm;;
 
-let rec simplify fm =
-  match fm with
+let rec simplify : fol formula -> fol formula =
+  function
     Not p -> simplify1 (Not(simplify p))
   | And(p,q) -> simplify1 (And(simplify p,simplify q))
   | Or(p,q) -> simplify1 (Or(simplify p,simplify q))
@@ -28,17 +29,15 @@ let rec simplify fm =
   | Iff(p,q) -> simplify1 (Iff(simplify p,simplify q))
   | Forall(x,p) -> simplify1(Forall(x,simplify p))
   | Exists(x,p) -> simplify1(Exists(x,simplify p))
-  | _ -> fm;;
+  | _ as fm -> fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
+let%expect_test "eg" =
+  print_fol_formula
+    (simplify {%fol|(forall x y. P(x) \/ (P(y) /\ false)) ==> exists z. Q|});
+  [%expect {| <<(forall x. P(x)) ==> Q>> |}]
+;;
 
-
-(* ------------------------------------------------------------------------- *)
-(* Negation normal form.                                                     *)
-(* ------------------------------------------------------------------------- *)
-
+(** Negation normal form. *)
 let rec nnf fm =
   match fm with
     And(p,q) -> And(nnf p,nnf q)
@@ -56,10 +55,16 @@ let rec nnf fm =
   | Not(Exists(x,p)) -> Forall(x,nnf(Not p))
   | _ -> fm;;
 
-(* ------------------------------------------------------------------------- *)
-(* Example of NNF function in action.                                        *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg: NNF function in action" =
+  print_fol_formula
+    (nnf {%fol|(forall x. P(x))
+          ==> ((exists y. Q(y)) <=> exists z. P(z) /\ Q(z))|});
+  [%expect {|
+    <<(exists x. ~P(x)) \/
+      (exists y. Q(y)) /\ (exists z. P(z) /\ Q(z)) \/
+      (forall y. ~Q(y)) /\ (forall z. ~P(z) \/ ~Q(z))>>
+    |}];
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Prenex normal form.                                                       *)
@@ -97,10 +102,12 @@ let rec prenex fm =
 
 let pnf fm = prenex(nnf(simplify fm));;
 
-(* ------------------------------------------------------------------------- *)
-(* Example.                                                                  *)
-(* ------------------------------------------------------------------------- *)
-
+let%expect_test "eg" =
+  print_fol_formula
+    (pnf {%fol|(forall x. P(x) \/ R(y))
+          ==> exists y z. Q(y) \/ ~(exists z. P(z) /\ Q(z))|});
+  [%expect {| <<exists x. forall z. ~P(x) /\ ~R(y) \/ Q(x) \/ ~P(z) \/ ~Q(z)>> |}];
+;;
 
 (* ------------------------------------------------------------------------- *)
 (* Get the functions in a term and formula.                                  *)
@@ -152,3 +159,16 @@ let skolemize fm = specialize(pnf(askolemize fm));;
 (* ------------------------------------------------------------------------- *)
 (* Example.                                                                  *)
 (* ------------------------------------------------------------------------- *)
+
+let%expect_test _ =
+  skolemize {%fol|exists y. x < y ==> forall u. exists v. x * u < y * v|}
+    |> print_fol_formula;
+  skolemize
+   {%fol|forall x. P(x)
+               ==> (exists y z. Q(y) \/ ~(exists z. P(z) /\ Q(z)))|}
+    |> print_fol_formula;
+  [%expect {|
+    <<~x < f_y(x) \/ x * u < f_y(x) * f_v(u,x)>><<~P(x) \/
+                                                  Q(c_y) \/ ~P(z) \/ ~Q(z)>>
+    |}];
+;;
