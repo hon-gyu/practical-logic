@@ -12,5 +12,6 @@
    -open Format
    -open Num
    -open Str))
+ (inline_tests)
  (preprocess
-  (pps ppx_atp_quot)))
+  (pps ppx_atp_quot ppx_inline_test ppx_expect)))

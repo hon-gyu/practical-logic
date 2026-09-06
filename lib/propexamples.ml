@@ -32,11 +32,18 @@ let ramsey s t n =
 let%expect_test "eg: Some currently tractable examples" =
   print_prop_formula
     (ramsey 3 3 4);
-  print_prop_formula
+  print_bool
     (tautology(ramsey 3 3 5));
-  print_prop_formula
+  print_bool
     (tautology(ramsey 3 3 6));
-  [%expect {| |}]
+  [%expect {|
+    <<(p_1_2 /\ p_1_3 /\ p_2_3 \/
+       p_1_2 /\ p_1_4 /\ p_2_4 \/
+       p_1_3 /\ p_1_4 /\ p_3_4 \/ p_2_3 /\ p_2_4 /\ p_3_4) \/
+      ~p_1_2 /\ ~p_1_3 /\ ~p_2_3 \/
+      ~p_1_2 /\ ~p_1_4 /\ ~p_2_4 \/
+      ~p_1_3 /\ ~p_1_4 /\ ~p_3_4 \/ ~p_2_3 /\ ~p_2_4 /\ ~p_3_4>>falsetrue
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -85,7 +92,12 @@ let%expect_test _ =
   let [x; y; out; c] = map mk_index ["X"; "Y"; "OUT"; "C"] in
   print_prop_formula
     (ripplecarry x y c out 2);
-  [%expect {| |}]
+  [%expect {|
+    <<((OUT_0 <=> (X_0 <=> ~Y_0) <=> ~C_0) /\
+       (C_1 <=> X_0 /\ Y_0 \/ (X_0 \/ Y_0) /\ C_0)) /\
+      (OUT_1 <=> (X_1 <=> ~Y_1) <=> ~C_1) /\
+      (C_2 <=> X_1 /\ Y_1 \/ (X_1 \/ Y_1) /\ C_1)>>
+    |}]
 ;;
 
 
@@ -186,11 +198,11 @@ let prime p =
       congruent_to out p (max n (2 * n - 2))));;
 
 let%expect_test "eg: Examples" =
-  print_prop_formula
+  print_bool
     (tautology(prime 7));
-  print_prop_formula
+  print_bool
     (tautology(prime 9));
-  print_prop_formula
+  print_bool
     (tautology(prime 11));
-  [%expect {| |}]
+  [%expect {| truefalsetrue |}]
 ;;

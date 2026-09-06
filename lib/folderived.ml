@@ -47,10 +47,10 @@ let rec icongruence s t stm ttm =
   | _ -> failwith "icongruence: not congruent";;
 
 let%expect_test "eg" =
-  print_fol_formula
+  print_thm
     (icongruence {%tm|s|} {%tm|t|} {%tm|f(s,g(s,t,s),u,h(h(s)))|}
                                 {%tm|f(s,g(t,t,s),u,h(h(t)))|});
-  [%expect {| |}]
+  [%expect {| |- s = t ==> f(s,g(s,t,s),u,h(h(s))) = f(s,g(t,t,s),u,h(h(t))) |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -202,51 +202,124 @@ let spec t th = modusponens (ispec t (concl th)) th;;
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: An example" =
-  print_fol_formula
+  print_thm
     (ispec {%tm|y|} {%fol|forall x y z. x + y + z = z + y + x|});
   (* ------------------------------------------------------------------------- *)
   (* Additional tests not in main text.                                        *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_thm
     (isubst {%tm|x + x|} {%tm|2 * x|}
             {%fol|x + x = x ==> x = 0|} {%fol|2 * x = x ==> x = 0|});
-  print_fol_formula
+  print_thm
     (isubst {%tm|x + x|}  {%tm|2 * x|}
            {%fol|(x + x = y + y) ==> (y + y + y = x + x + x)|}
            {%fol|2 * x = y + y ==> y + y + y = x + 2 * x|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|x|} {%fol|forall x y z. x + y + z = y + z + z|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|x|} {%fol|forall x. x = x|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|w + y + z|} {%fol|forall x y z. x + y + z = y + z + z|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|x + y + z|} {%fol|forall x y z. x + y + z = y + z + z|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|x + y + z|} {%fol|forall x y z. nothing_much|});
-  print_fol_formula
+  (* Deliberately partial: the book applies isubst to three of its four
+     arguments here, so there is nothing to print. *)
+  ignore
     (isubst {%tm|x + x|} {%tm|2 * x|}
            {%fol|(x + x = y + y) <=> (something \/ y + y + y = x + x + x)|});
-  print_fol_formula
+  print_thm
     (isubst {%tm|x + x|}  {%tm|2 * x|}
            {%fol|(exists x. x = 2) <=> exists y. y + x + x = y + y + y|}
            {%fol|(exists x. x = 2) <=> (exists y. y + 2 * x = y + y + y)|});
-  print_fol_formula
+  print_thm
     (isubst {%tm|x|}  {%tm|y|}
             {%fol|(forall z. x = z) <=> (exists x. y < z) /\ (forall y. y < x)|}
             {%fol|(forall z. y = z) <=> (exists x. y < z) /\ (forall y'. y' < y)|});
   (* ------------------------------------------------------------------------- *)
   (* The bug is now fixed.                                                     *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_thm
     (ispec {%tm|x'|} {%fol|forall x x' x''. x + x' + x'' = 0|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|x''|} {%fol|forall x x' x''. x + x' + x'' = 0|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|x' + x''|} {%fol|forall x x' x''. x + x' + x'' = 0|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|x + x' + x''|} {%fol|forall x x' x''. x + x' + x'' = 0|});
-  print_fol_formula
+  print_thm
     (ispec {%tm|2 * x|} {%fol|forall x x'. x + x' = x' + x|});
-  [%expect {| |}]
+  [%expect {|
+    |-
+    (forall x y z. x + y + z = z + y + x) ==>
+    (forall y' z. y + y' + z = z + y' + y)|-
+                                          x + x = 2 * x ==>
+                                          (x + x = x ==> x = 0) ==>
+                                          2 * x = x ==> x = 0|-
+                                                             x + x = 2 * x ==>
+                                                             (x + x = y + y ==>
+                                                              y + y + y = x + x +
+                                                              x) ==>
+                                                             2 * x = y + y ==>
+                                                             y + y + y = x + 2 *
+                                                             x|-
+                                                              (forall x y z.
+                                                                 x + y + z = y +
+                                                                 z + z) ==>
+                                                              (forall y z.
+                                                                 x + y + z = y +
+                                                                 z + z)|-
+                                                                       (forall x.
+                                                                        x = x) ==>
+                                                                       x = x
+    |-
+    (forall x y z. x + y + z = y + z + z) ==>
+    (forall y' z'. (w + y + z) + y' + z' = y' + z' + z')|-
+                                                        (forall x y z.
+                                                           x + y + z = y + z + z) ==>
+                                                        (forall y' z'.
+                                                           (x + y + z) + y' +
+                                                           z' = y' + z' + z')
+    |- (forall x y z. nothing_much) ==> (forall y z. nothing_much)|-
+                                                                  x + x = 2 *
+                                                                  x ==>
+                                                                  ((exists x.
+                                                                      x = 2) <=>
+                                                                   (exists y.
+                                                                      y + x + x =
+                                                                      y + y + y)) ==>
+                                                                  ((exists x.
+                                                                      x = 2) <=>
+                                                                   (exists y.
+                                                                      y + 2 * x =
+                                                                      y + y + y))
+    |-
+    x = y ==>
+    ((forall z. x = z) <=> (exists x. y < z) /\ (forall y. y < x)) ==>
+    ((forall z. y = z) <=> (exists x. y < z) /\ (forall y'. y' < y))|-
+                                                                    (forall x x' x''.
+                                                                       x + x' +
+                                                                       x'' = 0) ==>
+                                                                    (forall x'' x'''.
+                                                                       x' + x'' +
+                                                                       x''' = 0)
+    |-
+    (forall x x' x''. x + x' + x'' = 0) ==> (forall x' x'''. x'' + x' + x''' = 0)
+    |-
+    (forall x x' x''. x + x' + x'' = 0) ==>
+    (forall x''' x''''. (x' + x'') + x''' + x'''' = 0)|-
+                                                      (forall x x' x''.
+                                                         x + x' + x'' = 0) ==>
+                                                      (forall x''' x''''.
+                                                         (x + x' + x'') + x''' +
+                                                         x'''' = 0)|-
+                                                                   (forall x x'.
+                                                                      x + x' =
+                                                                      x' + x) ==>
+                                                                   (forall x'.
+                                                                      2 * x +
+                                                                      x' = x' +
+                                                                      2 * x)
+    |}]
 ;;

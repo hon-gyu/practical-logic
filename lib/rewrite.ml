@@ -32,11 +32,11 @@ let rec rewrite eqs tm =
                   if tm' = tm then tm else rewrite eqs tm';;
 
 let%expect_test "eg: 3 * 2 + 4 in successor notation" =
-  print_fol_formula
+  printert
     (rewrite [{%fol|0 + x = x|}; {%fol|S(x) + y = S(x + y)|};
              {%fol|0 * x = 0|}; {%fol|S(x) * y = y + x * y|}]
             {%tm|S(S(S(0))) * S(S(0)) + S(S(S(S(0))))|});
-  [%expect {| |}]
+  [%expect {| <<|S(S(S(S(S(S(S(S(S(S(0))))))))))|>> |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)

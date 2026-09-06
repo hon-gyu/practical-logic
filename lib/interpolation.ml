@@ -3,6 +3,7 @@ open Formulas
 open Prop
 open Defcnf
 open Fol
+open Meson
 open Skolem
 open Herbrand
 open Equal
@@ -43,21 +44,34 @@ let urinterpolate p q =
   let ps,qs = unzip (map (fun (And(p,q)) -> p,q) fmis) in
   pinterpolate (list_conj(setify ps)) (list_conj(setify qs));;
 
+(* Kept at top level: the examples below reuse these, as the toplevel did. *)
+let p = prenex
+ {%fol|(forall x. R(x,f(x))) /\ (forall x y. S(x,y) <=> R(x,y) \/ R(y,x))|}
+and q = prenex
+ {%fol|(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(0,0)|};;
+
 let%expect_test "eg" =
-  let p = prenex
-   {%fol|(forall x. R(x,f(x))) /\ (forall x y. S(x,y) <=> R(x,y) \/ R(y,x))|}
-  and q = prenex
-   {%fol|(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(0,0)|} in
   print_fol_formula
     (p);
   let c = urinterpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(p,c)));
-  print_fol_formula
+  print_list print_int
     (meson(Imp(q,Not c)));
-  [%expect {| |}]
+  [%expect {|
+    <<forall x y. R(x,f(x)) /\ (S(x,y) <=> R(x,y) \/ R(y,x))>>0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 5 items in list
+    1 ground instances tried; 5 items in list
+    2 ground instances tried; 6 items in list
+    3 ground instances tried; 10 items in list
+    <<S(0,f(0)) /\ S(f(0),0) \/ S(0,f(0)) /\ S(f(0),0)>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    [2; 2]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    [3]
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -101,11 +115,22 @@ let%expect_test "eg: The same example now gives a true interpolant" =
   let c = uinterpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(p,c)));
-  print_fol_formula
+  print_list print_int
     (meson(Imp(q,Not c)));
-  [%expect {| |}]
+  [%expect {|
+    0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 5 items in list
+    1 ground instances tried; 5 items in list
+    2 ground instances tried; 6 items in list
+    3 ground instances tried; 10 items in list
+    <<forall v_2.
+        exists v_1. S(v_2,v_1) /\ S(v_1,v_2) \/ S(v_2,v_1) /\ S(v_1,v_2)>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    [4]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    [3]
+    |}]
 ;;
 
 
@@ -146,11 +171,49 @@ let%expect_test "eg" =
   let c = interpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(p,c)));
-  print_fol_formula
+  print_list print_int
     (meson(Imp(q,Not c)));
-  [%expect {| |}]
+  [%expect {|
+    <<(forall x. exists y. R(x,y)) /\ (forall x y. S(v,x,y) <=> R(x,y) \/ R(y,x))>>0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 5 items in list
+    2 ground instances tried; 6 items in list
+    3 ground instances tried; 10 items in list
+    4 ground instances tried; 11 items in list
+    5 ground instances tried; 16 items in list
+    6 ground instances tried; 17 items in list
+    7 ground instances tried; 20 items in list
+    8 ground instances tried; 21 items in list
+    8 ground instances tried; 21 items in list
+    9 ground instances tried; 22 items in list
+    10 ground instances tried; 23 items in list
+    11 ground instances tried; 24 items in list
+    12 ground instances tried; 25 items in list
+    13 ground instances tried; 29 items in list
+    14 ground instances tried; 30 items in list
+    15 ground instances tried; 34 items in list
+    16 ground instances tried; 35 items in list
+    17 ground instances tried; 36 items in list
+    18 ground instances tried; 37 items in list
+    19 ground instances tried; 38 items in list
+    20 ground instances tried; 39 items in list
+    21 ground instances tried; 43 items in list
+    22 ground instances tried; 44 items in list
+    23 ground instances tried; 48 items in list
+    24 ground instances tried; 49 items in list
+    25 ground instances tried; 54 items in list
+    26 ground instances tried; 55 items in list
+    27 ground instances tried; 59 items in list
+    28 ground instances tried; 60 items in list
+    29 ground instances tried; 65 items in list
+    30 ground instances tried; 66 items in list
+    <<forall v_2.
+        exists v_1. S(v,v_2,v_1) /\ S(v,v_1,v_2) \/ S(v,v_2,v_1) /\ S(v,v_1,v_2)>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    [4]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    [3]
+    |}]
 ;;
 
 
@@ -176,11 +239,11 @@ let%expect_test "eg: More examples, not in the text" =
   let c = interpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_bool
     (tautology(Imp(And(p,q),False)));
-  print_fol_formula
+  print_bool
     (tautology(Imp(p,c)));
-  print_fol_formula
+  print_bool
     (tautology(Imp(q,Not c)));
   (* ------------------------------------------------------------------------- *)
   (* A more interesting example.                                               *)
@@ -190,14 +253,14 @@ let%expect_test "eg: More examples, not in the text" =
   and q = {%fol|(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(u,u)|} in
   print_fol_formula
     (p);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(And(p,q),False)));
   let c = interpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(p,c)));
-  print_fol_formula
+  print_list print_int
     (meson(Imp(q,Not c)));
   (* ------------------------------------------------------------------------- *)
   (* A variant where u is free in both parts.                                  *)
@@ -208,14 +271,14 @@ let%expect_test "eg: More examples, not in the text" =
   and q = {%fol|(forall x y z. S(x,y) /\ S(y,z) ==> T(x,z)) /\ ~T(u,u)|} in
   print_fol_formula
     (p);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(And(p,q),False)));
   let c = interpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(p,c)));
-  print_fol_formula
+  print_list print_int
     (meson(Imp(q,Not c)));
   (* ------------------------------------------------------------------------- *)
   (* Way of generating examples quite easily (see K&K exercises).              *)
@@ -240,9 +303,9 @@ let%expect_test "eg: More examples, not in the text" =
   let c = einterpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(p,c)));
-  print_fol_formula
+  print_list print_int
     (meson(Imp(q,Not c)));
   let p =
    {%fol|(forall x. A(x) /\ C(x) ==> B(x)) /\ (forall x. D(x) \/ ~D(x) ==> C(x))|}
@@ -253,9 +316,140 @@ let%expect_test "eg: More examples, not in the text" =
   let c = interpolate p q in
   print_fol_formula
     (c);
-  print_fol_formula
+  print_list print_int
     (meson(Imp(p,c)));
-  print_fol_formula
+  print_list print_int
     (meson(Imp(q,Not c)));
-  [%expect {| |}]
+  [%expect {|
+    <<p ==> q /\ r>>0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    <<~p \/ ~p \/ q>>truetruetrue<<(forall x. exists y. R(x,y)) /\
+                                   (forall x y. S(x,y) <=> R(x,y) \/ R(y,x))>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    [5]0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 5 items in list
+    1 ground instances tried; 5 items in list
+    2 ground instances tried; 6 items in list
+    3 ground instances tried; 10 items in list
+    <<forall v_2.
+        exists v_1. S(v_2,v_1) /\ S(v_1,v_2) \/ S(v_2,v_1) /\ S(v_1,v_2)>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    [4]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    [3]<<(forall x. exists y. R(x,y)) /\
+         (forall x y. S(x,y) <=> R(x,y) \/ R(y,x)) /\
+         (forall v. R(u,v) ==> Q(v,u))>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    [5]0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 6 items in list
+    1 ground instances tried; 6 items in list
+    2 ground instances tried; 7 items in list
+    3 ground instances tried; 11 items in list
+    <<exists v_1.
+        (S(u,v_1) /\ S(v_1,u) \/ S(u,v_1) /\ S(v_1,u)) \/
+        (S(u,v_1) /\ S(v_1,u) \/ S(u,v_1) /\ S(v_1,u)) \/
+        S(u,v_1) /\ S(v_1,u) \/ S(u,v_1) /\ S(v_1,u)>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    [4]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    [3]0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 4 items in list
+    2 ground instances tried; 5 items in list
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    <<forall v_2.
+        exists v_1.
+          (~P(v_2) \/ ~P(v_2) \/ Q(v_1)) \/
+          (~P(v_2) \/ ~P(v_2) \/ Q(v_1)) /\ (~P(v_2) \/ Q(v_1))>>0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 3 items in list
+    1 ground instances tried; 3 items in list
+    2 ground instances tried; 6 items in list
+    3 ground instances tried; 9 items in list
+    4 ground instances tried; 12 items in list
+    5 ground instances tried; 14 items in list
+    6 ground instances tried; 16 items in list
+    7 ground instances tried; 18 items in list
+    8 ground instances tried; 21 items in list
+    9 ground instances tried; 24 items in list
+    10 ground instances tried; 27 items in list
+    10 ground instances tried; 27 items in list
+    11 ground instances tried; 30 items in list
+    12 ground instances tried; 33 items in list
+    13 ground instances tried; 36 items in list
+    14 ground instances tried; 39 items in list
+    15 ground instances tried; 42 items in list
+    16 ground instances tried; 45 items in list
+    17 ground instances tried; 48 items in list
+    18 ground instances tried; 51 items in list
+    19 ground instances tried; 54 items in list
+    20 ground instances tried; 57 items in list
+    21 ground instances tried; 60 items in list
+    22 ground instances tried; 63 items in list
+    23 ground instances tried; 66 items in list
+    24 ground instances tried; 69 items in list
+    25 ground instances tried; 72 items in list
+    26 ground instances tried; 74 items in list
+    27 ground instances tried; 76 items in list
+    28 ground instances tried; 78 items in list
+    29 ground instances tried; 80 items in list
+    30 ground instances tried; 82 items in list
+    31 ground instances tried; 84 items in list
+    32 ground instances tried; 86 items in list
+    33 ground instances tried; 88 items in list
+    34 ground instances tried; 90 items in list
+    35 ground instances tried; 92 items in list
+    36 ground instances tried; 94 items in list
+    37 ground instances tried; 96 items in list
+    38 ground instances tried; 98 items in list
+    39 ground instances tried; 100 items in list
+    40 ground instances tried; 102 items in list
+    41 ground instances tried; 104 items in list
+    42 ground instances tried; 106 items in list
+    43 ground instances tried; 108 items in list
+    44 ground instances tried; 110 items in list
+    45 ground instances tried; 112 items in list
+    46 ground instances tried; 114 items in list
+    47 ground instances tried; 116 items in list
+    48 ground instances tried; 118 items in list
+    49 ground instances tried; 120 items in list
+    50 ground instances tried; 123 items in list
+    51 ground instances tried; 126 items in list
+    52 ground instances tried; 129 items in list
+    53 ground instances tried; 131 items in list
+    54 ground instances tried; 133 items in list
+    55 ground instances tried; 135 items in list
+    56 ground instances tried; 138 items in list
+    57 ground instances tried; 141 items in list
+    58 ground instances tried; 144 items in list
+    59 ground instances tried; 146 items in list
+    60 ground instances tried; 148 items in list
+    61 ground instances tried; 150 items in list
+    62 ground instances tried; 153 items in list
+    63 ground instances tried; 156 items in list
+    64 ground instances tried; 159 items in list
+    65 ground instances tried; 161 items in list
+    66 ground instances tried; 163 items in list
+    67 ground instances tried; 165 items in list
+    68 ground instances tried; 168 items in list
+    69 ground instances tried; 171 items in list
+    70 ground instances tried; 174 items in list
+    71 ground instances tried; 177 items in list
+    72 ground instances tried; 180 items in list
+    73 ground instances tried; 183 items in list
+    74 ground instances tried; 186 items in list
+    75 ground instances tried; 189 items in list
+    76 ground instances tried; 192 items in list
+    77 ground instances tried; 195 items in list
+    78 ground instances tried; 198 items in list
+    Searching with depth limit 0Searching with depth limit 1
+    Searching with depth limit 0Searching with depth limit 1
+    <<true>><<forall x. L(x,b)>>0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    <<L(b,b)>>Searching with depth limit 0Searching with depth limit 1
+    [1]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    [2]<<(forall x. A(x) /\ C(x) ==> B(x)) /\ (forall x. D(x) \/ ~D(x) ==> C(x))>>0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    <<forall v_1. (~A(v_1) \/ B(v_1)) \/ ~A(v_1) \/ B(v_1)>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    [5]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    [2]
+    |}]
 ;;

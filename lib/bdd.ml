@@ -1,6 +1,7 @@
 open Lib
 open Formulas
 open Prop
+open Propexamples
 
 (* Warnings the book's style trips in this file; the rest of the
    library compiles with them on.  See lib/dune. *)
@@ -125,9 +126,9 @@ let rec mkbdd (bdd,comp as bddcomp) fm =
 let bddtaut fm = snd(mkbdd (mk_bdd (<),undefined) fm) = 1;;
 
 let%expect_test "eg: Examples" =
-  print_prop_formula
+  print_bool
     (bddtaut (mk_adder_test 4 2));
-  [%expect {| |}]
+  [%expect {| true |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -183,9 +184,9 @@ let ebddtaut fm =
   snd(mkbdds undefined (mk_bdd (<),undefined) defs fm') = 1;;
 
 let%expect_test "eg: Examples" =
-  print_prop_formula
+  print_bool
     (ebddtaut (prime 101));
-  print_prop_formula
+  print_bool
     (ebddtaut (mk_adder_test 9 5));
-  [%expect {| |}]
+  [%expect {| truetrue |}]
 ;;

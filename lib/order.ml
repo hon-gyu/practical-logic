@@ -19,16 +19,16 @@ let rec termsize tm =
 
 let%expect_test "eg: This fails the rewrite properties" =
   let s = {%tm|f(x,x,x)|} and t = {%tm|g(x,y)|} in
-  print_fol_formula
+  printert
     (s);
-  print_fol_formula
+  print_bool
     (termsize s > termsize t);
   let i = ("y" |=> {%tm|f(x,x,x)|}) in
-  print_fol_formula
+  print_graph print_quoted printert
     (i);
-  print_fol_formula
+  print_bool
     (termsize (tsubst i s) > termsize (tsubst i t));
-  [%expect {| |}]
+  [%expect {| <<|f(x,x,x)|>>true[("y", <<|f(x,x,x)|>>)]false |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)

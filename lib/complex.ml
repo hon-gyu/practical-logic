@@ -101,7 +101,7 @@ let%expect_test "eg: Sanity check" =
          (w - x)^4 + (w - y)^4 + (w - z)^4 +
          (x - y)^4 + (x - z)^4 + (y - z)^4) / 6 =
         (w^2 + x^2 + y^2 + z^2)^2|});
-  [%expect {| |}]
+  [%expect {| <<0 = 0>> |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -289,7 +289,7 @@ let%expect_test "eg: Examples" =
   (* ------------------------------------------------------------------------- *)
   (* More tests, not in the main text.                                         *)
   (* ------------------------------------------------------------------------- *)
-  let polytest tm = time (polynate (fvt tm)) tm in
+  let polytest tm = (polynate (fvt tm)) tm in
   let lagrange_4 = polytest
    {%tm|(((x1^2) + (x2^2) + (x3^2) + (x4^2)) *
        ((y1^2) + (y2^2) + (y3^2) + (y4^2))) -
@@ -297,7 +297,7 @@ let%expect_test "eg: Examples" =
        (((((x1*y2) + (x2*y1)) + (x3*y4)) - (x4*y3))^2)  +
        (((((x1*y3) - (x2*y4)) + (x3*y1)) + (x4*y2))^2)  +
        (((((x1*y4) + (x2*y3)) - (x3*y2)) + (x4*y1))^2))|} in
-  print_fol_formula
+  printert
     (lagrange_4);
   let lagrange_8 = polytest
    {%tm|((p1^2 + q1^2 + r1^2 + s1^2 + t1^2 + u1^2 + v1^2 + w1^2) *
@@ -310,7 +310,7 @@ let%expect_test "eg: Examples" =
         (p1 * u2 + q1 * t2 - r1 * w2 + s1 * v2 - t1 * q2 + u1 * p2 - v1 * s2 + w1* r2)^2 +
         (p1 * v2 + q1 * w2 + r1 * t2 - s1 * u2 - t1 * r2 + u1 * s2 + v1 * p2 - w1* q2)^2 +
         (p1 * w2 - q1 * v2 + r1 * u2 + s1 * t2 - t1 * s2 - u1 * r2 + v1 * q2 + w1* p2)^2)|} in
-  print_fol_formula
+  printert
     (lagrange_8);
   let liouville = polytest
    {%tm|6 * (x1^2 + x2^2 + x3^2 + x4^2)^2 -
@@ -318,7 +318,7 @@ let%expect_test "eg: Examples" =
         (x2 + x3)^4 + (x2 + x4)^4 + (x3 + x4)^4) +
        ((x1 - x2)^4 + (x1 - x3)^4 + (x1 - x4)^4 +
         (x2 - x3)^4 + (x2 - x4)^4 + (x3 - x4)^4))|} in
-  print_fol_formula
+  printert
     (liouville);
   let fleck = polytest
    {%tm|60 * (x1^2 + x2^2 + x3^2 + x4^2)^3 -
@@ -337,7 +337,7 @@ let%expect_test "eg: Examples" =
             (x2 + x4)^6 + (x2 - x4)^6 +
             (x3 + x4)^6 + (x3 - x4)^6) +
        36 * (x1^6 + x2^6 + x3^6 + x4^6))|} in
-  print_fol_formula
+  printert
     (fleck);
   let hurwitz = polytest
    {%tm|5040 * (x1^2 + x2^2 + x3^2 + x4^2)^4 -
@@ -404,7 +404,7 @@ let%expect_test "eg: Examples" =
              (x2 + x4)^8 + (x2 - x4)^8 +
              (x3 + x4)^8 + (x3 - x4)^8) +
        6 * ((2 * x1)^8 + (2 * x2)^8 + (2 * x3)^8 + (2 * x4)^8))|} in
-  print_fol_formula
+  printert
     (hurwitz);
   let schur = polytest
    {%tm|22680 * (x1^2 + x2^2 + x3^2 + x4^2)^5 -
@@ -474,35 +474,33 @@ let%expect_test "eg: Examples" =
             (x1 - x2 + x3 - x4)^10 +
             (x1 - x2 - x3 + x4)^10 +
             (x1 - x2 - x3 - x4)^10))|} in
-  print_fol_formula
+  printert
     (schur);
-  let complex_qelim_all = time complex_qelim ** generalize in
+  let complex_qelim_all = complex_qelim ** generalize in
   print_fol_formula
-    (complex_qelim_all);
+    (complex_qelim {%fol|exists x. x + 2 = 3|});
   print_fol_formula
-    (time complex_qelim {%fol|exists x. x + 2 = 3|});
+    (complex_qelim {%fol|exists x. x^2 + a = 3|});
   print_fol_formula
-    (time complex_qelim {%fol|exists x. x^2 + a = 3|});
+    (complex_qelim {%fol|exists x. x^2 + x + 1 = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|exists x. x^2 + x + 1 = 0|});
+    (complex_qelim {%fol|exists x. x^2 + x + 1 = 0 /\ x^3 + x^2 + 1 = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|exists x. x^2 + x + 1 = 0 /\ x^3 + x^2 + 1 = 0|});
+    (complex_qelim {%fol|exists x. x^2 + 1 = 0 /\ x^4 + x^3 + x^2 + x = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|exists x. x^2 + 1 = 0 /\ x^4 + x^3 + x^2 + x = 0|});
+    (complex_qelim {%fol|forall a x. a^2 = 2 /\ x^2 + a * x + 1 = 0 ==> x^4 + 1 = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|forall a x. a^2 = 2 /\ x^2 + a * x + 1 = 0 ==> x^4 + 1 = 0|});
+    (complex_qelim {%fol|forall a x. a^2 = 2 /\ x^2 + a * x + 1 = 0 ==> x^4 + 2 = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|forall a x. a^2 = 2 /\ x^2 + a * x + 1 = 0 ==> x^4 + 2 = 0|});
+    (complex_qelim {%fol|exists a x. a^2 = 2 /\ x^2 + a * x + 1 = 0 /\ ~(x^4 + 2 = 0)|});
   print_fol_formula
-    (time complex_qelim {%fol|exists a x. a^2 = 2 /\ x^2 + a * x + 1 = 0 /\ ~(x^4 + 2 = 0)|});
+    (complex_qelim {%fol|exists x. a^2 = 2 /\ x^2 + a * x + 1 = 0 /\ ~(x^4 + 2 = 0)|});
   print_fol_formula
-    (time complex_qelim {%fol|exists x. a^2 = 2 /\ x^2 + a * x + 1 = 0 /\ ~(x^4 + 2 = 0)|});
+    (complex_qelim {%fol|forall x. x^2 + a * x + 1 = 0 ==> x^4 + 2 = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|forall x. x^2 + a * x + 1 = 0 ==> x^4 + 2 = 0|});
+    (complex_qelim {%fol|forall a. a^2 = 2 /\ x^2 + a * x + 1 = 0 ==> x^4 + 2 = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|forall a. a^2 = 2 /\ x^2 + a * x + 1 = 0 ==> x^4 + 2 = 0|});
-  print_fol_formula
-    (time complex_qelim {%fol|exists a b c x y.
+    (complex_qelim {%fol|exists a b c x y.
             a * x^2 + b * x + c = 0 /\
             a * y^2 + b * y + c = 0 /\
             ~(x = y) /\
@@ -539,58 +537,58 @@ let%expect_test "eg: Examples" =
                        ==> (a * x * y = c) /\ (a * (x + y) + b = 0))
         <=> ~(x = y)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall y_1 y_2 y_3 y_4.
          (y_1 = 2 * y_3) /\
          (y_2 = 2 * y_4) /\
          (y_1 * y_3 = y_2 * y_4)
          ==> (y_1^2 = y_2^2)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall x y. x^2 = 2 /\ y^2 = 3
              ==> (x * y)^2 = 6|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall x a. (a^2 = 2) /\ (x^2 + a * x + 1 = 0)
              ==> (x^4 + 1 = 0)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall a x. (a^2 = 2) /\ (x^2 + a * x + 1 = 0)
              ==> (x^4 + 1 = 0)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|~(exists a x y. (a^2 = 2) /\
                  (x^2 + a * x + 1 = 0) /\
                  (y * (x^4 + 1) + 1 = 0))|});
   print_fol_formula
-    (time complex_qelim {%fol|forall x. exists y. x^2 = y^3|});
+    (complex_qelim {%fol|forall x. exists y. x^2 = y^3|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall x y z a b. (a + b) * (x - y + z) - (a - b) * (x + y + z) =
                    2 * (b * x + b * z - a * y)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall a b. ~(a = b) ==> exists x y. (y * x^2 = a) /\ (y * x^2 + x = b)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall a b c x y. (a * x^2 + b * x + c = 0) /\
                    (a * y^2 + b * y + c = 0) /\
                    ~(x = y)
                    ==> (a * x * y = c) /\ (a * (x + y) + b = 0)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|~(forall a b c x y. (a * x^2 + b * x + c = 0) /\
                      (a * y^2 + b * y + c = 0)
                      ==> (a * x * y = c) /\ (a * (x + y) + b = 0))|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall y_1 y_2 y_3 y_4.
          (y_1 = 2 * y_3) /\
          (y_2 = 2 * y_4) /\
          (y_1 * y_3 = y_2 * y_4)
          ==> (y_1^2 = y_2^2)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall a1 b1 c1 a2 b2 c2.
             ~(a1 * b2 = a2 * b1)
             ==> exists x y. (a1 * x + b1 * y = c1) /\ (a2 * x + b2 * y = c2)|});
@@ -598,14 +596,14 @@ let%expect_test "eg: Examples" =
   (* This seems harder, so see how many quantifiers are feasible.              *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|(a * x^2 + b * x + c = 0) /\
       (a * y^2 + b * y + c = 0) /\
       (forall z. (a * z^2 + b * z + c = 0)
            ==> (z = x) \/ (z = y))
       ==> (a * x * y = c) /\ (a * (x + y) + b = 0)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall y. (a * x^2 + b * x + c = 0) /\
                 (a * y^2 + b * y + c = 0) /\
                 (forall z. (a * z^2 + b * z + c = 0)
@@ -613,14 +611,14 @@ let%expect_test "eg: Examples" =
                 ==> (a * x * y = c) /\ (a * (x + y) + b = 0)|});
   (**** feasible but lengthy?
 
-  time complex_qelim
+  complex_qelim
    {%fol|forall x y. (a * x^2 + b * x + c = 0) /\
                 (a * y^2 + b * y + c = 0) /\
                 (forall z. (a * z^2 + b * z + c = 0)
                            ==> (z = x) \/ (z = y))
                 ==> (a * x * y = c) /\ (a * (x + y) + b = 0)|};;
 
-  time complex_qelim
+  complex_qelim
    {%fol|forall c x y. (a * x^2 + b * x + c = 0) /\
                 (a * y^2 + b * y + c = 0) /\
                 (forall z. (a * z^2 + b * z + c = 0)
@@ -631,7 +629,7 @@ let%expect_test "eg: Examples" =
 
   (********* This seems too hard
 
-  time complex_qelim
+  complex_qelim
    {%fol|forall a b c x y. (a * x^2 + b * x + c = 0) /\
                  (a * y^2 + b * y + c = 0) /\
                  (forall z. (a * z^2 + b * z + c = 0)
@@ -640,12 +638,12 @@ let%expect_test "eg: Examples" =
 
    **************)
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|~(forall x1 y1 x2 y2 x3 y3.
           exists x0 y0. (x1 - x0)^2 + (y1 - y0)^2 = (x2 - x0)^2 + (y2 - y0)^2 /\
                         (x2 - x0)^2 + (y2 - y0)^2 = (x3 - x0)^2 + (y3 - y0)^2)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall a b c.
           (exists x y. (a * x^2 + b * x + c = 0) /\
                  (a * y^2 + b * y + c = 0) /\
@@ -653,7 +651,7 @@ let%expect_test "eg: Examples" =
           (a = 0) /\ (b = 0) /\ (c = 0) \/
           ~(a = 0) /\ ~(b^2 = 4 * a * c)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|~(forall x1 y1 x2 y2 x3 y3 x0 y0 x0' y0'.
             (x1 - x0)^2 + (y1 - y0)^2 =
             (x2 - x0)^2 + (y2 - y0)^2 /\
@@ -665,14 +663,14 @@ let%expect_test "eg: Examples" =
             (x3 - x0')^2 + (y3 - y0')^2
             ==> x0 = x0' /\ y0 = y0')|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall a b c.
             a * x^2 + b * x + c = 0 /\
             a * y^2 + b * y + c = 0 /\
             ~(x = y)
             ==> a * (x + y) + b = 0|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall a b c.
             (a * x^2 + b * x + c = 0) /\
             (2 * a * y^2 + 2 * b * y + 2 * c = 0) /\
@@ -685,7 +683,7 @@ let%expect_test "eg: Examples" =
         y_1 * y_3 = y_2 * y_4 /\
         (y_1^2 - y_2^2) * z = 1)|});
   print_fol_formula
-    (time complex_qelim {%fol|forall y_1 y_2 y_3 y_4.
+    (complex_qelim {%fol|forall y_1 y_2 y_3 y_4.
            (y_1 = 2 * y_3) /\
            (y_2 = 2 * y_4) /\
            (y_1 * y_3 = y_2 * y_4)
@@ -754,13 +752,13 @@ let%expect_test "eg: Examples" =
     ~(u2 = 0)
     ==> (x4 * x7 + (-(x5) + x3) * x6 - x3 * x4 = 0)|};;
 
-  time complex_qelim
+  complex_qelim
    {%fol|exists c.
       (p1 = ai^2 * (b + c)^2 - c * b * (c + b - a) * (c + b + a)) /\
       (p2 = ae^2 * (c - b)^2 - c * b * (a + b - c) * (a - b + a)) /\
       (p3 = be^2 * (c - a)^2 - a * c * (a + b - c) * (c + b - a))|};;
 
-  time complex_qelim
+  complex_qelim
    {%fol|exists b c.
       (p1 = ai^2 * (b + c)^2 - c * b * (c + b - a) * (c + b + a)) /\
       (p2 = ae^2 * (c - b)^2 - c * b * (a + b - c) * (a - b + a)) /\
@@ -768,7 +766,7 @@ let%expect_test "eg: Examples" =
 
   *********)
   print_fol_formula
-    (time complex_qelim {%fol|forall y.
+    (complex_qelim {%fol|forall y.
              a * x^2 + b * x + c = 0 /\
              a * y^2 + b * y + c = 0 /\
              ~(x = y)
@@ -809,24 +807,24 @@ let%expect_test "eg: Examples" =
        resultant(a * x^2 + b * x + c, 2 * a * x + b,x);
    ***)
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
     {%fol|forall a b c.
        (exists x. a * x^2 + b * x + c = 0 /\ 2 * a * x + b = 0) \/ (a = 0) <=>
        (4*a^2*c-b^2*a = 0)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
     {%fol|forall a b c d e.
       (exists x. a * x^2 + b * x + c = 0 /\ d * x + e = 0) \/
        a = 0 /\ d = 0 <=> d^2*c-e*d*b+a*e^2 = 0|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
     {%fol|forall a b c d e f.
        (exists x. a * x^2 + b * x + c = 0 /\ d * x^2 + e * x + f = 0) \/
        (a = 0) /\ (d = 0) <=>
        d^2*c^2-2*d*c*a*f+a^2*f^2-e*d*b*c-e*b*a*f+a*e^2*c+f*d*b^2 = 0|});
   (**** No hope for this one I think
 
-  time complex_qelim
+  complex_qelim
   {%fol|forall a b c d e f g.
     (exists x. a * x^3 + b * x^2 + c * x + d = 0 /\ e * x^2 + f * x + g = 0) \/
     (a = 0) /\ (e = 0) <=>
@@ -839,16 +837,16 @@ let%expect_test "eg: Examples" =
   (* Some trigonometric addition formulas (checking stuff from Maple).         *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
       {%fol|forall x y. x^2 + y^2 = 1 ==> (2 * y^2 - 1)^2 + (2 * x * y)^2 = 1|});
   (* ------------------------------------------------------------------------- *)
   (* The examples from my thesis.                                              *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim {%fol|forall s c. s^2 + c^2 = 1
+    (complex_qelim {%fol|forall s c. s^2 + c^2 = 1
           ==> 2 * s - (2 * s * c * c - s^3) = 3 * s^3|});
   print_fol_formula
-    (time complex_qelim {%fol|forall u v.
+    (complex_qelim {%fol|forall u v.
       -((((9 * u^8) * v) * v - (u * u^9)) * 128) -
          (((7 * u^6) * v) * v - (u * u^7)) * 144 -
          (((5 * u^4) * v) * v - (u * u^5)) * 168 -
@@ -857,7 +855,7 @@ let%expect_test "eg: Examples" =
        (-(1152) * u^8 - 1008 * u^6 - 840 * u^4 - 630 * u^2 - 315) *
        (u^2 + v^2 - 1)|});
   print_fol_formula
-    (time complex_qelim {%fol|forall u v.
+    (complex_qelim {%fol|forall u v.
             u^2 + v^2 = 1
             ==> (((9 * u^8) * v) * v - (u * u^9)) * 128 +
                 (((7 * u^6) * v) * v - (u * u^7)) * 144 +
@@ -868,29 +866,29 @@ let%expect_test "eg: Examples" =
   (* Deliberately silly examples from Poizat's model theory book (6.6).        *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim {%fol|exists z. x * z^87 + y * z^44 + 1 = 0|});
+    (complex_qelim {%fol|exists z. x * z^87 + y * z^44 + 1 = 0|});
   print_fol_formula
-    (time complex_qelim {%fol|forall u. exists v. x * (u + v^2)^2 + y * (u + v^2) + z = 0|});
+    (complex_qelim {%fol|forall u. exists v. x * (u + v^2)^2 + y * (u + v^2) + z = 0|});
   (* ------------------------------------------------------------------------- *)
   (* Actually prove simple equivalences.                                       *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim {%fol|forall x y. (exists z. x * z^87 + y * z^44 + 1 = 0)
+    (complex_qelim {%fol|forall x y. (exists z. x * z^87 + y * z^44 + 1 = 0)
                       <=> ~(x = 0) \/ ~(y = 0)|});
   print_fol_formula
-    (time complex_qelim {%fol|forall x y z. (forall u. exists v.
+    (complex_qelim {%fol|forall x y z. (forall u. exists v.
                              x * (u + v^2)^2 + y * (u + v^2) + z = 0)
                         <=> ~(x = 0) \/ ~(y = 0) \/ z = 0|});
   (* ------------------------------------------------------------------------- *)
   (* Invertibility of 2x2 matrix in terms of nonzero determinant.              *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim {%fol|exists w x y z. (a * w + b * y = 1) /\
+    (complex_qelim {%fol|exists w x y z. (a * w + b * y = 1) /\
                           (a * x + b * z = 0) /\
                           (c * w + d * y = 0) /\
                           (c * x + d * z = 1)|});
   print_fol_formula
-    (time complex_qelim {%fol|forall a b c d.
+    (complex_qelim {%fol|forall a b c d.
             (exists w x y z. (a * w + b * y = 1) /\
                              (a * x + b * z = 0) /\
                              (c * w + d * y = 0) /\
@@ -900,14 +898,14 @@ let%expect_test "eg: Examples" =
   (* Inspired by Cardano's formula for a cubic. Not all complex cbrts work.    *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall m n x u t cu ct.
        t - u = n /\ 27 * t * u = m^3 /\
        ct^3 = t /\ cu^3 = u /\
        x = ct - cu
        ==> x^3 + m * x = n|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall m n x u t.
        t - u = n /\ 27 * t * u = m^3
        ==> exists ct cu. ct^3 = t /\ cu^3 = u /\
@@ -917,12 +915,12 @@ let%expect_test "eg: Examples" =
   (* Of course these are just trivial normalization, nothing deep.             *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall x y z.
         (x^2 + y^2)^2 * (1 + x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2) =
          x^2 * y^2 * (x^2 + y^2 + 1) * (x^2 + y^2 - 2)^2 + (x^2 - y^2)^2|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall x y z.
         (x^2 + y^2)^2 * (1 + x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2) =
         x^2 * y^2 * x^2  * (x^2 + y^2 - 2)^2 +
@@ -930,7 +928,7 @@ let%expect_test "eg: Examples" =
         x^2 * y^2 * (x^2 + y^2 - 2)^2 +
         (x^2 - y^2)^2|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall x y z.
         (x^2 + y^2)^2 * (1 + x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2) =
         x^4 * y^2 * (x^2 + y^2 - 2)^2 +
@@ -938,7 +936,7 @@ let%expect_test "eg: Examples" =
         x^2 * y^2 * (x^2 + y^2 - 2)^2 +
         (x^2 - y^2)^2|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
      {%fol|forall x y z.
         (x^2 + y^2)^2 * (1 + x^4 * y^2 + x^2 * y^4 - 3 * x^2 * y^2) =
         (x^2 * y * (x^2 + y^2 - 2))^2 +
@@ -948,7 +946,7 @@ let%expect_test "eg: Examples" =
   (* ------------------------------------------------------------------------- *)
   (* A cute bilinear identity -- see ch14 of Rajwade's "Squares" for more.     *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  printert
     (polytest
     {%tm|(x_1^2 + x_2^2 + x_3^2 + x_4^2 + x_5^2 + x_6^2 + x_7^2 + x_8^2 + x_9^2) *
        (y_1^2 + y_2^2 + y_3^2 + y_4^2 + y_5^2 + y_6^2 + y_7^2 + y_8^2 +
@@ -973,18 +971,18 @@ let%expect_test "eg: Examples" =
   (* This is essentially the Cauchy-Riemann conditions for a differential.     *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
       {%fol|forall x y. (a * x + b * y = u * x - v * y) /\
                     (c * x + d * y = u * y + v * x)
                     ==> (a = d)|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
       {%fol|forall a b c d.
           (forall x y. (a * x + b * y = u * x - v * y) /\
                        (c * x + d * y = u * y + v * x))
                        ==> (a = d) /\ (b = -(c))|});
   print_fol_formula
-    (time complex_qelim
+    (complex_qelim
       {%fol|forall a b c d.
             (exists u v. forall x y. (a * x + b * y = u * x - v * y) /\
                                      (c * x + d * y = u * y + v * x))
@@ -996,5 +994,5310 @@ let%expect_test "eg: Examples" =
     (complex_qelim
       {%fol|forall x1 y1 x2 y2. exists a b.
           ~(a = 0 /\ b = 0) /\ a * x1 + b * y1 = 0 /\ a * x2 + b * y2 = 0|});
-  [%expect {| |}]
+  [%expect {|
+    <<true>><<1 + c * (-4 + c * (6 + c * (-4 + c * 1))) = 0>><<true>><<true>>
+    <<|0|>><<|0|>><<|0|>><<|0|>><<|0|>><<|0|>><<true>><<true>><<true>><<false>>
+    <<true>><<true>><<false>><<true>><<(~9 + a *
+                                         (0 + a *
+                                          (-10 + a *
+                                           (0 + a * (5 + a * (0 + a * -1))))) =
+                                         0 \/
+                                        ~0 + a *
+                                         (12 + a *
+                                          (0 + a *
+                                           (-14 + a *
+                                            (0 + a * (6 + a * (0 + a * -1)))))) =
+                                         0) /\
+                                       -2 + a * (0 + a * 1) = 0>><<~(~9 + a *
+                                                                      (0 + a *
+                                                                       (-10 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        5 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        -1))))) =
+                                                                      0 \/
+                                                                     ~0 + a *
+                                                                      (12 + a *
+                                                                       (0 + a *
+                                                                        (
+                                                                        -14 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        6 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        -1)))))) =
+                                                                      0)>>
+    <<~((0 + x * 1 = 0 /\ 1 + x * (0 + x * 1) = 0 \/
+         ~0 + x * 1 = 0 /\ 1 + x * (0 + x * (0 + x * (0 + x * 1))) = 0) /\
+        ~2 + x * (0 + x * (0 + x * (0 + x * 1))) = 0)>><<false>><<false>>
+    <<true>><<true>><<true>><<true>><<true>><<true>><<true>><<true>><<true>>
+    <<true>><<true>><<true>><<true>><<((0 + c * 1) + b * (0 + x * 1)) + a *
+                                      (0 + x * (0 + x * 1)) = 0 /\
+                                      ((0 + c * 1) + b * (0 + y * 1)) + a *
+                                      (0 + y * (0 + y * 1)) = 0 /\
+                                      ~(0 + a * 1 = 0 /\
+                                        (0 + b * 1 = 0 /\ 0 + c * 1 = 0 \/
+                                         ~0 + b * 1 = 0 /\
+                                         ~(0 + c * (0 + c * 1)) + b *
+                                          ((0 + c * ((0 + y * 1) + x * 1)) + b *
+                                           (0 + x * (0 + y * 1))) =
+                                          0) \/
+                                        ~0 + a * 1 = 0 /\
+                                        (~(0 + b * (0 + b * (0 + c * -1))) + a *
+                                          (((0 + c * (0 + c * 1)) + b *
+                                            (0 + c * ((0 + y * -2) + x * -2))) +
+                                           a *
+                                           ((0 + c *
+                                             ((0 + y * (0 + y * -1)) + x *
+                                              ((0 + y * -4) + x * -1))) +
+                                            a *
+                                            (0 + x *
+                                             (0 + x * (0 + y * (0 + y * 1)))))) =
+                                          0 \/
+                                         ~(0 + b * (0 + b * (0 + b * -1))) + a *
+                                          ((0 + b *
+                                            ((0 + c * 2) + b *
+                                             ((0 + y * -2) + x * -2))) +
+                                           a *
+                                           (((0 + c * ((0 + y * 2) + x * 2)) +
+                                             b *
+                                             ((0 + y * (0 + y * -1)) + x *
+                                              ((0 + y * -4) + x * -1))) +
+                                            a *
+                                            (0 + x *
+                                             ((0 + y * (0 + y * -2)) + x *
+                                              (0 + y * -2))))) =
+                                          0)) ==>
+                                      (0 + c * -1) + a * (0 + x * (0 + y * 1)) =
+                                      0 /\ (0 + b * 1) + a *
+                                      ((0 + y * 1) + x * 1) = 0>><<~((~0 + a *
+                                                                       1 = 0 /\
+                                                                      (0 + a *
+                                                                       (0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        -1) + a *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) =
+                                                                       0 /\
+                                                                       (0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -2)) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c * 2) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 2) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -1) + a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2)) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        1 = 0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        1 = 0 /\
+                                                                        0 + c *
+                                                                        1 = 0 /\
+                                                                        ~0 + a *
+                                                                        (0 + x *
+                                                                        1) = 0 \/
+                                                                        ~0 + b *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        -1)) = 0) \/
+                                                                        ~0 + a *
+                                                                        1 = 0 /\
+                                                                        (
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1)))) =
+                                                                        0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1)))) =
+                                                                        0)) \/
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        -4))) = 0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        16)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        14))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 1)))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 3))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        -1) + a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))) = 0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c * 1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) =
+                                                                        0 /\
+                                                                        (
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))))))) =
+                                                                        0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -4))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -3))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 3)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 8))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -3)))) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -2))))))) =
+                                                                        0)) \/
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -2)) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c * 2) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -2)))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -8))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -14))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -32)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 6)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -37))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -20)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -1)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 6) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -8)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        20)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        26))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        16)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 2) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x * 1)))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        (0 + b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))))) =
+                                                                        0) \/
+                                                                       ~0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        -1) + a *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) = 0 /\
+                                                                       (0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))))))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -2) + b *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -3) + b *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) =
+                                                                        0 /\
+                                                                        (
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)))) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))))))) =
+                                                                        0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2)))))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        -2) + b *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -24)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 5))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -20))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8))))))))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -1) + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1))))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        14))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        12))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 8)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        48)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        88)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        50)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -14))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        32))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        120))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        132))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        28))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        48)))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        112)))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        56)))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -9))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        32))))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        36))))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 8))))))))))))))))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -24)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 5))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -20))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))))))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -5))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)))))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))))) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1))))))))))) =
+                                                                        0)) \/
+                                                                      0 + a * 1 =
+                                                                      0 /\
+                                                                      ~0 + b *
+                                                                       1 = 0 /\
+                                                                      (0 + b *
+                                                                       ((
+                                                                        0 + c * 1) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x * 1)) =
+                                                                       0 /\
+                                                                       (0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                       b *
+                                                                       (0 + c *
+                                                                        (
+                                                                        0 + x * 1)) =
+                                                                       0 /\
+                                                                       (0 + a *
+                                                                        1 = 0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        1 = 0 /\
+                                                                        0 + c *
+                                                                        1 = 0 /\
+                                                                        ~0 + a *
+                                                                        (0 + x *
+                                                                        1) = 0 \/
+                                                                        ~0 + b *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        -1)) = 0) \/
+                                                                        ~0 + a *
+                                                                        1 = 0 /\
+                                                                        (
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1)))) =
+                                                                        0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1)))) =
+                                                                        0)) \/
+                                                                       ~0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 1) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x * 1)) =
+                                                                        0 /\
+                                                                       0 + a *
+                                                                       ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))) =
+                                                                       0 /\
+                                                                       ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) =
+                                                                        0) \/
+                                                                      0 + a * 1 =
+                                                                      0 /\
+                                                                      0 + b * 1 =
+                                                                      0 /\
+                                                                      ~0 + c *
+                                                                       1 = 0 /\
+                                                                      (0 + a *
+                                                                       1 = 0 /\
+                                                                       (0 + b *
+                                                                        1 = 0 /\
+                                                                        0 + c *
+                                                                        1 = 0 /\
+                                                                        ~0 + a *
+                                                                        (0 + x *
+                                                                        1) = 0 \/
+                                                                        ~0 + b *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        -1)) = 0) \/
+                                                                       ~0 + a *
+                                                                        1 = 0 /\
+                                                                       (~0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1)))) =
+                                                                        0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -1)))) =
+                                                                        0))) /\
+                                                                     ((0 + c * 1) +
+                                                                      b *
+                                                                      (0 + x * 1)) +
+                                                                     a *
+                                                                     (0 + x *
+                                                                      (0 + x * 1)) =
+                                                                     0 \/
+                                                                     (~0 + a *
+                                                                       1 = 0 /\
+                                                                      (0 + a *
+                                                                       (0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        -1) + a *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) =
+                                                                       0 /\
+                                                                       (0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -2)) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c * 2) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 2) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -1) + a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2)) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        1 = 0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        1 = 0 /\
+                                                                        0 + c *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b * 1) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        1) = 0 \/
+                                                                        ~0 + b *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        -1) + b *
+                                                                        (0 + x *
+                                                                        1)) = 0) \/
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2)) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        -4))) = 0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        16)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        14))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))) +
+                                                                        a *
+                                                                        (0 + c *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -3))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        -1) + a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))) = 0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c * 1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) =
+                                                                        0 /\
+                                                                        (
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))))))) =
+                                                                        0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -4))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -3))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 3)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 8))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 3)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1))))))) =
+                                                                        0)) \/
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -2)) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c * 2) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -2)))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -8))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -14))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -32)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 6)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -37))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -20)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -1)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 6) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -8)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        20)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        26))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        16)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1)))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        -1))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -5))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -2)))))) =
+                                                                        0) \/
+                                                                       ~0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        -1) + a *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) = 0 /\
+                                                                       (0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))))))) =
+                                                                        0 /\
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -2) + b *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        a *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -3) + b *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) =
+                                                                        0 /\
+                                                                        (
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        -2) + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -2))))))) =
+                                                                        0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        -2) + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2)) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        -2)))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        -2) + b *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -24)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 5))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -20))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8))))))))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 1) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x * 1))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 3))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))))) =
+                                                                        0) \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 4)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -4)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -1))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 4))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        14))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        12))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 8)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        48)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        88)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        50)))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12)))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -14))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        32))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        120))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        132))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        28))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        48)))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        112)))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        56)))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -9))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        32))))))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        36))))))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -2))))))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 8))))))))))))))))))))))) =
+                                                                        0 /\
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        0 + a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -4))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -6))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -24)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -12)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 5))))))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -16))))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -20))))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 2))))))) +
+                                                                        a *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        -8)))))))))))))) =
+                                                                        0 /\
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1))))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 6))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4))))) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 4)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 5))))) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        2))))))))))) =
+                                                                        0)) \/
+                                                                      0 + a * 1 =
+                                                                      0 /\
+                                                                      ~0 + b *
+                                                                       1 = 0 /\
+                                                                      (0 + b *
+                                                                       ((
+                                                                        0 + c * 1) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x * 1)) =
+                                                                       0 /\
+                                                                       (0 + c *
+                                                                        (
+                                                                        0 + c * 1)) +
+                                                                       b *
+                                                                       (0 + c *
+                                                                        (
+                                                                        0 + x * 1)) =
+                                                                       0 /\
+                                                                       (0 + a *
+                                                                        1 = 0 /\
+                                                                        (
+                                                                        0 + b *
+                                                                        1 = 0 /\
+                                                                        0 + c *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b * 1) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        1) = 0 \/
+                                                                        ~0 + b *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        -1) + b *
+                                                                        (0 + x *
+                                                                        1)) = 0) \/
+                                                                        ~0 + a *
+                                                                        1 = 0 /\
+                                                                        (
+                                                                        ~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        -1) + b *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))) = 0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b * 1) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        2))) = 0)) \/
+                                                                       ~0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 1) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x * 1)) =
+                                                                        0 /\
+                                                                       0 + a *
+                                                                       ((
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c * 1)))) +
+                                                                        b *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x * 2)))) +
+                                                                        b *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))))) =
+                                                                       0 /\
+                                                                       ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        (
+                                                                        0 + c * 1) +
+                                                                        b *
+                                                                        (
+                                                                        0 + x * 1)))) +
+                                                                        a *
+                                                                        (
+                                                                        (
+                                                                        0 + c *
+                                                                        (
+                                                                        0 + c *
+                                                                        -1)) +
+                                                                        b *
+                                                                        (
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + x *
+                                                                        (
+                                                                        0 + x * 1)))) =
+                                                                        0) \/
+                                                                      0 + a * 1 =
+                                                                      0 /\
+                                                                      0 + b * 1 =
+                                                                      0 /\
+                                                                      ~0 + c *
+                                                                       1 = 0 /\
+                                                                      (0 + a *
+                                                                       1 = 0 /\
+                                                                       (0 + b *
+                                                                        1 = 0 /\
+                                                                        0 + c *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b * 1) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        1) = 0 \/
+                                                                        ~0 + b *
+                                                                        1 = 0 /\
+                                                                        ~(
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        0 + c *
+                                                                        -1) + b *
+                                                                        (0 + x *
+                                                                        1)) = 0) \/
+                                                                       ~0 + a *
+                                                                        1 = 0 /\
+                                                                       (~0 + a *
+                                                                        ((
+                                                                        0 + b *
+                                                                        (
+                                                                        0 + b * 1)) +
+                                                                        a *
+                                                                        ((
+                                                                        (
+                                                                        0 + c *
+                                                                        -1) + b *
+                                                                        (
+                                                                        0 + x * 2)) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        (0 + x *
+                                                                        1)))) = 0 \/
+                                                                        ~0 + a *
+                                                                        (0 + a *
+                                                                        ((
+                                                                        0 + b * 1) +
+                                                                        a *
+                                                                        (0 + x *
+                                                                        2))) = 0))) /\
+                                                                     ((0 + c * 1) +
+                                                                      b *
+                                                                      (0 + x * 1)) +
+                                                                     a *
+                                                                     (0 + x *
+                                                                      (0 + x * 1)) =
+                                                                     0)>>
+    <<true>><<true>><<true>><<~(((0 + y * 1) + x * -1 = 0 /\
+                                 ((0 + y * (0 + y * 1)) + x * (0 + x * -1) = 0 \/
+                                  ~(0 + y * (0 + y * 1)) + x * (0 + x * -1) = 0)) /\
+                                ~(0 + y * -1) + x * 1 = 0)>><<~(((0 + y * 2) +
+                                                                 x * -2 = 0 /\
+                                                                 ((0 + y *
+                                                                   (0 + y * 2)) +
+                                                                  x *
+                                                                  (0 + x * -2) =
+                                                                  0 \/
+                                                                  ~(0 + y *
+                                                                    (0 + y * 2)) +
+                                                                   x *
+                                                                   (0 + x * -2) =
+                                                                   0)) /\
+                                                                ~(0 + y * -1) +
+                                                                 x * 1 = 0)>>
+    <<true>><<true>><<true>><<true>><<true>><<~((0 + a * 1 = 0 /\
+                                                 (0 + b * 1 = 0 /\
+                                                  0 + c * 1 = 0 /\
+                                                  ~0 + a * (0 + x * 1) = 0 \/
+                                                  ~0 + b * 1 = 0 /\
+                                                  ~(0 + b *
+                                                    ((0 + c * (0 + c * -1)) + b *
+                                                     (0 + c * (0 + x * -1)))) +
+                                                   a *
+                                                   ((0 + c *
+                                                     (0 + c * (0 + x * -1))) +
+                                                    b *
+                                                    (0 + c *
+                                                     (0 + x * (0 + x * -1)))) =
+                                                   0) \/
+                                                 ~0 + a * 1 = 0 /\
+                                                 (~0 + a *
+                                                   (0 + a *
+                                                    (((0 + c *
+                                                       (0 + c * (0 + c * -1))) +
+                                                      b *
+                                                      ((0 + c *
+                                                        (0 + c * (0 + x * -2))) +
+                                                       b *
+                                                       (0 + c *
+                                                        (0 + x * (0 + x * -1))))) +
+                                                     a *
+                                                     (((0 + c *
+                                                        (0 + c *
+                                                         (0 + x * (0 + x * -2)))) +
+                                                       b *
+                                                       (0 + c *
+                                                        (0 + x *
+                                                         (0 + x * (0 + x * -2))))) +
+                                                      a *
+                                                      (0 + c *
+                                                       (0 + x *
+                                                        (0 + x *
+                                                         (0 + x * (0 + x * -1)))))))) =
+                                                   0 \/
+                                                  ~0 + a *
+                                                   (0 + a *
+                                                    ((0 + b *
+                                                      ((0 + c * (0 + c * -1)) +
+                                                       b *
+                                                       ((0 + c * (0 + x * -2)) +
+                                                        b *
+                                                        (0 + x * (0 + x * -1))))) +
+                                                     a *
+                                                     ((0 + b *
+                                                       ((0 + c *
+                                                         (0 + x * (0 + x * -2))) +
+                                                        b *
+                                                        (0 + x *
+                                                         (0 + x * (0 + x * -2))))) +
+                                                      a *
+                                                      (0 + b *
+                                                       (0 + x *
+                                                        (0 + x *
+                                                         (0 + x * (0 + x * -1)))))))) =
+                                                   0)) /\
+                                                ((0 + c * 1) + b * (0 + x * 1)) +
+                                                a * (0 + x * (0 + x * 1)) = 0 \/
+                                                (0 + a * 1 = 0 /\
+                                                 (0 + b * 1 = 0 /\
+                                                  0 + c * 1 = 0 /\
+                                                  ~(0 + b * 1) + a *
+                                                   (0 + x * 1) = 0 \/
+                                                  ~0 + b * 1 = 0 /\
+                                                  ~(0 + b *
+                                                    (0 + b *
+                                                     ((0 + c * 1) + b *
+                                                      (0 + x * 1)))) +
+                                                   a *
+                                                   ((0 + c * (0 + c * -1)) + b *
+                                                    (0 + b *
+                                                     (0 + x * (0 + x * 1)))) =
+                                                   0) \/
+                                                 ~0 + a * 1 = 0 /\
+                                                 ~0 + a *
+                                                  (0 + a *
+                                                   (0 + a *
+                                                    (((0 + c * (0 + c * 1)) + b *
+                                                      ((0 + c * (0 + x * 2)) +
+                                                       b * (0 + x * (0 + x * 1)))) +
+                                                     a *
+                                                     (((0 + c *
+                                                        (0 + x * (0 + x * 2))) +
+                                                       b *
+                                                       (0 + x *
+                                                        (0 + x * (0 + x * 2)))) +
+                                                      a *
+                                                      (0 + x *
+                                                       (0 + x *
+                                                        (0 + x * (0 + x * 1)))))))) =
+                                                  0) /\
+                                                ((0 + c * 1) + b * (0 + x * 1)) +
+                                                a * (0 + x * (0 + x * 1)) = 0)>>
+    <<true>><<true>><<true>><<true>><<true>><<true>><<true>><<true>><<0 + x * 1 =
+                                                                      0 /\
+                                                                      ~0 + y *
+                                                                       1 = 0 \/
+                                                                      ~0 + x *
+                                                                       1 = 0>>
+    <<~(0 + x * 1 = 0 /\
+        (0 + x * 2 = 0 /\ 0 + y * 1 = 0 /\ ~0 + z * 1 = 0 \/
+         ~0 + x * 2 = 0 /\
+         ~0 + x * ((0 + y * (0 + y * -1)) + x * (0 + z * 4)) = 0))>><<true>>
+    <<true>><<(~0 + b * 1 = 0 /\
+               ((0 + b * (0 + c * 1)) + a * (0 + d * -1) = 0 /\ 0 + d * 1 = 0 \/
+                ~(0 + b * (0 + c * 1)) + a * (0 + d * -1) = 0) \/
+               0 + b * 1 = 0 /\ 0 + d * 1 = 0 /\ ~0 + a * 1 = 0 /\ 0 + c * 1 = 0 \/
+               0 + b * 1 = 0 /\ ~0 + d * 1 = 0 /\ ~0 + a * 1 = 0) /\
+              (~0 + d * 1 = 0 /\
+               ((0 + b * (0 + c * -1)) + a * (0 + d * 1) = 0 /\ 0 + b * 1 = 0 \/
+                ~(0 + b * (0 + c * -1)) + a * (0 + d * 1) = 0) \/
+               0 + b * 1 = 0 /\ 0 + d * 1 = 0 /\ ~0 + c * 1 = 0 /\ 0 + a * 1 = 0 \/
+               0 + d * 1 = 0 /\ ~0 + b * 1 = 0 /\ ~0 + c * 1 = 0)>><<true>>
+    <<false>><<true>><<true>><<true>><<true>><<true>><<|0|>><<~(((0 + u * -1) +
+                                                                 d * 1 = 0 /\
+                                                                 (0 + v * 1) +
+                                                                 b * 1 = 0 /\
+                                                                 ((0 + u * -1) +
+                                                                  a * 1 = 0 /\
+                                                                  ((0 + v * -1) +
+                                                                   c * 1 = 0 \/
+                                                                   ~(0 + v * -1) +
+                                                                    c * 1 = 0) \/
+                                                                  ~(0 + u * -1) +
+                                                                   a * 1 = 0) \/
+                                                                 (0 + v * 1) +
+                                                                 b * 1 = 0 /\
+                                                                 ~(0 + u * -1) +
+                                                                  d * 1 = 0 /\
+                                                                 ((0 + u * -1) +
+                                                                  a * 1 = 0 \/
+                                                                  ~(0 + u * -1) +
+                                                                   a * 1 = 0) \/
+                                                                 ~(0 + v * 1) +
+                                                                  b * 1 = 0 /\
+                                                                 ((((((0 + v *
+                                                                       (0 + v *
+                                                                        -1)) +
+                                                                      u *
+                                                                      (0 + u * -1)) +
+                                                                     d *
+                                                                     (0 + u * 1)) +
+                                                                    c *
+                                                                    (0 + v * 1)) +
+                                                                   b *
+                                                                   ((0 + v * -1) +
+                                                                    c * 1)) +
+                                                                  a *
+                                                                  ((0 + u * 1) +
+                                                                   d * -1) =
+                                                                  0 \/
+                                                                  ~(((((0 + v *
+                                                                        (
+                                                                        0 + v *
+                                                                        -1)) +
+                                                                       u *
+                                                                       (0 + u *
+                                                                        -1)) +
+                                                                      d *
+                                                                      (0 + u * 1)) +
+                                                                     c *
+                                                                     (0 + v * 1)) +
+                                                                    b *
+                                                                    ((0 + v * -1) +
+                                                                     c * 1)) +
+                                                                   a *
+                                                                   ((0 + u * 1) +
+                                                                    d * -1) =
+                                                                   0)) /\
+                                                                ~(0 + d * -1) +
+                                                                 a * 1 = 0)>>
+    <<true>><<true>><<false>>
+    |}]
 ;;

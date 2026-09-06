@@ -76,9 +76,23 @@ let paramodulation fm =
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: Test" =
-  print_fol_formula
+  print_list print_bool
     (paramodulation
      {%fol|(forall x. f(f(x)) = f(x)) /\ (forall x. exists y. f(y) = x)
        ==> forall x. f(x) = x|});
-  [%expect {| |}]
+  [%expect {|
+    0 used; 4 unused.
+    1 used; 3 unused.
+    2 used; 4 unused.
+    3 used; 8 unused.
+    4 used; 11 unused.
+    5 used; 13 unused.
+    6 used; 21 unused.
+    7 used; 40 unused.
+    8 used; 64 unused.
+    9 used; 83 unused.
+    10 used; 108 unused.
+    11 used; 125 unused.
+    [true]
+    |}]
 ;;

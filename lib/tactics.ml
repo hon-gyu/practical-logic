@@ -254,23 +254,23 @@ let%expect_test "eg: A simple example" =
      (forall x y. f(x) <= y <=> x <= g(y))
      ==> (forall x y. x <= y ==> f(x) <= f(y)) /\
          (forall x y. x <= y ==> g(x) <= g(y))|} in
-  print_fol_formula
+  print_goal
     (g0);
   let g1 = imp_intro_tac "ant" g0 in
-  print_fol_formula
+  print_goal
     (g1);
   let g2 = conj_intro_tac g1 in
-  print_fol_formula
+  print_goal
     (g2);
   let g3 = funpow 2 (auto_tac by ["ant"]) g2 in
-  print_fol_formula
+  print_goal
     (g3);
-  print_fol_formula
+  print_thm
     (extract_thm g3);
   (* ------------------------------------------------------------------------- *)
   (* All packaged up together.                                                 *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_thm
     (prove {%fol|(forall x. x <= x) /\
             (forall x y z. x <= y /\ y <= z ==> x <= z) /\
             (forall x y. f(x) <= y <=> x <= g(y))
@@ -280,7 +280,65 @@ let%expect_test "eg: A simple example" =
            conj_intro_tac;
            auto_tac by ["ant"];
            auto_tac by ["ant"]]);
-  [%expect {| |}]
+  [%expect {|
+    1 subgoal:
+    ---> (forall x. x <= x) /\
+         (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+         (forall x y. f(x) <= y <=> x <= g(y)) ==>
+         (forall x y. x <= y ==> f(x) <= f(y)) /\
+         (forall x y. x <= y ==> g(x) <= g(y))
+
+    1 subgoal:
+    ant: (forall x. x <= x) /\
+         (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+         (forall x y. f(x) <= y <=> x <= g(y))
+    ---> (forall x y. x <= y ==> f(x) <= f(y)) /\
+         (forall x y. x <= y ==> g(x) <= g(y))
+
+    2 subgoals starting with
+    ant: (forall x. x <= x) /\
+         (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+         (forall x y. f(x) <= y <=> x <= g(y))
+    ---> forall x y. x <= y ==> f(x) <= f(y)
+    Proving <<(forall x. x <= x) /\
+              (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+              (forall x y. f(x) <= y <=> x <= g(y)) ==>
+              (forall x y. x <= y ==> f(x) <= f(y))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Proving <<(forall x. x <= x) /\
+              (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+              (forall x y. f(x) <= y <=> x <= g(y)) ==>
+              (forall x y. x <= y ==> g(x) <= g(y))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    No subgoals|-
+               (forall x. x <= x) /\
+               (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+               (forall x y. f(x) <= y <=> x <= g(y)) ==>
+               (forall x y. x <= y ==> f(x) <= f(y)) /\
+               (forall x y. x <= y ==> g(x) <= g(y))Proving <<(forall x. x <= x) /\
+                                                              (forall x y z.
+                                                                 x <= y /\ y <= z ==>
+                                                                 x <= z) /\
+                                                              (forall x y.
+                                                                 f(x) <= y <=>
+                                                                 x <= g(y)) ==>
+                                                              (forall x y.
+                                                                 x <= y ==>
+                                                                 f(x) <= f(
+                                                                 y))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Proving <<(forall x. x <= x) /\
+              (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+              (forall x y. f(x) <= y <=> x <= g(y)) ==>
+              (forall x y. x <= y ==> g(x) <= g(y))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    |-
+    (forall x. x <= x) /\
+    (forall x y z. x <= y /\ y <= z ==> x <= z) /\
+    (forall x y. f(x) <= y <=> x <= g(y)) ==>
+    (forall x y. x <= y ==> f(x) <= f(y)) /\
+    (forall x y. x <= y ==> g(x) <= g(y))
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -347,11 +405,10 @@ let qed (Goals((asl,w)::gls,jfn) as gl) =
 (* A simple example.                                                         *)
 (* ------------------------------------------------------------------------- *)
 
+(* Defined here just in time for (interactive) use.  See above. *)
+let cases = disj_elim_tac "";;
+
 let%expect_test "eg: A simple example" =
-  (* Define here just in time for (interactive) use. See above. *)
-  let cases = disj_elim_tac "" in
-  print_fol_formula
-    (cases);
   let ewd954 = prove
    {%fol|(forall x y. x <= y <=> x * y = x) /\
      (forall x y. f(x * y) = f(x) * f(y))
@@ -373,9 +430,34 @@ let%expect_test "eg: A simple example" =
     so have {%fol|f(x) * f(y) = f(x)|} by ["eq_sym"];
     so conclude {%fol|f(x) <= f(y)|} by ["le"];
     qed] in
-  print_fol_formula
+  print_thm
     (ewd954);
-  [%expect {| |}]
+  [%expect {|
+    Proving <<(forall x y z. x = y ==> y = z ==> x = z) ==>
+              (forall x y z. x = y /\ y = z ==> x = z)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Proving <<x <= y ==> (forall x y. x <= y <=> x * y = x) ==> x * y = x>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<x * y = x ==>
+              (forall x y. x = y ==> f(x) = f(y)) ==> f(x * y) = f(x)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<f(x * y) = f(x) ==>
+              (forall x y. x = y ==> y = x) ==> f(x) = f(x * y)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<f(x) = f(x * y) ==>
+              (forall x y z. x = y /\ y = z ==> x = z) ==>
+              (forall x y. f(x * y) = f(x) * f(y)) ==> f(x) = f(x) * f(y)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    Proving <<f(x) = f(x) * f(y) ==>
+              (forall x y. x = y ==> y = x) ==> f(x) * f(y) = f(x)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<f(x) * f(y) = f(x) ==>
+              (forall x y. x <= y <=> x * y = x) ==> f(x) <= f(y)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    |-
+    (forall x y. x <= y <=> x * y = x) /\ (forall x y. f(x * y) = f(x) * f(y)) ==>
+    (forall x y. x <= y ==> f(x) <= f(y))
+    |}]
 ;;
 
 
@@ -384,7 +466,7 @@ let%expect_test "eg: A simple example" =
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: More examples not in the main text" =
-  print_fol_formula
+  print_thm
     (prove
      {%fol|(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
        ==> exists y. p(f(f(f(f(y)))))|}
@@ -402,7 +484,7 @@ let%expect_test "eg: More examples not in the main text" =
   (* ------------------------------------------------------------------------- *)
   (* Alternative formulation with lemma construct.                             *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_thm
     (let lemma (s,p) (Goals((asl,w)::gls,jfn) as gl) =
       Goals((asl,p)::((s,p)::asl,w)::gls,
             fun (thp::thw::oths) ->
@@ -428,8 +510,6 @@ let%expect_test "eg: More examples not in the main text" =
   (* LCF-style interactivity.                                                  *)
   (* ------------------------------------------------------------------------- *)
   let current_goal = ref[set_goal False] in
-  print_fol_formula
-    (current_goal);
   let g x = current_goal := [set_goal x]; hd(!current_goal) in
   let e t = current_goal := (t(hd(!current_goal))::(!current_goal));
             hd(!current_goal) in
@@ -439,12 +519,12 @@ let%expect_test "eg: More examples not in the main text" =
   (* ------------------------------------------------------------------------- *)
   (* Examples.                                                                 *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_thm
     (prove {%fol|p(a) ==> (forall x. p(x) ==> p(f(x)))
             ==> exists y. p(y) /\ p(f(y))|}
           [our thesis at once;
            qed]);
-  print_fol_formula
+  print_thm
     (prove
      {%fol|(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x)))
        ==> exists y. p(f(f(f(f(y)))))|}
@@ -458,7 +538,7 @@ let%expect_test "eg: More examples not in the main text" =
        take {%tm|a|};
        so our thesis by ["C"];
        qed]);
-  print_fol_formula
+  print_thm
     (prove {%fol|forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
                       ==> exists y. p(y) /\ p(f(y))|}
           [fix "c";
@@ -469,7 +549,7 @@ let%expect_test "eg: More examples not in the main text" =
            note ("C",{%fol|p(c) ==> p(f(c))|}) by ["B"];
            so our thesis by ["C"; "A"];
            qed]);
-  print_fol_formula
+  print_thm
     (prove {%fol|p(c) ==> (forall x. p(x) ==> p(f(x)))
                       ==> exists y. p(y) /\ p(f(y))|}
           [assume ["A",{%fol|p(c)|}];
@@ -478,7 +558,7 @@ let%expect_test "eg: More examples not in the main text" =
            conclude {%fol|p(c)|} by ["A"];
            our thesis by ["A"; "B"];
            qed]);
-  print_fol_formula
+  print_thm
     (prove {%fol|forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
                       ==> exists y. p(y) /\ p(f(y))|}
           [fix "c";
@@ -489,7 +569,7 @@ let%expect_test "eg: More examples not in the main text" =
            note ("C",{%fol|p(c) ==> p(f(c))|}) by ["B"];
            our thesis by ["C"; "A"];
            qed]);
-  print_fol_formula
+  print_thm
     (prove {%fol|forall a. p(a) ==> (forall x. p(x) ==> p(f(x)))
                       ==> exists y. p(y) /\ p(f(y))|}
           [fix "c";
@@ -500,7 +580,7 @@ let%expect_test "eg: More examples not in the main text" =
            note ("C",{%fol|p(c) ==> p(f(c))|}) by ["B"];
            our thesis by ["C"; "A"; "D"];
            qed]);
-  print_fol_formula
+  print_thm
     (prove {%fol|(p(a) \/ p(b)) ==> q ==> exists y. p(y)|}
       [assume ["A",{%fol|p(a) \/ p(b)|}];
        assume ["",{%fol|q|}];
@@ -512,7 +592,7 @@ let%expect_test "eg: More examples not in the main text" =
          take {%tm|b|};
          so our thesis at once;
          qed]);
-  print_fol_formula
+  print_thm
     (prove
       {%fol|(p(a) \/ p(b)) /\ (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))|}
       [assume ["base",{%fol|p(a) \/ p(b)|};
@@ -527,7 +607,7 @@ let%expect_test "eg: More examples not in the main text" =
          take {%tm|b|};
          so our thesis by ["Step"];
          qed]);
-  print_fol_formula
+  print_thm
     (prove
      {%fol|(exists x. p(x)) ==> (forall x. p(x) ==> p(f(x))) ==> exists y. p(f(y))|}
       [assume ["A",{%fol|exists x. p(x)|}];
@@ -537,7 +617,7 @@ let%expect_test "eg: More examples not in the main text" =
        take {%tm|a|};
        our thesis by ["concl"];
        qed]);
-  print_fol_formula
+  print_thm
     (prove {%fol|(forall x. p(x) ==> q(x)) ==> (forall x. q(x) ==> p(x))
            ==> (p(a) <=> q(a))|}
       [assume ["A",{%fol|forall x. p(x) ==> q(x)|}];
@@ -565,7 +645,93 @@ let%expect_test "eg: More examples not in the main text" =
      endcase];;
 
   *****)
-  [%expect {| |}]
+  [%expect {|
+    Proving <<(forall x. p(x) ==> p(f(x))) ==> (forall x. p(x) ==> p(f(f(x))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<(forall x. p(x) ==> p(f(f(x)))) ==>
+              (forall x. p(x) ==> p(f(f(f(f(x))))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<(exists x. p(x)) ==> (exists a. p(a))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<p(a) ==> (forall x. p(x) ==> p(f(f(f(f(x)))))) ==> p(f(f(f(f(a)))))>>
+    Searching with depth limit 0Searching with depth limit 1
+    |-
+    (exists x. p(x)) ==>
+    (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(f(f(f(y))))))Proving
+    <<(forall x. p(x) ==> p(f(x))) ==> (forall x. p(x) ==> p(f(f(x))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<(forall x. p(x) ==> p(f(f(x)))) ==>
+              (forall x. p(x) ==> p(f(f(f(f(x))))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<(exists x. p(x)) ==> (exists a. p(a))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<p(a) ==> (forall x. p(x) ==> p(f(f(f(f(x)))))) ==> p(f(f(f(f(a)))))>>
+    Searching with depth limit 0Searching with depth limit 1
+    |-
+    (exists x. p(x)) ==>
+    (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(f(f(f(y))))))Proving
+    <<p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    |- p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
+    <<(forall x. p(x) ==> p(f(x))) ==> (forall x. p(x) ==> p(f(f(x))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<(forall x. p(x) ==> p(f(f(x)))) ==>
+              (forall x. p(x) ==> p(f(f(f(f(x))))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Proving <<(exists x. p(x)) ==> (exists a. p(a))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<p(a) ==> (forall x. p(x) ==> p(f(f(f(f(x)))))) ==> p(f(f(f(f(a)))))>>
+    Searching with depth limit 0Searching with depth limit 1
+    |-
+    (exists x. p(x)) ==>
+    (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(f(f(f(y))))))Proving
+    <<(forall x. p(x) ==> p(f(x))) ==> p(c) ==> p(f(c))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<(p(c) ==> p(f(c))) ==> (p(c) ==> p(f(c))) ==> p(c) ==> p(f(c))>>
+    Searching with depth limit 0
+    |-
+    forall a.
+      p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
+    <<p(c) ==> (forall x. p(x) ==> p(f(x))) ==> p(f(c))>>
+    Searching with depth limit 0Searching with depth limit 1
+    |- p(c) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
+    <<(forall x. p(x) ==> p(f(x))) ==> p(c) ==> p(f(c))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<(p(c) ==> p(f(c))) ==> p(c) ==> p(f(c))>>
+    Searching with depth limit 0
+    |-
+    forall a.
+      p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))Proving
+    <<(forall x. p(x) ==> p(f(x))) ==> p(c) ==> p(f(c))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<(p(c) ==> p(f(c))) ==> p(c) ==> p(c) ==> p(c) /\ p(f(c))>>
+    Searching with depth limit 0
+    |-
+    forall a.
+      p(a) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(y) /\ p(f(y)))
+    |- p(a) \/ p(b) ==> q ==> (exists y. p(y))Proving <<(forall x.
+                                                           p(x) ==> p(f(x))) ==>
+                                                        p(a) ==> p(f(a))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<p(a) ==> (p(a) ==> p(f(a))) ==> p(f(a))>>
+    Searching with depth limit 0
+    Proving <<p(b) ==> (forall x. p(x) ==> p(f(x))) ==> p(f(b))>>
+    Searching with depth limit 0Searching with depth limit 1
+    |- (p(a) \/ p(b)) /\ (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(y)))Proving
+    <<(exists x. p(x)) ==> (exists a. p(a))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<p(a) ==> (forall x. p(x) ==> p(f(x))) ==> p(f(a))>>
+    Searching with depth limit 0Searching with depth limit 1
+    |- (exists x. p(x)) ==> (forall x. p(x) ==> p(f(x))) ==> (exists y. p(f(y)))Proving
+    <<(forall x. p(x) ==> q(x)) ==> p(a) ==> q(a)>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<(forall x. q(x) ==> p(x)) ==> q(a) ==> p(a)>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<(p(a) ==> q(a)) ==> (q(a) ==> p(a)) ==> (p(a) <=> q(a))>>
+    Searching with depth limit 0
+    |-
+    (forall x. p(x) ==> q(x)) ==> (forall x. q(x) ==> p(x)) ==> (p(a) <=> q(a))
+    |}]
 ;;
 
 

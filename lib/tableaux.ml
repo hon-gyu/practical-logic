@@ -64,9 +64,9 @@ let%expect_test "eg: Examples" =
   let p20 = prawitz
    {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
      ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|} in
-  print_fol_formula
+  print_int
     (p20);
-  [%expect {| |}]
+  [%expect {| 2 |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -80,12 +80,12 @@ let compare fm =
 let%expect_test _ =
   let p19 = compare
    {%fol|exists x. forall y z. (P(y) ==> Q(z)) ==> P(x) ==> Q(x)|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p19);
   let p20 = compare
    {%fol|(forall x y. exists z. forall w. P(x) /\ Q(y) ==> R(z) /\ U(w))
      ==> (exists x y. P(x) /\ Q(y)) ==> (exists z. R(z))|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p20);
   let p24 = compare
    {%fol|~(exists x. U(x) /\ Q(x)) /\
@@ -93,15 +93,15 @@ let%expect_test _ =
      ~(exists x. P(x) ==> (exists x. Q(x))) /\
      (forall x. Q(x) /\ R(x) ==> U(x))
      ==> (exists x. P(x) /\ R(x))|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p24);
   let p39 = compare
    {%fol|~(exists x. forall y. P(y,x) <=> ~P(y,y))|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p39);
   let p42 = compare
    {%fol|~(exists y. forall x. P(x,y) <=> ~(exists z. P(x,z) /\ P(z,x)))|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p42);
   (***** Too slow?
 
@@ -115,18 +115,79 @@ let%expect_test _ =
      (exists y. G(y) /\ ~H(x,y))) /\
      (exists x. J(x) /\ (forall y. G(y) ==> H(x,y)))
      ==> (exists x. J(x) /\ ~P(x))|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p44);
   let p59 = compare
    {%fol|(forall x. P(x) <=> ~P(f(x))) ==> (exists x. P(x) /\ ~P(f(x)))|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p59);
   let p60 = compare
    {%fol|forall x. P(x,f(x)) <=>
                exists y. (forall z. P(z,y) ==> P(z,f(x))) /\ P(x,y)|} in
-  print_fol_formula
+  print_pair print_int print_int
     (p60);
-  [%expect {| |}]
+  [%expect {|
+    0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 3 items in list
+    1 ground instances tried; 3 items in list
+    2 ground instances tried; 6 items in list
+    (3, 3)0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 5 items in list
+    2 ground instances tried; 7 items in list
+    3 ground instances tried; 10 items in list
+    4 ground instances tried; 12 items in list
+    5 ground instances tried; 13 items in list
+    6 ground instances tried; 14 items in list
+    7 ground instances tried; 15 items in list
+    8 ground instances tried; 16 items in list
+    8 ground instances tried; 16 items in list
+    9 ground instances tried; 18 items in list
+    10 ground instances tried; 20 items in list
+    11 ground instances tried; 22 items in list
+    12 ground instances tried; 24 items in list
+    13 ground instances tried; 26 items in list
+    14 ground instances tried; 28 items in list
+    15 ground instances tried; 30 items in list
+    16 ground instances tried; 32 items in list
+    17 ground instances tried; 35 items in list
+    18 ground instances tried; 37 items in list
+    (2, 19)0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    (1, 1)0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    (1, 1)0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 5 items in list
+    1 ground instances tried; 5 items in list
+    2 ground instances tried; 8 items in list
+    (2, 3)0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 7 items in list
+    1 ground instances tried; 7 items in list
+    2 ground instances tried; 13 items in list
+    (2, 3)0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 3 items in list
+    1 ground instances tried; 3 items in list
+    (2, 2)0 ground instances tried; 0 items in list
+    0 ground instances tried; 0 items in list
+    1 ground instances tried; 8 items in list
+    2 ground instances tried; 11 items in list
+    3 ground instances tried; 17 items in list
+    4 ground instances tried; 19 items in list
+    4 ground instances tried; 19 items in list
+    5 ground instances tried; 22 items in list
+    6 ground instances tried; 25 items in list
+    7 ground instances tried; 28 items in list
+    8 ground instances tried; 31 items in list
+    9 ground instances tried; 33 items in list
+    10 ground instances tried; 35 items in list
+    11 ground instances tried; 37 items in list
+    12 ground instances tried; 39 items in list
+    (1, 13)
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -179,9 +240,12 @@ let%expect_test "eg" =
        (~P(a) \/ P(x) \/ (exists z w. P(z) /\ R(x,w) /\ R(w,z))) /\
        (~P(a) \/ ~(exists y. P(y) /\ R(x,y)) \/
        (exists z w. P(z) /\ R(x,w) /\ R(w,z))))|} in
-  print_fol_formula
+  print_int
     (p38);
-  [%expect {| |}]
+  [%expect {|
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    4
+    |}]
 ;;
 
 
@@ -198,7 +262,7 @@ let%expect_test "eg: the Andrews challenge" =
       ((exists x. Q(x)) <=> (forall y. Q(y)))) <=>
      ((exists x. forall y. Q(x) <=> Q(y)) <=>
       ((exists x. P(x)) <=> (forall y. P(y))))|} in
-  print_fol_formula
+  print_list print_int
     (p34);
   (* ------------------------------------------------------------------------- *)
   (* Another nice example from EWD 1602.                                       *)
@@ -209,9 +273,45 @@ let%expect_test "eg: the Andrews challenge" =
      (forall x y. f(x) <= y <=> x <= g(y))
      ==> (forall x y. x <= y ==> f(x) <= f(y)) /\
          (forall x y. x <= y ==> g(x) <= g(y))|} in
-  print_fol_formula
+  print_list print_int
     (ewd1062);
-  [%expect {| |}]
+  [%expect {|
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    [5; 4; 5; 3; 3; 3; 2; 4; 6; 2; 3; 3; 4; 3; 3; 3; 3; 2; 2; 3; 6; 3; 2; 4; 3; 3; 3; 3; 3; 4; 4; 4]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9
+    [9; 9]
+    |}]
 ;;
 
 

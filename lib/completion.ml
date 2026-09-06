@@ -1,10 +1,12 @@
 open Lib
 open Formulas
 open Fol
+open Meson
 open Unif
 open Equal
 open Rewrite
 open Order
+open Skolem
 
 (* Warnings the book's style trips in this file; the rest of the
    library compiles with them on.  See lib/dune. *)
@@ -58,9 +60,9 @@ let critical_pairs fma fmb =
 
 
 let%expect_test "eg: Simple example" =
-  print_fol_formula
+  print_list print_fol_formula
     (let eq = {%fol|f(f(x)) = g(x)|} in critical_pairs eq eq);
-  [%expect {| |}]
+  [%expect {| [<<f(g(x0)) = g(f(x0))>>; <<g(x1) = g(x1)>>] |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -110,18 +112,84 @@ let rec complete ord (eqs,def,crits) =
 let%expect_test "eg: A simple 'manual' example, before considering packaging and refinements" =
   let eqs =
     [{%fol|1 * x = x|}; {%fol|i(x) * x = 1|}; {%fol|(x * y) * z = x * y * z|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
   let ord = lpo_ge (weight ["1"; "*"; "i"]) in
-  print_fol_formula
+  ignore
     (ord);
   let eqs' = complete ord
     (eqs,[],unions(allpairs critical_pairs eqs eqs)) in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs');
-  print_fol_formula
+  printert
     (rewrite eqs' {%tm|i(x * i(x)) * (i(i((y * z) * u) * y) * i(u))|});
-  [%expect {| |}]
+  [%expect {|
+    [<<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>]4 equations and 8 pending critical pairs + 0 deferred
+    5 equations and 12 pending critical pairs + 0 deferred
+    6 equations and 16 pending critical pairs + 0 deferred
+    7 equations and 27 pending critical pairs + 0 deferred
+    8 equations and 51 pending critical pairs + 0 deferred
+    9 equations and 70 pending critical pairs + 0 deferred
+    10 equations and 81 pending critical pairs + 0 deferred
+    11 equations and 78 pending critical pairs + 0 deferred
+    12 equations and 85 pending critical pairs + 0 deferred
+    13 equations and 114 pending critical pairs + 0 deferred
+    14 equations and 151 pending critical pairs + 0 deferred
+    15 equations and 180 pending critical pairs + 0 deferred
+    16 equations and 247 pending critical pairs + 0 deferred
+    17 equations and 298 pending critical pairs + 0 deferred
+    18 equations and 356 pending critical pairs + 0 deferred
+    19 equations and 404 pending critical pairs + 0 deferred
+    20 equations and 485 pending critical pairs + 0 deferred
+    21 equations and 530 pending critical pairs + 0 deferred
+    22 equations and 583 pending critical pairs + 0 deferred
+    23 equations and 642 pending critical pairs + 0 deferred
+    24 equations and 730 pending critical pairs + 0 deferred
+    25 equations and 779 pending critical pairs + 0 deferred
+    26 equations and 794 pending critical pairs + 0 deferred
+    27 equations and 819 pending critical pairs + 1 deferred
+    28 equations and 918 pending critical pairs + 1 deferred
+    29 equations and 901 pending critical pairs + 1 deferred
+    30 equations and 1005 pending critical pairs + 1 deferred
+    31 equations and 1086 pending critical pairs + 1 deferred
+    32 equations and 1155 pending critical pairs + 1 deferred
+    32 equations and 1000 pending critical pairs + 1 deferred
+    32 equations and 0 pending critical pairs + 1 deferred
+    32 equations and 0 pending critical pairs + 0 deferred
+    [<<i(x4 * x5) = i(x5) * i(x4)>>; <<x1 * i(x5 * x1) = i(x5)>>; <<i(x4) * x1 *
+                                                                    i(x3 * x1) =
+                                                                    i(x4) * i(
+                                                                    x3)>>;
+    <<x1 * i(i(x4) * i(x3) * x1) = x3 * x4>>; <<i(x3 * x5) * x0 = i(x5) * i(
+                                                x3) * x0>>; <<i(x4 * x5 * x6 * x3) *
+                                                              x0 = i(x3) *
+                                                              i(x4 * x5 * x6) *
+                                                              x0>>; <<i(x0 *
+                                                                        i(
+                                                                        x1)) =
+                                                                      x1 * i(
+                                                                      x0)>>;
+    <<i(i(x2 * x1) * x2) = x1>>; <<i(i(x4) * x2) * x0 = i(x2) * x4 * x0>>;
+    <<x1 * i(x2 * x1) * x2 = 1>>; <<x1 * i(i(x4 * x5) * x1) * x3 = x4 * x5 * x3>>;
+    <<i(x3 * i(x1 * x2)) = x1 * x2 * i(x3)>>; <<i(i(x3 * i(x1 * x2)) * i(x5 * x6)) *
+                                                x1 * x2 * x0 = x5 * x6 * x3 * x0>>;
+    <<x1 * x2 * i(x1 * x2) = 1>>; <<x2 * x3 * i(x2 * x3) * x1 = x1>>; <<i(
+                                                                        x3 * x4) *
+                                                                        x3 * x1 =
+                                                                        i(
+                                                                        x4) * x1>>;
+    <<i(x1 * x3 * x4) * x1 * x3 * x4 * x0 = x0>>; <<i(x1 * i(x3)) * x1 * x4 =
+                                                    x3 * x4>>; <<i(i(x5 * x2) *
+                                                                   x5) *
+                                                                 x0 = x2 * x0>>;
+    <<i(x4 * i(x1 * x2)) * x4 * x0 = x1 * x2 * x0>>; <<i(i(x1)) = x1>>; <<
+                                                                        i(
+                                                                        1) = 1>>;
+    <<x0 * i(x0) = 1>>; <<x0 * i(x0) * x3 = x3>>; <<i(x2 * x3) * x2 * x3 * x1 =
+                                                    x1>>; <<x1 * 1 = x1>>;
+    <<i(1) * x1 = x1>>; <<i(i(x0)) * x1 = x0 * x1>>; <<i(x1) * x1 * x2 = x2>>;
+    <<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>]<<|z|>>
+    |}]
 ;;
 
 
@@ -142,9 +210,52 @@ let rec interreduce dun eqs =
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: This does indeed help a lot" =
-  print_fol_formula
+  let eqs =
+    [{%fol|1 * x = x|}; {%fol|i(x) * x = 1|}; {%fol|(x * y) * z = x * y * z|}] in
+  let ord = lpo_ge (weight ["1"; "*"; "i"]) in
+  let eqs' = complete ord
+    (eqs,[],unions(allpairs critical_pairs eqs eqs)) in
+  print_list print_fol_formula
     (interreduce [] eqs');
-  [%expect {| |}]
+  [%expect {|
+    4 equations and 8 pending critical pairs + 0 deferred
+    5 equations and 12 pending critical pairs + 0 deferred
+    6 equations and 16 pending critical pairs + 0 deferred
+    7 equations and 27 pending critical pairs + 0 deferred
+    8 equations and 51 pending critical pairs + 0 deferred
+    9 equations and 70 pending critical pairs + 0 deferred
+    10 equations and 81 pending critical pairs + 0 deferred
+    11 equations and 78 pending critical pairs + 0 deferred
+    12 equations and 85 pending critical pairs + 0 deferred
+    13 equations and 114 pending critical pairs + 0 deferred
+    14 equations and 151 pending critical pairs + 0 deferred
+    15 equations and 180 pending critical pairs + 0 deferred
+    16 equations and 247 pending critical pairs + 0 deferred
+    17 equations and 298 pending critical pairs + 0 deferred
+    18 equations and 356 pending critical pairs + 0 deferred
+    19 equations and 404 pending critical pairs + 0 deferred
+    20 equations and 485 pending critical pairs + 0 deferred
+    21 equations and 530 pending critical pairs + 0 deferred
+    22 equations and 583 pending critical pairs + 0 deferred
+    23 equations and 642 pending critical pairs + 0 deferred
+    24 equations and 730 pending critical pairs + 0 deferred
+    25 equations and 779 pending critical pairs + 0 deferred
+    26 equations and 794 pending critical pairs + 0 deferred
+    27 equations and 819 pending critical pairs + 1 deferred
+    28 equations and 918 pending critical pairs + 1 deferred
+    29 equations and 901 pending critical pairs + 1 deferred
+    30 equations and 1005 pending critical pairs + 1 deferred
+    31 equations and 1086 pending critical pairs + 1 deferred
+    32 equations and 1155 pending critical pairs + 1 deferred
+    32 equations and 1000 pending critical pairs + 1 deferred
+    32 equations and 0 pending critical pairs + 1 deferred
+    32 equations and 0 pending critical pairs + 0 deferred
+    [<<i(x4 * x5) = i(x5) * i(x4)>>; <<i(i(x1)) = x1>>; <<i(1) = 1>>; <<x0 *
+                                                                        i(
+                                                                        x0) = 1>>;
+    <<x0 * i(x0) * x3 = x3>>; <<x1 * 1 = x1>>; <<i(x1) * x1 * x2 = x2>>;
+    <<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>]
+    |}]
 ;;
 
 
@@ -164,19 +275,26 @@ let complete_and_simplify wts eqs =
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: Inverse property (K&B example 4)" =
-  print_fol_formula
+  print_list print_fol_formula
     (complete_and_simplify ["1"; "*"; "i"]
       [{%fol|i(a) * (a * b) = b|}]);
   (* ------------------------------------------------------------------------- *)
   (* Auxiliary result used to justify extension of language for cancellation.  *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_list print_int
     ((meson ** equalitize)
      {%fol|(forall x y z. x * y = x * z ==> y = z) <=>
        (forall x z. exists w. forall y. z = x * y ==> w = y)|});
   print_fol_formula
     (skolemize {%fol|forall x z. exists w. forall y. z = x * y ==> w = y|});
-  [%expect {| |}]
+  [%expect {|
+    2 equations and 4 pending critical pairs + 0 deferred
+    3 equations and 9 pending critical pairs + 0 deferred
+    3 equations and 0 pending critical pairs + 0 deferred
+    [<<x0 * i(x0) * x3 = x3>>; <<i(i(x0)) * x1 = x0 * x1>>; <<i(a) * a * b = b>>]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    [5; 4]<<~z = x * y \/ f_w(x,z) = y>>
+    |}]
 ;;
 
 
@@ -200,9 +318,9 @@ complete_and_simplify ["1"; "*"; "i"]
 
 let%expect_test "eg: Central groupoids (K&B example 6)" =
   let eqs =  [{%fol|(a * b) * (b * c) = b|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
-  print_fol_formula
+  print_list print_fol_formula
     (complete_and_simplify ["*"] eqs);
   (* ------------------------------------------------------------------------- *)
   (* (l,r)-systems (K&B example 12).                                           *)
@@ -220,7 +338,7 @@ let%expect_test "eg: Central groupoids (K&B example 6)" =
   (* ------------------------------------------------------------------------- *)
   (* Auxiliary result used to justify extension for example 9.                 *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_list print_int
     ((meson ** equalitize)
      {%fol|(forall x y z. x * y = x * z ==> y = z) <=>
        (forall x z. exists w. forall y. z = x * y ==> w = y)|});
@@ -228,15 +346,15 @@ let%expect_test "eg: Central groupoids (K&B example 6)" =
     (skolemize {%fol|forall x z. exists w. forall y. z = x * y ==> w = y|});
   let eqs =
     [{%fol|f(a,a*b) = b|}; {%fol|g(a*b,b) = a|}; {%fol|1 * a = a|}; {%fol|a * 1 = a|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
-  print_fol_formula
+  print_list print_fol_formula
     (complete_and_simplify ["1"; "*"; "f"; "g"] eqs);
   (* ------------------------------------------------------------------------- *)
   (* K&B example 7, where we need to divide through.                           *)
   (* ------------------------------------------------------------------------- *)
   let eqs =  [{%fol|f(a,f(b,c,a),d) = c|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
   (*********** Can't orient
 
@@ -245,9 +363,9 @@ let%expect_test "eg: Central groupoids (K&B example 6)" =
   *************)
   let eqs =  [{%fol|f(a,f(b,c,a),d) = c|}; {%fol|f(a,b,c) = g(a,b)|};
                        {%fol|g(a,b) = h(b)|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
-  print_fol_formula
+  print_list print_fol_formula
     (complete_and_simplify ["h"; "g"; "f"] eqs);
   (* ------------------------------------------------------------------------- *)
   (* Other examples not in the book, mostly from K&B                           *)
@@ -608,14 +726,14 @@ let%expect_test "eg: Some of the exercises (these are taken from Baader & Nipkow
     {%fol|g(g(x)) = f(x)|};
     {%fol|f(g(x)) = g(x)|};
     {%fol|g(f(x)) = f(x)|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
-  print_fol_formula
+  print_list print_fol_formula
     (complete_and_simplify ["f"; "g"] eqs);
   let eqs =  [{%fol|f(g(f(x))) = g(x)|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
-  print_fol_formula
+  print_list print_fol_formula
     (complete_and_simplify ["f"; "g"] eqs);
   (* ------------------------------------------------------------------------- *)
   (* Inductive theorem proving example.                                        *)
@@ -629,9 +747,9 @@ let%expect_test "eg: Some of the exercises (these are taken from Baader & Nipkow
     {%fol|length(h::t) = SUC(length(t))|};
     {%fol|rev(nil) = nil|};
     {%fol|rev(h::t) = append(rev(t),h::nil)|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
-  print_fol_formula
+  print_list print_fol_formula
     (complete_and_simplify
        ["0"; "nil"; "SUC"; "::"; "+"; "length"; "append"; "rev"] eqs);
   let iprove eqs' tm =
@@ -665,7 +783,7 @@ let%expect_test "eg: Some of the exercises (these are taken from Baader & Nipkow
   print_fol_formula
     (iprove [] {%fol|rev(rev(x)) = x|});
   (* ------------------------------------------------------------------------- *)
-  (* With fewer lemmas, it may just need more time or may not terminate.       *)
+  (* With fewer lemmas, it may just need more or may not terminate.       *)
   (* ------------------------------------------------------------------------- *)
 
   (********* not enough lemmas...or maybe it just needs more runtime
@@ -682,5 +800,24 @@ let%expect_test "eg: Some of the exercises (these are taken from Baader & Nipkow
     (iprove [] {%fol|length(append(x,y)) = length(x)|});
   (*** try something false ***)
   *************)
-  [%expect {| |}]
+  [%expect {|
+    [<<(a * b) * b * c = b>>]2 equations and 8 pending critical pairs + 0 deferred
+    3 equations and 18 pending critical pairs + 0 deferred
+    3 equations and 0 pending critical pairs + 0 deferred
+    [<<(x3 * x0 * x1) * x1 = x0 * x1>>; <<x1 * (x1 * x2) * x5 = x1 * x2>>;
+    <<(a * b) * b * c = b>>]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    [5; 4]<<~z = x * y \/ f_w(x,z) = y>>[<<f(a,a * b) = b>>; <<g(a * b,b) = a>>;
+    <<1 * a = a>>; <<a * 1 = a>>]5 equations and 8 pending critical pairs + 0 deferred
+    6 equations and 10 pending critical pairs + 0 deferred
+    7 equations and 11 pending critical pairs + 0 deferred
+    8 equations and 12 pending critical pairs + 0 deferred
+    8 equations and 0 pending critical pairs + 0 deferred
+    [<<g(x1,x1) = 1>>; <<g(x0,1) = x0>>; <<f(1,x1) = x1>>; <<f(x0,x0) = 1>>;
+    <<f(a,a * b) = b>>; <<g(a * b,b) = a>>; <<1 * a = a>>; <<a * 1 = a>>][
+    <<f(a,f(b,c,a),d) = c>>][<<f(a,f(b,c,a),d) = c>>; <<f(a,b,c) = g(a,b)>>;
+    <<g(a,b) = h(b)>>]4 equations and 11 pending critical pairs + 0 deferred
+    4 equations and 0 pending critical pairs + 0 deferred
+    [<<h(h(x2)) = x2>>; <<f(a,b,c) = h(b)>>; <<g(a,b) = h(b)>>]
+    |}]
 ;;

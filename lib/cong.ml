@@ -68,10 +68,10 @@ let ccvalid fm =
   not (exists ccsatisfiable fms);;
 
 let%expect_test "eg" =
-  print_fol_formula
+  print_bool
     (ccvalid {%fol|f(f(f(f(f(c))))) = c /\ f(f(f(c))) = c
               ==> f(c) = c \/ f(g(c)) = g(f(c))|});
-  print_fol_formula
+  print_bool
     (ccvalid {%fol|f(f(f(f(c)))) = c /\ f(f(c)) = c ==> f(c) = c|});
   (* ------------------------------------------------------------------------- *)
   (* For debugging. Maybe I will incorporate into a prettyprinter one day.     *)
@@ -84,5 +84,5 @@ let%expect_test "eg" =
     map (apply fn) (dom fn);;
 
    **********)
-  [%expect {| |}]
+  [%expect {| truefalse |}]
 ;;

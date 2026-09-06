@@ -51,45 +51,65 @@ let unify_and_apply eqs =
   map apply eqs;;
 
 let%expect_test _ =
-  print_fol_formula
+  print_list (print_pair printert printert)
     (unify_and_apply [{%tm|f(x,g(y))|},{%tm|f(f(z),w)|}]);
-  print_fol_formula
+  print_list (print_pair printert printert)
     (unify_and_apply [{%tm|f(x,y)|},{%tm|f(y,x)|}]);
   (****  unify_and_apply [{%tm|f(x,g(y))|},{%tm|f(y,x)|}];; *****)
-  print_fol_formula
+  print_list (print_pair printert printert)
     (unify_and_apply [{%tm|x_0|},{%tm|f(x_1,x_1)|};
                      {%tm|x_1|},{%tm|f(x_2,x_2)|};
                      {%tm|x_2|},{%tm|f(x_3,x_3)|}]);
-  let cyclic() = "cyclic" |=> parse_term "0" in
-  print_fol_formula
-    (fullunify [parse_term "x", parse_term "x"]);
-  print_fol_formula
-    (fullunify [parse_term "p(X,Y)", parse_term "p(Y,X)"]);
+  let cyclic() = "cyclic" |=> parset "0" in
+  print_graph print_quoted printert
+    (fullunify [parset "x", parset "x"]);
+  print_graph print_quoted printert
+    (fullunify [parset "p(X,Y)", parset "p(Y,X)"]);
   (* Makes solve do some work. *)
-  print_fol_formula
-    (fullunify [parse_term "p(x,x)", parse_term "p(y,0)"]);
-  print_fol_formula
-    (try fullunify [parse_term "p(x,x)", parse_term "p(y,f(y))"]
+  print_graph print_quoted printert
+    (fullunify [parset "p(x,x)", parset "p(y,0)"]);
+  print_graph print_quoted printert
+    (try fullunify [parset "p(x,x)", parset "p(y,f(y))"]
     with Failure _ ->  cyclic());
-  print_fol_formula
-    (fullunify [parse_term "p(X,Y,2)", parse_term "p(Y,X,X)"]);
-  print_fol_formula
-    (try fullunify [parse_term "Q(a, x, f(x))", parse_term "Q(2, y, y)"]
+  print_graph print_quoted printert
+    (fullunify [parset "p(X,Y,2)", parset "p(Y,X,X)"]);
+  print_graph print_quoted printert
+    (try fullunify [parset "Q(a, x, f(x))", parset "Q(2, y, y)"]
     with Failure _ -> cyclic());
-  print_fol_formula
-    (fullunify [parse_term "Q(x, y, z)", parse_term "Q(u, h(v, v), u)"]);
-  print_fol_formula
-    (fullunify [parse_term "q(p(X,Y),p(Y,X))", parse_term "q(Z,Z)"]);
+  print_graph print_quoted printert
+    (fullunify [parset "Q(x, y, z)", parset "Q(u, h(v, v), u)"]);
+  print_graph print_quoted printert
+    (fullunify [parset "q(p(X,Y),p(Y,X))", parset "q(Z,Z)"]);
   (* This one gives "solve" some work to do. *)
   let expander = [
-    (parse_term "x"),(parse_term "f(y,y)");
-    (parse_term "y"),(parse_term "f(z,z)");
-    (parse_term "z"),(parse_term "f(w,w)")] in
-  print_fol_formula
+    (parset "x"),(parset "f(y,y)");
+    (parset "y"),(parset "f(z,z)");
+    (parset "z"),(parset "f(w,w)")] in
+  print_list (print_pair printert printert)
     (expander);
-  print_fol_formula
+  print_graph print_quoted printert
     (unify undefined expander);
-  print_fol_formula
+  print_graph print_quoted printert
     (fullunify expander);
-  [%expect {| |}]
+  [%expect {|
+    [(<<|f(f(z),g(y))|>>, <<|f(f(z),g(y))|>>)][(<<|f(y,y)|>>, <<|f(y,y)|>>)][(
+    <<|f(f(f(x_3,x_3),f(x_3,x_3)),f(f(x_3,x_3),f(x_3,x_3)))|>>, <<|f(f(f(
+                                                                       x_3,x_3),
+                                                                       f(
+                                                                       x_3,x_3))
+                                                                     ,
+                                                                     f(f(
+                                                                       x_3,x_3),
+                                                                       f(
+                                                                       x_3,x_3)))|>>); (
+    <<|f(f(x_3,x_3),f(x_3,x_3))|>>, <<|f(f(x_3,x_3),f(x_3,x_3))|>>); (<<|
+                                                                      f(x_3,x_3)|>>,
+    <<|f(x_3,x_3)|>>)][][("X", <<|Y|>>)][("x", <<|0|>>); ("y", <<|0|>>)][("cyclic",
+    <<|0|>>)][("X", <<|2|>>); ("Y", <<|2|>>)][("cyclic", <<|0|>>)][("x",
+    <<|u|>>); ("y", <<|h(v,v)|>>); ("z", <<|u|>>)][("X", <<|Y|>>); ("Z",
+    <<|p(Y,Y)|>>)][(<<|x|>>, <<|f(y,y)|>>); (<<|y|>>, <<|f(z,z)|>>); (<<|z|>>,
+    <<|f(w,w)|>>)][("x", <<|f(y,y)|>>); ("y", <<|f(z,z)|>>); ("z", <<|f(w,w)|>>)][("x",
+    <<|f(f(f(w,w),f(w,w)),f(f(w,w),f(w,w)))|>>); ("y", <<|f(f(w,w),f(w,w))|>>); ("z",
+    <<|f(w,w)|>>)]
+    |}]
 ;;

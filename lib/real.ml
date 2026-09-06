@@ -6,6 +6,7 @@ open Skolem
 open Qelim
 open Cooper
 open Complex
+open Completion
 
 (* Warnings the book's style trips in this file; the rest of the
    library compiles with them on.  See lib/dune. *)
@@ -193,7 +194,41 @@ let%expect_test "eg: First examples" =
   print_fol_formula
     (real_qelim {%fol|1 < 2 /\ (forall x. 1 < x ==> 1 < x^2) /\
                  (forall x y. 1 < x /\ 1 < y ==> 1 < x * (1 + 2 * y))|});
-  [%expect {| |}]
+  [%expect {|
+    <<false>><<true>><<false>><<false>><<true>><<0 + a * 1 = 0 /\
+                                                 (0 + b * 1 = 0 /\ 0 + c * 1 = 0 \/
+                                                  ~0 + b * 1 = 0 /\
+                                                  (0 + b * 1 > 0 \/
+                                                   ~0 + b * 1 > 0)) \/
+                                                 ~0 + a * 1 = 0 /\
+                                                 (0 + a * 1 > 0 /\
+                                                  (0 + a *
+                                                   ((0 + b * (0 + b * -1)) + a *
+                                                    (0 + c * 4)) =
+                                                   0 \/
+                                                   ~0 + a *
+                                                    ((0 + b * (0 + b * -1)) + a *
+                                                     (0 + c * 4)) =
+                                                    0 /\
+                                                   ~0 + a *
+                                                    ((0 + b * (0 + b * -1)) + a *
+                                                     (0 + c * 4)) >
+                                                    0) \/
+                                                  ~0 + a * 1 > 0 /\
+                                                  (0 + a *
+                                                   ((0 + b * (0 + b * -1)) + a *
+                                                    (0 + c * 4)) =
+                                                   0 \/
+                                                   ~0 + a *
+                                                    ((0 + b * (0 + b * -1)) + a *
+                                                     (0 + c * 4)) =
+                                                    0 /\
+                                                   0 + a *
+                                                   ((0 + b * (0 + b * -1)) + a *
+                                                    (0 + c * 4)) >
+                                                   0))>><<false>><<true>>
+    <<true>>
+    |}]
 ;;
 
 let rec grpterm tm =
@@ -211,14 +246,134 @@ let grpform (Atom(R("=",[s;t]))) =
 let%expect_test _ =
   let eqs = complete_and_simplify ["1"; "*"; "i"]
     [{%fol|1 * x = x|}; {%fol|i(x) * x = 1|}; {%fol|(x * y) * z = x * y * z|}] in
-  print_fol_formula
+  print_list print_fol_formula
     (eqs);
   let fm = list_conj (map grpform eqs) in
   print_fol_formula
     (fm);
   print_fol_formula
     (real_qelim fm);
-  [%expect {| |}]
+  [%expect {|
+    4 equations and 8 pending critical pairs + 0 deferred
+    5 equations and 12 pending critical pairs + 0 deferred
+    6 equations and 16 pending critical pairs + 0 deferred
+    7 equations and 27 pending critical pairs + 0 deferred
+    8 equations and 51 pending critical pairs + 0 deferred
+    9 equations and 70 pending critical pairs + 0 deferred
+    10 equations and 81 pending critical pairs + 0 deferred
+    11 equations and 78 pending critical pairs + 0 deferred
+    12 equations and 85 pending critical pairs + 0 deferred
+    13 equations and 114 pending critical pairs + 0 deferred
+    14 equations and 151 pending critical pairs + 0 deferred
+    15 equations and 180 pending critical pairs + 0 deferred
+    16 equations and 247 pending critical pairs + 0 deferred
+    17 equations and 298 pending critical pairs + 0 deferred
+    18 equations and 356 pending critical pairs + 0 deferred
+    19 equations and 404 pending critical pairs + 0 deferred
+    20 equations and 485 pending critical pairs + 0 deferred
+    21 equations and 530 pending critical pairs + 0 deferred
+    22 equations and 583 pending critical pairs + 0 deferred
+    23 equations and 642 pending critical pairs + 0 deferred
+    24 equations and 730 pending critical pairs + 0 deferred
+    25 equations and 779 pending critical pairs + 0 deferred
+    26 equations and 794 pending critical pairs + 0 deferred
+    27 equations and 819 pending critical pairs + 1 deferred
+    28 equations and 918 pending critical pairs + 1 deferred
+    29 equations and 901 pending critical pairs + 1 deferred
+    30 equations and 1005 pending critical pairs + 1 deferred
+    31 equations and 1086 pending critical pairs + 1 deferred
+    32 equations and 1155 pending critical pairs + 1 deferred
+    32 equations and 1000 pending critical pairs + 1 deferred
+    32 equations and 0 pending critical pairs + 1 deferred
+    32 equations and 0 pending critical pairs + 0 deferred
+    [<<i(x4 * x5) = i(x5) * i(x4)>>; <<i(i(x1)) = x1>>; <<i(1) = 1>>; <<x0 *
+                                                                        i(
+                                                                        x0) = 1>>;
+    <<x0 * i(x0) * x3 = x3>>; <<x1 * 1 = x1>>; <<i(x1) * x1 * x2 = x2>>;
+    <<1 * x = x>>; <<i(x) * x = 1>>; <<(x * y) * z = x * y * z>>]<<(forall x4.
+                                                                      x4 > 1 ==>
+                                                                      (forall x5.
+                                                                        x5 >
+                                                                        1 ==>
+                                                                        (
+                                                                        x4 *
+                                                                        (
+                                                                        1 + 2 *
+                                                                        x5))^2 >
+                                                                        x5^2 *
+                                                                        (
+                                                                        1 + 2 *
+                                                                        x4^2))) /\
+                                                                   (forall x1.
+                                                                      x1 > 1 ==>
+                                                                      x1^2^2 > x1) /\
+                                                                   2^2 > 2 /\
+                                                                   (forall x0.
+                                                                      x0 > 1 ==>
+                                                                      x0 *
+                                                                      (1 + 2 *
+                                                                       x0^2) >
+                                                                      2) /\
+                                                                   (forall x0.
+                                                                      x0 > 1 ==>
+                                                                      (forall x3.
+                                                                        x3 >
+                                                                        1 ==>
+                                                                        x0 *
+                                                                        (
+                                                                        1 + 2 *
+                                                                        x0^2 *
+                                                                        (
+                                                                        1 + 2 *
+                                                                        x3)) > x3)) /\
+                                                                   (forall x1.
+                                                                      x1 > 1 ==>
+                                                                      x1 *
+                                                                      (1 + 2 * 2) >
+                                                                      x1) /\
+                                                                   (forall x1.
+                                                                      x1 > 1 ==>
+                                                                      (forall x2.
+                                                                        x2 >
+                                                                        1 ==> x1^
+                                                                        2 *
+                                                                        (
+                                                                        1 + 2 *
+                                                                        x1 *
+                                                                        (
+                                                                        1 + 2 *
+                                                                        x2)) > x2)) /\
+                                                                   (forall x.
+                                                                      x > 1 ==>
+                                                                      2 *
+                                                                      (1 + 2 * x) >
+                                                                      x) /\
+                                                                   (forall x.
+                                                                      x > 1 ==>
+                                                                      x^2 *
+                                                                      (1 + 2 * x) >
+                                                                      2) /\
+                                                                   (forall x.
+                                                                      x > 1 ==>
+                                                                      (forall y.
+                                                                        y > 1 ==>
+                                                                        (
+                                                                        forall z.
+                                                                        z > 1 ==>
+                                                                        (
+                                                                        x *
+                                                                        (
+                                                                        1 + 2 * y)) *
+                                                                        (
+                                                                        1 + 2 * z) >
+                                                                        x *
+                                                                        (
+                                                                        1 + 2 *
+                                                                        y *
+                                                                        (
+                                                                        1 + 2 * z)))))>>
+    <<true>>
+    |}]
 ;;
 
 
@@ -282,13 +437,11 @@ let%expect_test "eg: Didn't seem worth it in the book, but monicization can help
   let real_qelim =
     simplify ** evalc **
     lift_qelim polyatom (simplify ** evalc) basic_real_qelim in
-  print_fol_formula
-    (real_qelim);
+  ignore (real_qelim);
   let real_qelim' =
     simplify ** evalc **
     lift_qelim polyatom (dnf ** cnnf (fun x -> x) ** evalc)
                         basic_real_qelim in
-  print_fol_formula
-    (real_qelim');
+  ignore (real_qelim');
   [%expect {| |}]
 ;;

@@ -269,7 +269,7 @@ let%expect_test "eg: Examples" =
                               divides(12,x-1) \/ divides(12,x-7)|});
   print_fol_formula
     (integer_qelim {%fol|forall x. b < x ==> a <= x|});
-  [%expect {| |}]
+  [%expect {| <<true>><<true>><<false>><<true>><<~0 < 1 * a + -1 * b + -1>> |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -309,81 +309,81 @@ let%expect_test _ =
   print_fol_formula
     (integer_qelim {%fol|forall x. a < 3 * x ==> b < 3 * x|});
   print_fol_formula
-    (time integer_qelim {%fol|forall x y. x <= y ==> 2 * x + 1 < 2 * y|});
+    (integer_qelim {%fol|forall x y. x <= y ==> 2 * x + 1 < 2 * y|});
   print_fol_formula
-    (time integer_qelim {%fol|(exists d. y = 65 * d) ==> (exists d. y = 5 * d)|});
+    (integer_qelim {%fol|(exists d. y = 65 * d) ==> (exists d. y = 5 * d)|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall y. (exists d. y = 65 * d) ==> (exists d. y = 5 * d)|});
   print_fol_formula
-    (time integer_qelim {%fol|forall x y. ~(2 * x + 1 = 2 * y)|});
+    (integer_qelim {%fol|forall x y. ~(2 * x + 1 = 2 * y)|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall x y z. (2 * x + 1 = 2 * y) ==> x + y + z > 129|});
   print_fol_formula
-    (time integer_qelim {%fol|forall x. a < x ==> b < x|});
+    (integer_qelim {%fol|forall x. a < x ==> b < x|});
   print_fol_formula
-    (time integer_qelim {%fol|forall x. a <= x ==> b < x|});
+    (integer_qelim {%fol|forall x. a <= x ==> b < x|});
   (* ------------------------------------------------------------------------- *)
   (* Formula examples from Cooper's paper.                                     *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time integer_qelim {%fol|forall a b. exists x. a < 20 * x /\ 20 * x < b|});
+    (integer_qelim {%fol|forall a b. exists x. a < 20 * x /\ 20 * x < b|});
   print_fol_formula
-    (time integer_qelim {%fol|exists x. a < 20 * x /\ 20 * x < b|});
+    (integer_qelim {%fol|exists x. a < 20 * x /\ 20 * x < b|});
   print_fol_formula
-    (time integer_qelim {%fol|forall b. exists x. a < 20 * x /\ 20 * x < b|});
+    (integer_qelim {%fol|forall b. exists x. a < 20 * x /\ 20 * x < b|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall a. exists b. a < 4 * b + 3 * a \/ (~(a < b) /\ a > b + 1)|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|exists y. forall x. x + 5 * y > 1 /\ 13 * x - y > 1 /\ x + 2 < 0|});
   (* ------------------------------------------------------------------------- *)
   (* More of my own.                                                           *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time integer_qelim {%fol|forall x y. x >= 0 /\ y >= 0
+    (integer_qelim {%fol|forall x y. x >= 0 /\ y >= 0
                       ==> 12 * x - 8 * y < 0 \/ 12 * x - 8 * y > 2|});
   print_fol_formula
-    (time integer_qelim {%fol|exists x y. 5 * x + 3 * y = 1|});
+    (integer_qelim {%fol|exists x y. 5 * x + 3 * y = 1|});
   print_fol_formula
-    (time integer_qelim {%fol|exists x y. 5 * x + 10 * y = 1|});
+    (integer_qelim {%fol|exists x y. 5 * x + 10 * y = 1|});
   print_fol_formula
-    (time integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 5 * x - 6 * y = 1|});
+    (integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 5 * x - 6 * y = 1|});
   print_fol_formula
-    (time integer_qelim {%fol|exists w x y z. 2 * w + 3 * x + 4 * y + 5 * z = 1|});
+    (integer_qelim {%fol|exists w x y z. 2 * w + 3 * x + 4 * y + 5 * z = 1|});
   print_fol_formula
-    (time integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 5 * x - 3 * y = 1|});
+    (integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 5 * x - 3 * y = 1|});
   print_fol_formula
-    (time integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 3 * x - 5 * y = 1|});
+    (integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 3 * x - 5 * y = 1|});
   print_fol_formula
-    (time integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 6 * x - 3 * y = 1|});
+    (integer_qelim {%fol|exists x y. x >= 0 /\ y >= 0 /\ 6 * x - 3 * y = 1|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall x y. ~(x = 0) ==> 5 * y < 6 * x \/ 5 * y > 6 * x|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall x y. ~divides(5,x) /\ ~divides(6,y) ==> ~(6 * x = 5 * y)|});
   print_fol_formula
-    (time integer_qelim {%fol|forall x y. ~divides(5,x) ==> ~(6 * x = 5 * y)|});
+    (integer_qelim {%fol|forall x y. ~divides(5,x) ==> ~(6 * x = 5 * y)|});
   print_fol_formula
-    (time integer_qelim {%fol|forall x y. ~(6 * x = 5 * y)|});
+    (integer_qelim {%fol|forall x y. ~(6 * x = 5 * y)|});
   print_fol_formula
-    (time integer_qelim {%fol|forall x y. 6 * x = 5 * y ==> exists d. y = 3 * d|});
+    (integer_qelim {%fol|forall x y. 6 * x = 5 * y ==> exists d. y = 3 * d|});
   print_fol_formula
-    (time integer_qelim {%fol|6 * x = 5 * y ==> exists d. y = 3 * d|});
+    (integer_qelim {%fol|6 * x = 5 * y ==> exists d. y = 3 * d|});
   (* ------------------------------------------------------------------------- *)
   (* Positive variant of the Bezout theorem (see the exercise).                *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall z. z > 7 ==> exists x y. x >= 0 /\ y >= 0 /\ 3 * x + 5 * y = z|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall z. z > 2 ==> exists x y. x >= 0 /\ y >= 0 /\ 3 * x + 5 * y = z|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall z.
             z <= 7
             ==> ((exists x y. x >= 0 /\ y >= 0 /\ 3 * x + 5 * y = z) <=>
@@ -392,18 +392,18 @@ let%expect_test _ =
   (* Basic result about congruences.                                           *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall x. ~divides(2,x) /\ divides(3,x-1) <=>
                   divides(12,x-1) \/ divides(12,x-7)|});
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
       {%fol|forall x. ~(exists m. x = 2 * m) /\ (exists m. x = 3 * m + 1) <=>
                   (exists m. x = 12 * m + 1) \/ (exists m. x = 12 * m + 7)|});
   (* ------------------------------------------------------------------------- *)
   (* Something else.                                                           *)
   (* ------------------------------------------------------------------------- *)
   print_fol_formula
-    (time integer_qelim
+    (integer_qelim
      {%fol|forall x.
             ~(divides(2,x))
             ==> divides(4,x-1) \/
@@ -529,5 +529,39 @@ let%expect_test _ =
              n <= 2503 /\ 2503 <= 2 * n|};;
 
    ****)
-  [%expect {| |}]
+  [%expect {|
+    <<false>><<true>><<true>><<true>><<true>><<false>><<~(divides(3,1 * a + 1) /\
+                                                          0 < -1 * a + 1 * b + 0 \/
+                                                          divides(3,1 * a + 2) /\
+                                                          0 < -1 * a + 1 * b + -1 \/
+                                                          divides(3,1 * a + 3) /\
+                                                          0 < -1 * a + 1 * b + -2)>>
+    <<false>><<divides(65,1 * y + 0) ==> divides(5,1 * y + 0)>><<true>><<true>>
+    <<true>><<~0 < -1 * a + 1 * b + 0>><<~0 < -1 * a + 1 * b + 1>><<false>>
+    <<divides(20,1 * a + 1) /\ 0 < -1 * a + 1 * b + -1 \/
+      divides(20,1 * a + 2) /\ 0 < -1 * a + 1 * b + -2 \/
+      divides(20,1 * a + 3) /\ 0 < -1 * a + 1 * b + -3 \/
+      divides(20,1 * a + 4) /\ 0 < -1 * a + 1 * b + -4 \/
+      divides(20,1 * a + 5) /\ 0 < -1 * a + 1 * b + -5 \/
+      divides(20,1 * a + 6) /\ 0 < -1 * a + 1 * b + -6 \/
+      divides(20,1 * a + 7) /\ 0 < -1 * a + 1 * b + -7 \/
+      divides(20,1 * a + 8) /\ 0 < -1 * a + 1 * b + -8 \/
+      divides(20,1 * a + 9) /\ 0 < -1 * a + 1 * b + -9 \/
+      divides(20,1 * a + 10) /\ 0 < -1 * a + 1 * b + -10 \/
+      divides(20,1 * a + 11) /\ 0 < -1 * a + 1 * b + -11 \/
+      divides(20,1 * a + 12) /\ 0 < -1 * a + 1 * b + -12 \/
+      divides(20,1 * a + 13) /\ 0 < -1 * a + 1 * b + -13 \/
+      divides(20,1 * a + 14) /\ 0 < -1 * a + 1 * b + -14 \/
+      divides(20,1 * a + 15) /\ 0 < -1 * a + 1 * b + -15 \/
+      divides(20,1 * a + 16) /\ 0 < -1 * a + 1 * b + -16 \/
+      divides(20,1 * a + 17) /\ 0 < -1 * a + 1 * b + -17 \/
+      divides(20,1 * a + 18) /\ 0 < -1 * a + 1 * b + -18 \/
+      divides(20,1 * a + 19) /\ 0 < -1 * a + 1 * b + -19 \/
+      divides(20,1 * a + 20) /\ 0 < -1 * a + 1 * b + -20>><<false>><<true>>
+    <<false>><<false>><<true>><<false>><<true>><<true>><<true>><<true>><<false>>
+    <<false>><<true>><<true>><<false>><<true>><<0 = -6 * x + 5 * y + 0 ==>
+                                                divides(3,1 * y + 0)>><<true>>
+    <<false>><<true>><<true>><<true>><<false>><<false>><<true>><<false>><<true>>
+    <<true>><<true>><<true>>
+    |}]
 ;;

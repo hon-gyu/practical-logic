@@ -17,7 +17,7 @@ open Prop
 let%expect_test _ =
   print_prop_formula
     (cnf {%prop|p <=> (q <=> r)|});
-  [%expect {| |}]
+  [%expect {| <<(p \/ q \/ r) /\ (p \/ ~q \/ ~r) /\ (q \/ ~p \/ ~r) /\ (r \/ ~p \/ ~q)>> |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -73,7 +73,14 @@ let defcnf fm = list_conj(map list_disj(mk_defcnf maincnf fm));;
 let%expect_test "eg" =
   print_prop_formula
     (defcnf {%prop|(p \/ (q /\ ~r)) /\ s|});
-  [%expect {| |}]
+  [%expect {|
+    <<(p \/ p_1 \/ ~p_2) /\
+      (p_1 \/ r \/ ~q) /\
+      (p_2 \/ ~p) /\
+      (p_2 \/ ~p_1) /\
+      (p_2 \/ ~p_3) /\
+      p_3 /\ (p_3 \/ ~p_2 \/ ~s) /\ (q \/ ~p_1) /\ (s \/ ~p_3) /\ (~p_1 \/ ~r)>>
+    |}]
 ;;
 
 
@@ -102,7 +109,7 @@ let defcnf fm = list_conj (map list_disj (defcnfs fm));;
 let%expect_test "eg: Examples" =
   print_prop_formula
     (defcnf {%prop|(p \/ (q /\ ~r)) /\ s|});
-  [%expect {| |}]
+  [%expect {| <<(p \/ p_1) /\ (p_1 \/ r \/ ~q) /\ (q \/ ~p_1) /\ s /\ (~p_1 \/ ~r)>> |}]
 ;;
 
 

@@ -1,6 +1,7 @@
 open Lib
 open Formulas
 open Fol
+open Meson
 open Skolem
 
 (* Warnings the book's style trips in this file; the rest of the
@@ -45,11 +46,20 @@ let function_congruence (f,n) =
   [itlist mk_forall (argnames_x @ argnames_y) (Imp(ant,con))];;
 
 let%expect_test "eg" =
-  print_fol_formula
+  print_list print_fol_formula
     (function_congruence ("f",3));
-  print_fol_formula
+  print_list print_fol_formula
     (function_congruence ("+",2));
-  [%expect {| |}]
+  [%expect {|
+    [<<forall x1 x2 x3 y1 y2 y3.
+         x1 = y1 /\ x2 = y2 /\ x3 = y3 ==> f(x1,x2,x3) = f(y1,y2,y3)>>][<<
+                                                                        forall x1 x2 y1 y2.
+                                                                        x1 =
+                                                                        y1 /\
+                                                                        x2 = y2 ==>
+                                                                        x1 + x2 =
+                                                                        y1 + y2>>]
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -94,7 +104,7 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      ==> forall y. g(y) ==> f(y)|} in
   print_fol_formula
     (ewd);
-  print_fol_formula
+  print_list print_int
     (meson ewd);
   (* ------------------------------------------------------------------------- *)
   (* Wishnu Prasetya's example (even nicer with an "exists unique" primitive). *)
@@ -104,8 +114,8 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|} in
   print_fol_formula
     (wishnu);
-  print_fol_formula
-    (time meson wishnu);
+  print_list print_int
+    (meson wishnu);
   (* ------------------------------------------------------------------------- *)
   (* More challenging equational problems. (Size 18, 61814 seconds.)           *)
   (* ------------------------------------------------------------------------- *)
@@ -151,7 +161,7 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      (forall x y z. x = y /\ y = z ==> x = z)
      ==> forall x. x * i(x) = 1|};;
 
-  time meson fm;;
+  meson fm;;
 
   (* ------------------------------------------------------------------------- *)
   (* Newer version of stratified equalities.                                   *)
@@ -176,7 +186,7 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      (forall t. t = t)
      ==> forall x. x * i(x) = 1|};;
 
-  time meson fm;;
+  meson fm;;
 
   let fm =
    {%fol|(forall x y z. axiom(x * (y * z),(x * y) * z)) /\
@@ -196,7 +206,7 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      (forall t. t = t)
      ==> forall x. x * i(x) = 1|};;
 
-  time meson fm;;
+  meson fm;;
 
   (* ------------------------------------------------------------------------- *)
   (* Showing congruence closure.                                               *)
@@ -205,7 +215,7 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
   let fm = equalitize
    {%fol|forall c. f(f(f(f(f(c))))) = c /\ f(f(f(c))) = c ==> f(c) = c|};;
 
-  time meson fm;;
+  meson fm;;
 
   let fm =
    {%fol|axiom(f(f(f(f(f(c))))),c) /\
@@ -222,7 +232,7 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      (forall x y. x = y ==> cong(f(x),f(y)))
      ==> f(c) = c|};;
 
-  time meson fm;;
+  meson fm;;
 
   (* ------------------------------------------------------------------------- *)
   (* With stratified equalities.                                               *)
@@ -280,7 +290,7 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      (forall x y z. eqC (x,y) /\ eqT (y,z) ==> eqT (x,z))
      ==> forall x. eqT (x * i(x),1) \/ eqC (x * i(x),1)|};;
 
-  time meson fm;;
+  meson fm;;
 
   (* ------------------------------------------------------------------------- *)
   (* Enforce canonicity (proof size = 20).                                     *)
@@ -299,8 +309,24 @@ let%expect_test "eg: A simple example (see EWD1266a and the application to Morle
      (forall x y. eq1(x,y) ==> eq2(x,y))
      ==> forall x. eq2(x,i(x))|};;
 
-  time meson fm;;
+  meson fm;;
 
   ******************)
-  [%expect {| |}]
+  [%expect {|
+    <<(forall x. x = x) /\
+      (forall x y z. x = y /\ x = z ==> y = z) /\
+      (forall x1 y1. x1 = y1 ==> f(x1) ==> f(y1)) /\
+      (forall x1 y1. x1 = y1 ==> g(x1) ==> g(y1)) ==>
+      (forall x. f(x) ==> g(x)) /\
+      (exists x. f(x)) /\ (forall x y. g(x) /\ g(y) ==> x = y) ==>
+      (forall y. g(y) ==> f(y))>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    [6]<<(forall x. x = x) /\
+         (forall x y z. x = y /\ x = z ==> y = z) /\
+         (forall x1 y1. x1 = y1 ==> f(x1) = f(y1)) /\
+         (forall x1 y1. x1 = y1 ==> g(x1) = g(y1)) ==>
+         ((exists x. x = f(g(x)) /\ (forall x'. x' = f(g(x')) ==> x = x')) <=>
+          (exists y. y = g(f(y)) /\ (forall y'. y' = g(f(y')) ==> y = y')))>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14Searching with depth limit 15Searching with depth limit 16
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14Searching with depth limit 15Searching with depth limit 16
+    [16; 16]
+    |}]
 ;;

@@ -141,10 +141,10 @@ let%expect_test "eg: Running example if we magically knew the interpolant" =
     ((integer_qelim ** generalize)
       {%fol|(u + 1 = v /\ v_1 + 1 = u - 1 /\ v_2 - 1 = v + 1 /\ v_3 = v - 1)
         ==> u = v_3 /\ ~(v_1 = v_2)|});
-  print_fol_formula
+  print_bool
     (ccvalid
       {%fol|(v_2 = f(v_3) /\ v_1 = f(u)) ==> ~(u = v_3 /\ ~(v_1 = v_2))|});
-  [%expect {| |}]
+  [%expect {| <<true>>true |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -209,15 +209,15 @@ let nelop langs fm = forall (nelop1 langs) (simpdnf(simplify(Not fm)));;
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: Check that our example works" =
-  print_fol_formula
+  print_bool
     (nelop (add_default [int_lang])
      {%fol|f(v - 1) - 1 = v + 1 /\ f(u) + 1 = u - 1 /\ u + 1 = v ==> false|});
   (* ------------------------------------------------------------------------- *)
   (* Bell numbers show the size of our case analysis.                          *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_list print_int
     (let bell n = length(allpartitions (1--n)) in map bell (1--10));
-  [%expect {| |}]
+  [%expect {| true[1; 2; 5; 15; 52; 203; 877; 4140; 21147; 115975] |}]
 ;;
 
 
@@ -265,25 +265,25 @@ let nelop langs fm = forall (nelop1 langs) (simpdnf(simplify(Not fm)));;
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: Some additional examples (from ICS paper and Shostak's 'A practical...'" =
-  print_fol_formula
+  print_bool
     (nelop (add_default [int_lang])
      {%fol|y <= x /\ y >= x + z /\ z >= 0 ==> f(f(x) - f(y)) = f(z)|});
-  print_fol_formula
+  print_bool
     (nelop (add_default [int_lang])
      {%fol|x = y /\ y >= z /\ z >= x ==> f(z) = f(x)|});
-  print_fol_formula
+  print_bool
     (nelop (add_default [int_lang])
      {%fol|a <= b /\ b <= f(a) /\ f(a) <= 1
       ==> a + b <= 1 \/ b + f(b) <= 1 \/ f(f(b)) <= f(a)|});
   (* ------------------------------------------------------------------------- *)
   (* Confirmation of non-convexity.                                            *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_list print_fol_formula
     (map (real_qelim ** generalize)
       [{%fol|x * y = 0 /\ z = 0 ==> x = z \/ y = z|};
        {%fol|x * y = 0 /\ z = 0 ==> x = z|};
        {%fol|x * y = 0 /\ z = 0 ==> y = z|}]);
-  print_fol_formula
+  print_list print_fol_formula
     (map (integer_qelim ** generalize)
       [{%fol|0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = y \/ x = z|};
        {%fol|0 <= x /\ x < 2 /\ y = 0 /\ z = 1 ==> x = y|};
@@ -291,11 +291,11 @@ let%expect_test "eg: Some additional examples (from ICS paper and Shostak's 'A p
   (* ------------------------------------------------------------------------- *)
   (* Failures of original Shostak procedure.                                   *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_bool
     (nelop (add_default [int_lang])
      {%fol|f(v - 1) - 1 = v + 1 /\ f(u) + 1 = u - 1 /\ u + 1 = v ==> false|});
   (*** And this one is where the original procedure loops ***)
-  print_fol_formula
+  print_bool
     (nelop (add_default [int_lang])
      {%fol|f(v) = v /\ f(u) = u - 1 /\ u = v ==> false|});
   (* ------------------------------------------------------------------------- *)
@@ -303,61 +303,61 @@ let%expect_test "eg: Some additional examples (from ICS paper and Shostak's 'A p
   (* ------------------------------------------------------------------------- *)
 
   (*** This is on p. 8 of Shostak's "Deciding combinations" paper ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|z = f(x - y) /\ x = z + y /\ ~(-(y) = -(x - f(f(z)))) ==> false|});
   (*** This (ICS theories-1) fails without array operations ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|a + 2 = b ==> f(read(update(A,a,3),b-2)) = f(b - a + 1)|});
   (*** can-001 from ICS examples site, with if-then-elses expanded manually ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|(x = y /\ z = 1 ==> f(f((x+z))) = f(f((1+y))))|});
   (*** RJB example; lists plus uninterpreted functions ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|hd(x) = hd(y) /\ tl(x) = tl(y) /\ ~(x = nil) /\ ~(y = nil)
        ==> f(x) = f(y)|});
   (*** Another one from the ICS paper ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|~(f(f(x) - f(y)) = f(z)) /\ y <= x /\ y >= x + z /\ z >= 0 ==> false|});
   (*** Shostak's "A Practical Decision Procedure..." paper
    *** No longer works since I didn't do predicates in congruence closure
-  time (nelop (add_default [int_lang]))
+  (nelop (add_default [int_lang]))
    {%fol|x < f(y) + 1 /\ f(y) <= x ==> (P(x,y) <=> P(f(y),y))|};;
    ***)
 
   (*** Shostak's "Practical..." paper again, using extra clauses for MAX ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|(x >= y ==> MAX(x,y) = x) /\ (y >= x ==> MAX(x,y) = y)
        ==> x = y + 2 ==> MAX(x,y) = x|});
   (*** Shostak's "Practical..." paper again ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|x <= g(x) /\ x >= g(x) ==> x = g(g(g(g(x))))|});
   (*** Easy example I invented ***)
-  print_fol_formula
-    (time (nelop (add_default [real_lang]))
+  print_bool
+    ((nelop (add_default [real_lang]))
      {%fol|x^2 =  1 ==> (f(x) = f(-(x)))  ==> (f(x) = f(1))|});
   (*** Taken from Clark Barrett's CVC page ***)
-  print_fol_formula
-    (time (nelop (add_default [int_lang]))
+  print_bool
+    ((nelop (add_default [int_lang]))
      {%fol|2 * f(x + y) = 3 * y /\ 2 * x = y ==> f(f(x + y)) = 3 * x|});
   (*** My former running example in the text; seems too slow.
    *** Anyway this also needs extra predicates in CC
 
-  time (nelop (add_default [real_lang]))
+  (nelop (add_default [real_lang]))
    {%fol|x^2 = y^2 /\ x < y /\ z^2 = z /\ x < x * z /\ P(f(1 + z))
     ==> P(f(x + y) - f(0))|};;
    ***)
 
   (*** An example where the "naive" procedure is slow but feasible ***)
-  print_fol_formula
+  print_bool
     (nelop (add_default [int_lang])
      {%fol|4 * x = 2 * x + 2 * y /\ x = f(2 * x - y) /\
       f(2 * y - x) = 3 /\ f(x) = 4 ==> false|});
-  [%expect {| |}]
+  [%expect {| truetruetrue[<<true>>; <<false>>; <<false>>][<<true>>; <<false>>; <<false>>]truetruetruefalsetruefalsetruetruetruetruetruetrue |}]
 ;;

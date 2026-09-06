@@ -22,7 +22,7 @@ let%expect_test _ =
   (* ------------------------------------------------------------------------- *)
   (* The x^2 = 1 implies Abelian problem.                                      *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_list print_int
     (meson
      {%fol|(forall x. P(1,x,x)) /\
        (forall x. P(x,x,1)) /\
@@ -32,13 +32,22 @@ let%expect_test _ =
   (* ------------------------------------------------------------------------- *)
   (* Lemma for equivalence elimination.                                        *)
   (* ------------------------------------------------------------------------- *)
-  print_fol_formula
+  print_list print_int
     (meson
      {%fol|(forall x. R(x,x)) /\
        (forall x y. R(x,y) ==>  R(y,x)) /\
        (forall x y z. R(x,y) /\ R(y,z) ==> R(x,z))
        <=> (forall x y. R(x,y) <=> (forall z. R(x,z) <=> R(y,z)))|});
-  [%expect {| |}]
+  [%expect {|
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13
+    [13]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7
+    [4; 3; 9; 3; 2; 7]
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -126,23 +135,31 @@ let bmeson fm =
   let fm1 = askolemize(Not(generalize fm)) in
   map (bpuremeson ** list_conj) (simpdnf fm1);;
 
+let emeson fm = meson (equalitize fm);;
+
 let%expect_test "eg: Examples" =
-  let emeson fm = meson (equalitize fm) in
-  print_fol_formula
-    (time bmeson
+  print_list print_int
+    (bmeson
      {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
        (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|});
-  print_fol_formula
-    (time emeson
+  print_list print_int
+    (emeson
      {%fol|(exists x. x = f(g(x)) /\ forall x'. x' = f(g(x')) ==> x = x') <=>
        (exists y. y = g(f(y)) /\ forall y'. y' = g(f(y')) ==> y = y')|});
-  print_fol_formula
-    (time bmeson
+  print_list print_int
+    (bmeson
      {%fol|(forall x y z. x * (y * z) = (x * y) * z) /\
        (forall x. e * x = x) /\
        (forall x. i(x) * x = e)
        ==> forall x. x * i(x) = e|});
-  [%expect {| |}]
+  [%expect {|
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14Searching with depth limit 15Searching with depth limit 16Searching with depth limit 17Searching with depth limit 18Searching with depth limit 19Searching with depth limit 20Searching with depth limit 21Searching with depth limit 22Searching with depth limit 23Searching with depth limit 24Searching with depth limit 25
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14Searching with depth limit 15Searching with depth limit 16Searching with depth limit 17Searching with depth limit 18Searching with depth limit 19Searching with depth limit 20Searching with depth limit 21Searching with depth limit 22Searching with depth limit 23Searching with depth limit 24Searching with depth limit 25
+    [25; 25]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14Searching with depth limit 15Searching with depth limit 16
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14Searching with depth limit 15Searching with depth limit 16
+    [16; 16]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14Searching with depth limit 15Searching with depth limit 16Searching with depth limit 17Searching with depth limit 18Searching with depth limit 19
+    [19]
+    |}]
 ;;
 
 
@@ -177,20 +194,20 @@ let%expect_test "eg: Older stuff not now in the text" =
      ==> forall x. x * i(x) = e|} in
   print_fol_formula
     (group2);
-  print_fol_formula
-    (time bmeson ewd);
-  print_fol_formula
-    (time emeson ewd);
+  print_list print_int
+    (bmeson ewd);
+  print_list print_int
+    (emeson ewd);
   (***********
 
-  time bmeson wishnu;;
-  time emeson wishnu;;
+  bmeson wishnu;;
+  emeson wishnu;;
 
-  time bmeson group1;;
-  time emeson group1;;
+  bmeson group1;;
+  emeson group1;;
 
-  time bmeson group2;;
-  time emeson group2;;
+  bmeson group2;;
+  emeson group2;;
 
    *************)
 
@@ -204,9 +221,9 @@ let%expect_test "eg: Older stuff not now in the text" =
    {%fol|(forall x y z. x * (y * z) = (x * y) * z) /\ p * q * p = p
      ==> exists q'. p * q' * p = p /\ q' * p * q' = q'|};;
 
-  time bmeson fm;;        (** Seems to take a bit longer than below version  **)
+  bmeson fm;;        (** Seems to take a bit longer than below version  **)
 
-  time emeson fm;;        (** Works in 64275 seconds(!), depth 30, on laptop **)
+  emeson fm;;        (** Works in 64275 seconds(!), depth 30, on laptop **)
 
   ****************)
 
@@ -279,5 +296,21 @@ let%expect_test "eg: Older stuff not now in the text" =
      ==> forall x y. ~R'(x,y) ==> ~R(x,y)|};;
 
   ***)
-  [%expect {| |}]
+  [%expect {|
+    <<(forall x. f(x) ==> g(x)) /\
+      (exists x. f(x)) /\ (forall x y. g(x) /\ g(y) ==> x = y) ==>
+      (forall y. g(y) ==> f(y))>><<(exists x.
+                                      x = f(g(x)) /\
+                                      (forall x'. x' = f(g(x')) ==> x = x')) <=>
+                                   (exists y.
+                                      y = g(f(y)) /\
+                                      (forall y'. y' = g(f(y')) ==> y = y'))>>
+    <<(forall x y z. x * y * z = (x * y) * z) /\
+      (forall x. e * x = x) /\ (forall x. i(x) * x = e) ==> (forall x. x * e = x)>>
+    <<(forall x y z. x * y * z = (x * y) * z) /\
+      (forall x. e * x = x) /\ (forall x. i(x) * x = e) ==>
+      (forall x. x * i(x) = e)>>Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9
+    [9]Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6
+    [6]
+    |}]
 ;;

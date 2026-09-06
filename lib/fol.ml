@@ -19,12 +19,23 @@ open Formulas
 type term = Var of string
           | Fn of string * term list;;
 
+(* The real printers come later in this chapter, so the examples above them
+   show the constructor tree, as the toplevel did before #install_printer. *)
+
+let rec dump_term tm =
+  match tm with
+    Var x -> print_string ("Var \"" ^ x ^ "\"")
+  | Fn(f,args) ->
+        print_string ("Fn(\"" ^ f ^ "\", "); print_list dump_term args;
+        print_string ")";;
+
+
 let%expect_test "eg" =
-  print_fol_formula
+  dump_term
     (Fn("sqrt",[Fn("-",[Fn("1",[]);
                        Fn("cos",[Fn("power",[Fn("+",[Var "x"; Var "y"]);
                                             Fn("2",[])])])])]));
-  [%expect {| |}]
+  [%expect {| Fn("sqrt", [Fn("-", [Fn("1", []); Fn("cos", [Fn("power", [Fn("+", [Var "x"; Var "y"]); Fn("2", [])])])])]) |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -32,6 +43,14 @@ let%expect_test "eg" =
 (* ------------------------------------------------------------------------- *)
 
 type fol = R of string * term list;;
+
+let dump_fol fm =
+  match fm with
+    Atom(R(p,args)) ->
+        print_string ("Atom(R(\"" ^ p ^ "\", "); print_list dump_term args;
+        print_string "))"
+  | _ -> print_string "<formula>";;
+
 
 (* ------------------------------------------------------------------------- *)
 (* Special case of applying a subfunction to the top *terms*.                *)
@@ -44,9 +63,9 @@ let onformula f = onatoms(fun (R(p,a)) -> Atom(R(p,map f a)));;
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: Trivial example of 'x + y < z'" =
-  print_fol_formula
+  dump_fol
     (Atom(R("<",[Fn("+",[Var "x"; Var "y"]); Var "z"])));
-  [%expect {| |}]
+  [%expect {| Atom(R("<", [Fn("+", [Var "x"; Var "y"]); Var "z"])) |}]
 ;;
 
 
@@ -220,22 +239,22 @@ let mod_interp n =
   (0--(n-1),func,pred);;
 
 let%expect_test _ =
-  print_fol_formula
+  print_bool
     (holds bool_interp undefined {%fol|forall x. (x = 0) \/ (x = 1)|});
-  print_fol_formula
+  print_bool
     (holds (mod_interp 2) undefined {%fol|forall x. (x = 0) \/ (x = 1)|});
-  print_fol_formula
+  print_bool
     (holds (mod_interp 3) undefined {%fol|forall x. (x = 0) \/ (x = 1)|});
   let fm = {%fol|forall x. ~(x = 0) ==> exists y. x * y = 1|} in
   print_fol_formula
     (fm);
-  print_fol_formula
+  print_list print_int
     (filter (fun n -> holds (mod_interp n) undefined fm) (1--45));
-  print_fol_formula
+  print_bool
     (holds (mod_interp 3) undefined {%fol|(forall x. x = 0) ==> 1 = 0|});
-  print_fol_formula
+  print_bool
     (holds (mod_interp 3) undefined {%fol|forall x. x = 0 ==> 1 = 0|});
-  [%expect {| |}]
+  [%expect {| truetruefalse<<forall x. ~x = 0 ==> (exists y. x * y = 1)>>[1; 2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43]truefalse |}]
 ;;
 
 
@@ -287,13 +306,13 @@ let rec variant x vars =
   if mem x vars then variant (x^"'") vars else x;;
 
 let%expect_test _ =
-  print_fol_formula
+  print_quoted
     (variant "x" ["y"; "z"]);
-  print_fol_formula
+  print_quoted
     (variant "x" ["x"; "y"]);
-  print_fol_formula
+  print_quoted
     (variant "x" ["x"; "x'"]);
-  [%expect {| |}]
+  [%expect {| "x""x'""x''" |}]
 ;;
 
 
@@ -325,5 +344,5 @@ let%expect_test "eg: Examples" =
     (subst ("y" |=> Var "x") {%fol|forall x. x = y|});
   print_fol_formula
     (subst ("y" |=> Var "x") {%fol|forall x x'. x = y ==> x = x'|});
-  [%expect {| |}]
+  [%expect {| <<forall x'. x' = x>><<forall x' x''. x' = x ==> x' = x''>> |}]
 ;;

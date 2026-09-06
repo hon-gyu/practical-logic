@@ -1,5 +1,6 @@
 open Lib
 open Formulas
+open Fol
 open Lcf
 
 (* Warnings the book's style trips in this file; the rest of the
@@ -435,11 +436,15 @@ let lcftaut p =
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: The examples in the text" =
-  print_fol_formula
+  print_thm
     (lcftaut {%fol|(p ==> q) \/ (q ==> p)|});
-  print_fol_formula
+  print_thm
     (lcftaut {%fol|p /\ q <=> ((p <=> q) <=> p \/ q)|});
-  print_fol_formula
+  print_thm
     (lcftaut {%fol|((p <=> q) <=> r) <=> (p <=> (q <=> r))|});
-  [%expect {| |}]
+  [%expect {|
+    |- (p ==> q) \/ (q ==> p)|- p /\ q <=> (p <=> q) <=> p \/ q|-
+                                                               ((p <=> q) <=> r) <=>
+                                                               p <=> q <=> r
+    |}]
 ;;

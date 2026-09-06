@@ -38,7 +38,7 @@ let rec dump_exp e =
 let%expect_test "eg: Trivial example of using the type constructors" =
   dump_exp
     (Add(Mul(Const 2,Var "x"),Var "y"));
-  [%expect {| |}]
+  [%expect {| Add(Mul(Const 2,Var "x"),Var "y") |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -70,7 +70,7 @@ let%expect_test "eg" =
     (e);
   dump_exp
     (simplify e);
-  [%expect {| |}]
+  [%expect {| Add(Mul(Add(Mul(Const 0,Var "x"),Const 1),Const 3),Const 12)Const 15 |}]
 ;;
 
 
@@ -102,11 +102,11 @@ let rec lex inp =
              (c^toktl)::lex rest;;
 
 let%expect_test _ =
-  dump_exp
+  print_list print_quoted
     (lex(explode "2*((var_1 + x') + 11)"));
-  dump_exp
+  print_list print_quoted
     (lex(explode "if (*p1-- == *p2++) then f() else g()"));
-  [%expect {| |}]
+  [%expect {| ["2"; "*"; "("; "("; "var_1"; "+"; "x'"; ")"; "+"; "11"; ")"]["if"; "("; "*"; "p1"; "--"; "=="; "*"; "p2"; "++"; ")"; "then"; "f"; "("; ")"; "else"; "g"; "("; ")"] |}]
 ;;
 
 
@@ -154,7 +154,7 @@ let%expect_test _ =
   (* ------------------------------------------------------------------------- *)
   (* Demonstrate automatic installation.                                       *)
   (* ------------------------------------------------------------------------- *)
-  [%expect {| |}]
+  [%expect {| Add(Var "x",Const 1) |}]
 ;;
 
 
@@ -170,9 +170,9 @@ let rec string_of_exp e =
   | Mul(e1,e2) -> "("^(string_of_exp e1)^" * "^(string_of_exp e2)^")";;
 
 let%expect_test "eg: Examples" =
-  dump_exp
+  print_quoted
     (string_of_exp {%expr|x + 3 * y|});
-  [%expect {| |}]
+  [%expect {| "(x + (3 * y))" |}]
 ;;
 
 

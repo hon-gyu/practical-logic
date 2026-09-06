@@ -26,8 +26,8 @@ let rec skolems fms corr =
 let skolemizes fms = fst(skolems fms []);;
 
 let%expect_test _ =
-  print_fol_formula
+  print_list print_fol_formula
     (skolemizes [{%fol|exists x y. x + y = 2|};
                 {%fol|forall x. exists y. x + 1 = y|}]);
-  [%expect {| |}]
+  [%expect {| [<<old_+(c_x,c_y) = old_2>>; <<forall x. old_+(x,old_1) = f_y(x)>>] |}]
 ;;

@@ -3,10 +3,12 @@
    is a second or so of proof search that no other module should pay for. *)
 
 open Atp
+open Initialization
 open Lib
 open Formulas
 open Fol
 open Equal
+open Meson
 open Cooper
 open Lcf
 open Lcfprop
@@ -82,9 +84,9 @@ let rec gform fm =
 
 
 let%expect_test "eg: One explicit example" =
-  print_fol_formula
+  print_num
     (gform {%fol|~(x = 0)|});
-  [%expect {| |}]
+  [%expect {| 2116574771128325487937994357299494 |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -92,11 +94,11 @@ let%expect_test "eg: One explicit example" =
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: Some more examples of things in or not in the set of true formulas" =
-  print_fol_formula
+  print_num
     (gform {%fol|x = x|});
-  print_fol_formula
+  print_num
     (gform {%fol|0 < 0|});
-  [%expect {| |}]
+  [%expect {| 7354216740292900021767 |}]
 ;;
 
 
@@ -121,11 +123,11 @@ let diag s =
   replacex 0 (explode s);;
 
 let%expect_test _ =
-  print_fol_formula
+  print_quoted
     (diag("p(x)"));
-  print_fol_formula
+  print_quoted
     (diag("This string is diag(x)"));
-  [%expect {| |}]
+  [%expect {| "p(`p(x)')""This string is diag(`This string is diag(x)')" |}]
 ;;
 
 
@@ -143,10 +145,10 @@ let phi = qdiag("P(qdiag(x))");;
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: Analogous construct in natural language" =
-  print_fol_formula
+  print_quoted
     (diag("The result of substituting the quotation of x for `x' in x \
             has property P"));
-  [%expect {| |}]
+  [%expect {| "The result of substituting the quotation of `The result of substituting the quotation of x for `x' in x has property P' for `x' in `The result of substituting the quotation of x for `x' in x has property P' has property P" |}]
 ;;
 
 
@@ -202,11 +204,11 @@ let%expect_test "eg: Examples" =
   let prime_form p = subst("p" |=> numeral(Int p))
    {%fol|S(S(0)) <= p /\
      forall n. n < p ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)|} in
-  print_fol_formula
+  print_bool
     (dholds undefined (prime_form 100));
-  print_fol_formula
+  print_bool
     (dholds undefined (prime_form 101));
-  [%expect {| |}]
+  [%expect {| falsetrue |}]
 ;;
 
 
@@ -233,12 +235,12 @@ let rec classify c n fm =
   | Exists(x,p) |  Forall(x,p) -> n <> 0 && classify (opp c) (n - 1) fm;;
 
 let%expect_test "eg" =
-  print_fol_formula
+  print_bool
     (classify Sigma 1
       {%fol|forall x. x < 2
                   ==> exists y z. forall w. w < x + 2
                                             ==> w + x + y + z = 42|});
-  [%expect {| |}]
+  [%expect {| true |}]
 ;;
 
 
@@ -281,7 +283,7 @@ let sholds = veref (fun b -> b);;
 let sigma_bound fm = first (Int 0) (fun n -> sholds n undefined fm);;
 
 let%expect_test "eg" =
-  print_fol_formula
+  print_num
     (sigma_bound
       {%fol|exists p x.
          p < x /\
@@ -292,7 +294,7 @@ let%expect_test "eg" =
          forall z. z <= x
                    ==> (exists w. w <= x /\ x = z * w)
                        ==> z = S(0) \/ exists x. x <= z /\ z = p * x|});
-  [%expect {| |}]
+  [%expect {| 4 |}]
 ;;
 
 
@@ -384,15 +386,14 @@ let%expect_test "eg: program (successor)" =
     (4,One) |-> (One,Left,4);
     (4,Blank) |-> (Blank,Stay,0)]
    undefined in
-  print_fol_formula
-    (prog_suc);
-  print_fol_formula
+  ignore (prog_suc);
+  print_int
     (exec prog_suc [0]);
-  print_fol_formula
+  print_int
     (exec prog_suc [1]);
-  print_fol_formula
+  print_int
     (exec prog_suc [19]);
-  [%expect {| |}]
+  [%expect {| 1220 |}]
 ;;
 
 
@@ -463,9 +464,20 @@ and robeval tm =
   | _ -> add_assum robinson (axiom_eqrefl tm);;
 
 let%expect_test "eg" =
-  print_fol_formula
+  print_thm
     (robeval {%tm|S(0) + (S(S(0)) * ((S(0) + S(S(0)) + S(0))))|});
-  [%expect {| |}]
+  [%expect {|
+    |-
+    (forall m n. S(m) = S(n) ==> m = n) /\
+    (forall n. ~n = 0 <=> (exists m. n = S(m))) /\
+    (forall n. 0 + n = n) /\
+    (forall m n. S(m) + n = S(m + n)) /\
+    (forall n. 0 * n = 0) /\
+    (forall m n. S(m) * n = n + m * n) /\
+    (forall m n. m <= n <=> (exists d. m + d = n)) /\
+    (forall m n. m < n <=> S(m) <= n) ==> S(0) + S(S(0)) *
+    (S(0) + S(S(0)) + S(0)) = S(S(S(S(S(S(S(S(S(0)))))))))
+    |}]
 ;;
 
 
@@ -603,13 +615,69 @@ let rob_ne s t =
   right_imp_trans (right_mp (imp_trans sth xth) tth) th;;
 
 let%expect_test _ =
-  print_fol_formula
+  print_thm
     (rob_ne {%tm|S(0) + S(0) + S(0)|} {%tm|S(S(0)) * S(S(0))|});
-  print_fol_formula
+  print_thm
     (rob_ne {%tm|0 + 0 * S(0)|} {%tm|S(S(0)) + 0|});
-  print_fol_formula
+  print_thm
     (rob_ne {%tm|S(S(0)) + 0|} {%tm|0 + 0 + 0 * 0|});
-  [%expect {| |}]
+  [%expect {|
+    |-
+    (forall m n. S(m) = S(n) ==> m = n) /\
+    (forall n. ~n = 0 <=> (exists m. n = S(m))) /\
+    (forall n. 0 + n = n) /\
+    (forall m n. S(m) + n = S(m + n)) /\
+    (forall n. 0 * n = 0) /\
+    (forall m n. S(m) * n = n + m * n) /\
+    (forall m n. m <= n <=> (exists d. m + d = n)) /\
+    (forall m n. m < n <=> S(m) <= n) ==>
+    S(0) + S(0) + S(0) = S(S(0)) * S(S(0)) ==> false|-
+                                                    (forall m n.
+                                                       S(m) = S(n) ==> m = n) /\
+                                                    (forall n.
+                                                       ~n = 0 <=>
+                                                       (exists m. n = S(m))) /\
+                                                    (forall n. 0 + n = n) /\
+                                                    (forall m n.
+                                                       S(m) + n = S(m + n)) /\
+                                                    (forall n. 0 * n = 0) /\
+                                                    (forall m n.
+                                                       S(m) * n = n + m * n) /\
+                                                    (forall m n.
+                                                       m <= n <=>
+                                                       (exists d. m + d = n)) /\
+                                                    (forall m n.
+                                                       m < n <=> S(m) <= n) ==>
+                                                    0 + 0 * S(0) = S(S(0)) +
+                                                    0 ==> false|-
+                                                               (forall m n.
+                                                                  S(m) = S(
+                                                                  n) ==> m = n) /\
+                                                               (forall n.
+                                                                  ~n = 0 <=>
+                                                                  (exists m.
+                                                                     n = S(m))) /\
+                                                               (forall n.
+                                                                  0 + n = n) /\
+                                                               (forall m n.
+                                                                  S(m) + n =
+                                                                  S(m + n)) /\
+                                                               (forall n.
+                                                                  0 * n = 0) /\
+                                                               (forall m n.
+                                                                  S(m) * n = n +
+                                                                  m * n) /\
+                                                               (forall m n.
+                                                                  m <= n <=>
+                                                                  (exists d.
+                                                                     m + d = n)) /\
+                                                               (forall m n.
+                                                                  m < n <=>
+                                                                  S(m) <= n) ==>
+                                                               S(S(0)) + 0 = 0 +
+                                                               0 + 0 * 0 ==>
+                                                               false
+    |}]
 ;;
 
 
@@ -746,13 +814,26 @@ and boundednum_prove(a,x,t,q) =
         boundquant_step (sigma_prove fm') (sigma_prove fm'');;
 
 let%expect_test "eg: in the text" =
-  print_fol_formula
+  print_thm
     (sigma_prove
       {%fol|exists p.
           S(S(0)) <= p /\
           forall n. n < p
                     ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)|});
-  [%expect {| |}]
+  [%expect {|
+    |-
+    (forall m n. S(m) = S(n) ==> m = n) /\
+    (forall n. ~n = 0 <=> (exists m. n = S(m))) /\
+    (forall n. 0 + n = n) /\
+    (forall m n. S(m) + n = S(m + n)) /\
+    (forall n. 0 * n = 0) /\
+    (forall m n. S(m) * n = n + m * n) /\
+    (forall m n. m <= n <=> (exists d. m + d = n)) /\
+    (forall m n. m < n <=> S(m) <= n) ==>
+    (exists p.
+       S(S(0)) <= p /\
+       (forall n. n < p ==> (exists x. x <= p /\ p = n * x) ==> n = S(0)))
+    |}]
 ;;
 
 
@@ -761,14 +842,18 @@ let%expect_test "eg: in the text" =
 (* ------------------------------------------------------------------------- *)
 
 let%expect_test "eg: The essence of Goedel's first theorem" =
-  print_fol_formula
+  print_list print_int
     (meson
      {%fol|(True(G) <=> ~(|--(G))) /\ Pi(G) /\
        (forall p. Sigma(p) ==> (|--(p) <=> True(p))) /\
        (forall p. True(Not(p)) <=> ~True(p)) /\
        (forall p. Pi(p) ==> Sigma(Not(p)))
        ==> (|--(Not(G)) <=> |--(G))|});
-  [%expect {| |}]
+  [%expect {|
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5
+    [5; 5]
+    |}]
 ;;
 
 
@@ -805,7 +890,69 @@ let%expect_test "eg: Godel's second theorem" =
     so have {%fol||--(Pr(G))|} by ["lob1"; "logic"];
     so conclude {%fol||--(F)|} by ["L"; "logic"];
     qed] in
-  print_fol_formula
+  print_thm
     (godel_2);
-  [%expect {| |}]
+  [%expect {|
+    Proving <<(forall p. |--(p) ==> |--(Pr(p))) ==>
+              |--(imp(G,imp(Pr(G),F))) ==> |--(Pr(imp(G,imp(Pr(G),F))))>>
+    Searching with depth limit 0Searching with depth limit 1
+    Proving <<|--(Pr(imp(G,imp(Pr(G),F)))) ==>
+              (forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))) ==>
+              (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+              (forall p q. |--(imp(q,imp(p,q)))) /\
+              (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+              |--(imp(Pr(G),Pr(imp(Pr(G),F))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9
+    Proving <<|--(imp(Pr(G),Pr(imp(Pr(G),F)))) ==>
+              (forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))) ==>
+              (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+              (forall p q. |--(imp(q,imp(p,q)))) /\
+              (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+              |--(imp(Pr(G),imp(Pr(Pr(G)),Pr(F))))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11Searching with depth limit 12Searching with depth limit 13Searching with depth limit 14
+    Proving <<|--(imp(Pr(G),imp(Pr(Pr(G)),Pr(F)))) ==>
+              (forall p. |--(imp(Pr(p),Pr(Pr(p))))) ==>
+              (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+              (forall p q. |--(imp(q,imp(p,q)))) /\
+              (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+              |--(imp(Pr(G),Pr(F)))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9Searching with depth limit 10Searching with depth limit 11
+    Proving <<|--(imp(Pr(G),Pr(F))) ==>
+              |--(imp(Pr(F),F)) ==>
+              (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+              (forall p q. |--(imp(q,imp(p,q)))) /\
+              (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+              |--(imp(Pr(G),F))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8Searching with depth limit 9
+    Proving <<|--(imp(Pr(G),F)) ==>
+              |--(imp(imp(Pr(G),F),G)) ==>
+              (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+              (forall p q. |--(imp(q,imp(p,q)))) /\
+              (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+              |--(G)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7
+    Proving <<|--(G) ==>
+              (forall p. |--(p) ==> |--(Pr(p))) ==>
+              (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+              (forall p q. |--(imp(q,imp(p,q)))) /\
+              (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+              |--(Pr(G))>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8
+    Proving <<|--(Pr(G)) ==>
+              |--(imp(Pr(G),F)) ==>
+              (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+              (forall p q. |--(imp(q,imp(p,q)))) /\
+              (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+              |--(F)>>
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7
+    |-
+    (forall p. |--(p) ==> |--(Pr(p))) /\
+    (forall p q. |--(imp(Pr(imp(p,q)),imp(Pr(p),Pr(q))))) /\
+    (forall p. |--(imp(Pr(p),Pr(Pr(p))))) ==>
+    (forall p q. |--(imp(p,q)) /\ |--(p) ==> |--(q)) /\
+    (forall p q. |--(imp(q,imp(p,q)))) /\
+    (forall p q r. |--(imp(imp(p,imp(q,r)),imp(imp(p,q),imp(p,r))))) ==>
+    |--(imp(G,imp(Pr(G),F))) /\ |--(imp(imp(Pr(G),F),G)) ==>
+    |--(imp(Pr(F),F)) ==> |--(F)
+    |}]
 ;;

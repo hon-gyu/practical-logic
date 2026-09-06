@@ -1,6 +1,7 @@
 open Lib
 open Formulas
 open Prop
+open Propexamples
 open Defcnf
 
 (* ========================================================================= *)
@@ -64,11 +65,11 @@ let dpsat fm = dp(defcnfs fm);;
 let dptaut fm = not(dpsat(Not fm));;
 
 let%expect_test "eg: Examples" =
-  print_prop_formula
+  print_bool
     (tautology(prime 11));
-  print_prop_formula
+  print_bool
     (dptaut(prime 11));
-  [%expect {| |}]
+  [%expect {| truetrue |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -93,9 +94,9 @@ let dpllsat fm = dpll(defcnfs fm);;
 let dplltaut fm = not(dpllsat(Not fm));;                   
 
 let%expect_test "eg" =
-  print_prop_formula
+  print_bool
     (dplltaut(prime 11));
-  [%expect {| |}]
+  [%expect {| true |}]
 ;;
 
 
@@ -176,9 +177,9 @@ let dplbsat fm = dplb (defcnfs fm) [];;
 let dplbtaut fm = not(dplbsat(Not fm));;
 
 let%expect_test "eg: Examples" =
-  print_prop_formula
+  print_bool
     (dplitaut(prime 101));
-  print_prop_formula
+  print_bool
     (dplbtaut(prime 101));
-  [%expect {| |}]
+  [%expect {| truetrue |}]
 ;;

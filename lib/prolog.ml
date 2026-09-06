@@ -60,7 +60,7 @@ let%expect_test "eg: A Horn example" =
      (forall x. Q(x) /\ H(x) ==> J(x)) /\
      (forall x. R(x) ==> H(x))
      ==> (forall x. P(x) /\ R(x) ==> J(x))|} in
-  print_fol_formula
+  print_pair (print_graph print_quoted printert) print_int
     (p32);
   (* ------------------------------------------------------------------------- *)
   (* A non-Horn example.                                                       *)
@@ -71,7 +71,10 @@ let%expect_test "eg: A Horn example" =
   hornprove {%fol|(p \/ q) /\ (~p \/ q) /\ (p \/ ~q) ==> ~(~q \/ ~q)|};;
 
   **********)
-  [%expect {| |}]
+  [%expect {|
+    Searching with depth limit 0Searching with depth limit 1Searching with depth limit 2Searching with depth limit 3Searching with depth limit 4Searching with depth limit 5Searching with depth limit 6Searching with depth limit 7Searching with depth limit 8
+    ([("_0", <<|c_x|>>); ("_1", <<|_0|>>); ("_2", <<|_0|>>); ("_3", <<|_2|>>)], 8)
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -101,18 +104,23 @@ let simpleprolog rules gl =
 
 let%expect_test "eg: Ordering example" =
   let lerules = ["0 <= X"; "S(X) <= S(Y) :- X <= Y"] in
-  print_fol_formula
+  print_list print_quoted
     (lerules);
-  print_fol_formula
+  print_graph print_quoted printert
     (simpleprolog lerules "S(S(0)) <= S(S(S(0)))");
   (*** simpleprolog lerules "S(S(0)) <= S(0)";;
    ***)
   let env = simpleprolog lerules "S(S(0)) <= X" in
-  print_fol_formula
+  print_graph print_quoted printert
     (env);
-  print_fol_formula
+  printert
     (apply env "X");
-  [%expect {| |}]
+  [%expect {|
+    ["0 <= X"; "S(X) <= S(Y) :- X <= Y"][("_0", <<|S(0)|>>); ("_1", <<|S(S(0))|>>); ("_2",
+    <<|0|>>); ("_3", <<|S(0)|>>); ("_4", <<|_3|>>)][("X", <<|S(_1)|>>); ("_0",
+    <<|S(0)|>>); ("_1", <<|S(_3)|>>); ("_2", <<|0|>>); ("_4", <<|_3|>>)]<<|
+                                                                        S(_1)|>>
+    |}]
 ;;
 
 
@@ -125,22 +133,23 @@ let prolog rules gl =
   mapfilter (fun x -> Atom(R("=",[Var x; apply i x]))) (fv(parse_fol_formula gl));;
 
 let%expect_test "eg: again" =
-  print_fol_formula
+  let lerules = ["0 <= X"; "S(X) <= S(Y) :- X <= Y"] in
+  print_list print_fol_formula
     (prolog lerules "S(S(0)) <= X");
   (* ------------------------------------------------------------------------- *)
   (* Append example, showing symmetry between inputs and outputs.              *)
   (* ------------------------------------------------------------------------- *)
   let appendrules =
     ["append(nil,L,L)"; "append(H::T,L,H::A) :- append(T,L,A)"] in
-  print_fol_formula
+  print_list print_quoted
     (appendrules);
-  print_fol_formula
+  print_list print_fol_formula
     (prolog appendrules "append(1::2::nil,3::4::nil,Z)");
-  print_fol_formula
+  print_list print_fol_formula
     (prolog appendrules "append(1::2::nil,Y,1::2::3::4::nil)");
-  print_fol_formula
+  print_list print_fol_formula
     (prolog appendrules "append(X,3::4::nil,1::2::3::4::nil)");
-  print_fol_formula
+  print_list print_fol_formula
     (prolog appendrules "append(X,Y,1::2::3::4::nil)");
   (* ------------------------------------------------------------------------- *)
   (* However this way round doesn't work.                                      *)
@@ -164,9 +173,9 @@ let%expect_test "eg: again" =
     "delete(X,Y::Z,Y::W) :- delete(X,Z,W)";
     "0 <= X";
     "S(X) <= S(Y) :- X <= Y"] in
-  print_fol_formula
+  print_list print_quoted
     (sortrules);
-  print_fol_formula
+  print_list print_fol_formula
     (prolog sortrules
       "sort(S(S(S(S(0))))::S(0)::0::S(S(0))::S(0)::nil,X)");
   (* ------------------------------------------------------------------------- *)
@@ -183,7 +192,7 @@ let%expect_test "eg: again" =
     "delete(X,Y::Z,Y::W) :- delete(X,Z,W)";
     "0 <= X";
     "S(X) <= S(Y) :- X <= Y"] in
-  print_fol_formula
+  print_list print_quoted
     (badrules);
   (*** This no longer works
 
@@ -191,5 +200,10 @@ let%expect_test "eg: again" =
     "sort(S(S(S(S(0))))::S(0)::0::S(S(0))::S(0)::nil,X)";;
 
    ***)
-  [%expect {| |}]
+  [%expect {|
+    [<<X = S(S(_3))>>]["append(nil,L,L)"; "append(H::T,L,H::A) :- append(T,L,A)"][
+    <<Z = 1::2::3::4::nil>>][<<Y = 3::4::nil>>][<<X = 1::2::nil>>][<<X = nil>>;
+    <<Y = 1::2::3::4::nil>>]["sort(X,Y) :- perm(X,Y),sorted(Y)"; "sorted(nil)"; "sorted(X::nil)"; "sorted(X::Y::Z) :- X <= Y, sorted(Y::Z)"; "perm(nil,nil)"; "perm(X::Y,U::V) :- delete(U,X::Y,Z), perm(Z,V)"; "delete(X,X::Y,Y)"; "delete(X,Y::Z,Y::W) :- delete(X,Z,W)"; "0 <= X"; "S(X) <= S(Y) :- X <= Y"][
+    <<X = 0::S(0)::S(0)::S(S(0))::S(S(S(S(0))))::nil>>]["sort(X,Y) :- sorted(Y), perm(X,Y)"; "sorted(nil)"; "sorted(X::nil)"; "sorted(X::Y::Z) :- X <= Y, sorted(Y::Z)"; "perm(nil,nil)"; "perm(X::Y,U::V) :- delete(U,X::Y,Z), perm(Z,V)"; "delete(X,X::Y,Y)"; "delete(X,Y::Z,Y::W) :- delete(X,Z,W)"; "0 <= X"; "S(X) <= S(Y) :- X <= Y"]
+    |}]
 ;;

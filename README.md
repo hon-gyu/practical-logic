@@ -128,8 +128,12 @@ a formula as ```<<p ==> q>>``` rather than as its constructor tree.  The printer
 are in ```toplevel/printers.ml``` and can simply be left out.
 
 The worked examples from the book -- the blocks that used to be bracketed by
-```START_INTERACTIVE``` in each source file -- are in ```examples/```, one file per
-chapter topic, to be pasted into a toplevel that has done ```open Atp.All```.
+```START_INTERACTIVE``` in each source file -- also live next to the code they
+illustrate, as ```let%expect_test``` blocks whose expected output is what the
+toplevel used to show.  ```dune test``` runs them; ```dune runtest
+--auto-promote``` rewrites an expectation after a deliberate change.  The same
+blocks are still in ```examples/```, one file per chapter topic, for pasting
+into a toplevel that has done ```open Atp.All```.
 
 ## Customization
 
@@ -146,7 +150,7 @@ repository top level directory, or provide UTop-specific customizations in
 | ```ppx/``` | the quotation rewriter |
 | ```ppx/driver/``` | standalone driver, so the quotations also work in the toplevel |
 | ```bin/``` | the example.ml executable |
-| ```tests/``` | the test suite, run with ```dune test``` |
+| ```tests/``` | the hand-written test suite, run with ```dune test``` |
 | ```examples/``` | the book's interactive example blocks, for pasting into a toplevel |
 | ```toplevel/``` | optional toplevel setup: loader and printers |
 | ```tools/``` | one-shot migration scripts, kept for reference |

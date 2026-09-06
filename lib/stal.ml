@@ -1,6 +1,7 @@
 open Lib
 open Formulas
 open Prop
+open Propexamples
 open Defcnf
 
 (* Warnings the book's style trips in this file; the rest of the
@@ -62,9 +63,16 @@ let triggers fm =
 
 
 let%expect_test "eg: An example" =
-  print_prop_formula
+  print_list (print_pair (print_pair print_prop_formula print_prop_formula) (print_list (print_pair print_prop_formula print_prop_formula)))
     (triggers {%prop|p <=> (q /\ r)|});
-  [%expect {| |}]
+  [%expect {|
+    [((<<p>>, <<true>>), [(<<q>>, <<true>>); (<<r>>, <<true>>)]); ((<<q>>,
+    <<true>>), [(<<r>>, <<p>>)]); ((<<q>>, <<~true>>), [(<<p>>, <<~true>>)]); ((
+    <<q>>, <<~p>>), [(<<p>>, <<~true>>); (<<r>>, <<p>>)]); ((<<r>>, <<true>>), [(
+    <<q>>, <<p>>)]); ((<<r>>, <<q>>), [(<<q>>, <<p>>)]); ((<<r>>, <<~true>>), [(
+    <<p>>, <<~true>>)]); ((<<r>>, <<~p>>), [(<<p>>, <<~true>>); (<<q>>, <<p>>)]); ((
+    <<r>>, <<~q>>), [(<<p>>, <<~true>>)])]
+    |}]
 ;;
 
 (* ------------------------------------------------------------------------- *)
@@ -229,7 +237,12 @@ let stalmarck fm =
   saturate_upto vars 0 2 (graph trigfn) [p,True];;
 
 let%expect_test "eg: Examples" =
-  print_prop_formula
-    (time stalmarck (mk_adder_test 6 3));
-  [%expect {| |}]
+  print_bool
+    (stalmarck (mk_adder_test 6 3));
+  [%expect {|
+    *** Starting 0-saturation
+    *** Starting 1-saturation
+    *** Starting 2-saturation
+    true
+    |}]
 ;;

@@ -740,3 +740,25 @@ let equated (Partition f) = dom f;;
 (* ------------------------------------------------------------------------- *)
 
 let rec first n p = if p(n) then n else first (n +/ Int 1) p;;
+
+(* ------------------------------------------------------------------------- *)
+(* Printing combinators for the inline examples.  The toplevel could print    *)
+(* any value; an expect test has to name a printer, and these save spelling   *)
+(* out the same List.iter at every site.                                      *)
+(* ------------------------------------------------------------------------- *)
+
+let print_bool b = print_string (string_of_bool b);;
+
+let print_quoted s = print_string ("\"" ^ s ^ "\"");;
+
+let print_list pfn l =
+  print_string "[";
+  (match l with
+     [] -> ()
+   | h::t -> pfn h; List.iter (fun x -> print_string "; "; pfn x) t);
+  print_string "]";;
+
+let print_pair pfn qfn (a,b) =
+  print_string "("; pfn a; print_string ", "; qfn b; print_string ")";;
+
+let print_graph pfn qfn f = print_list (print_pair pfn qfn) (graph f);;
