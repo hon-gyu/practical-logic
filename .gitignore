@@ -6,3 +6,8 @@ _build
 toplevel/utop-prefs.ml
 
 __pycache__
+
+_site
+
+.agents/
+.claude/
